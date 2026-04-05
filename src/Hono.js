@@ -7,7 +7,7 @@ import { Request } from "./process/Request.mjs";
 /***************** Processing *****************/
 
 export default new Hono().all("/:rest{.*}", async c => {
-	let $request = await HonoWorkerAdapter.buildRequest(c);
+	let $request = await HonoWorkerAdapter.buildRequest(c.req);
 	let $response;
 	const KV = c.env ? new Storage({ env: { namespaces: new Map([["", c.env.PersistentStore], ["@iRingo.Maps.Caches", c.env.Maps]]) } }) : undefined;
 	({ $request, $response } = await Request($request, KV));

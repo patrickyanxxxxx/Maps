@@ -5,6 +5,12 @@
  */
 
 /**
+ * Hono 请求类型。
+ * Hono request type.
+ * @typedef {HonoContext["req"]} HonoRequest
+ */
+
+/**
  * Worker 统一头部字典。
  * Worker normalized header dictionary.
  * @typedef {Record<string, string | string[] | undefined>} WorkerHeaders
@@ -88,14 +94,14 @@ export default class HonoWorkerAdapter {
 	}
 
 	/**
-	 * 从 Hono context 构造内部统一请求对象。
-	 * Build the normalized internal request payload from Hono context.
-	 * @param {HonoContext} c Hono 上下文 / Hono context.
+	 * 从 Hono request 构造内部统一请求对象。
+	 * Build the normalized internal request payload from Hono request.
+	 * @param {HonoRequest} req Hono 请求 / Hono request.
 	 * @returns {Promise<WorkerRequest>} 标准化请求对象 / Normalized request object.
 	 */
-	static async buildRequest(c) {
-		const url = HonoWorkerAdapter.routeRewrite(new URL(c.req.url), c.req.param("rest"));
-		const method = c.req.method;
+	static async buildRequest(req) {
+		const url = HonoWorkerAdapter.routeRewrite(new URL(req.url), req.param("rest"));
+		const method = req.method;
 		let bodyBytes;
 		switch (method) {
 			case "GET":
@@ -103,7 +109,7 @@ export default class HonoWorkerAdapter {
 			case "OPTIONS":
 				break;
 			default:
-				bodyBytes = await c.req.arrayBuffer().catch(error => {
+				bodyBytes = await req.arrayBuffer().catch(error => {
 					console.info(error);
 					return undefined;
 				});
@@ -113,7 +119,7 @@ export default class HonoWorkerAdapter {
 		return {
 			method,
 			url: url.toString(),
-			headers: HonoWorkerAdapter.normalizeRequestHeaders(c.req.header()),
+			headers: HonoWorkerAdapter.normalizeRequestHeaders(req.header()),
 			body: bodyBytes,
 			bodyBytes,
 		};
