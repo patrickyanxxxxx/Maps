@@ -10,7 +10,17 @@
 
 ### Selective Hybrid Mainland 3D Route Local v6
 
-[点击导入 Egern 本地模块](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v6.yaml)
+[点击导入 Egern 本地模块](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.yaml)
+
+其他代理软件：
+
+| 客户端 | 模块 |
+| --- | --- |
+| Surge | [`iRingo.Maps.sgmodule`](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.sgmodule) |
+| Loon | [`iRingo.Maps.plugin`](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.plugin) |
+| Shadowrocket | [`iRingo.Maps.srmodule`](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.srmodule) |
+| Stash | [`iRingo.Maps.stoverride`](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.stoverride) |
+| Quantumult X | [`iRingo.Maps.snippet`](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.snippet) |
 
 已经在 iOS 27 实机验证：
 
@@ -73,7 +83,7 @@ v6 因此不再插入第二套 CN 卫星 selector。它保留国际 `style=98` s
 
 ### 3. 按瓦片坐标路由
 
-`modules/assets/request.selective-hybrid-mainland-3d-route.v6.js` 根据 `z/x/y` 判断请求是否位于中国大陆：
+`modules/assets/satellite-route.js` 根据 `z/x/y` 判断请求是否位于中国大陆：
 
 ```text
 国际请求
@@ -116,15 +126,20 @@ style=7, v=68, size=1, scale=2, vertical_datum=wgs84
 | 路径 | 用途 |
 | --- | --- |
 | `src/function/InternationalHybrid.mjs` | 中国二维数据与国际 3D 的选择性合并、卫星路由配置和大陆覆盖扩展 |
-| `modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v6.yaml` | 当前推荐的 Egern 本地模块 |
-| `modules/assets/request.selective-hybrid-mainland-3d-route.v6.js` | iOS 27 卫星瓦片坐标识别与 CN 路由 |
-| `modules/assets/request.selective-hybrid-mainland-3d.v6.bundle.js` | v6 请求处理 bundle |
-| `modules/assets/response.selective-hybrid-mainland-3d.v6.bundle.js` | v6 资源清单响应处理 bundle |
+| `modules/iRingo.Maps.yaml` | 当前推荐的 Egern 本地模块 |
+| `modules/iRingo.Maps.sgmodule` | Surge 模块 |
+| `modules/iRingo.Maps.plugin` | Loon 插件 |
+| `modules/iRingo.Maps.srmodule` | Shadowrocket 模块 |
+| `modules/iRingo.Maps.stoverride` | Stash 覆写 |
+| `modules/iRingo.Maps.snippet` | Quantumult X 片段 |
+| `modules/assets/satellite-route.js` | iOS 27 卫星瓦片坐标识别与 CN 路由 |
+| `modules/assets/request.bundle.js` | 当前稳定请求处理 bundle，内置 v6 默认参数 |
+| `modules/assets/response.bundle.js` | 当前稳定资源清单响应处理 bundle，内置 v6 默认参数 |
 | `scripts/build-selective-hybrid-egern.mjs` | 生成 Selective Hybrid 本地模块和 bundle |
 | `scripts/test-selective-hybrid-route-v6.mjs` | 回放中国与东京卫星请求，验证路由边界 |
 | `src/class/GEOResourceManifest.mjs` | iOS 27 缓存兼容及国际 3D/Look Around 资源选择 |
 | `src/process/Request.mjs` / `Response.mjs` | `.apple.com`、`.apple.cn` 清单请求与响应兼容 |
-| `modules/assets/diagnose.satellite-requests.v2.js` | 脱敏记录卫星主机、路径、样式、版本和坐标 |
+| `modules/archive/assets/diagnose.satellite-requests.v2.js` | 已归档的脱敏卫星请求诊断脚本 |
 
 ## 版本说明
 
@@ -147,7 +162,7 @@ style=7, v=68, size=1, scale=2, vertical_datum=wgs84
 本地验证命令：
 
 ```bash
-node --check modules/assets/request.selective-hybrid-mainland-3d-route.v6.js
+node --check modules/assets/satellite-route.js
 node scripts/test-selective-hybrid-route-v6.mjs
 ```
 

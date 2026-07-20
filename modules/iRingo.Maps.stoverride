@@ -1,0 +1,77 @@
+name: " iRingo: 🗺️ Maps iOS 27 Hybrid"
+desc: |-
+  自定义 Maps app
+  添加国际版功能
+  自定义服务版本
+  iOS 27 中国大陆卫星 + 国际卫星与 3D
+author: |-
+  patrickyanxxxxx
+  VirgilClyne
+homepage: "https://github.com/patrickyanxxxxx/Maps"
+icon: "https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png"
+category: " iRingo"
+version: "6.0.0"
+
+rules:
+  # 🗺️ Amap
+  - DOMAIN-SUFFIX,is.autonavi.com,DIRECT
+  # 🗺️ Maps
+  - DOMAIN,gspe11-2-cn-ssl.ls.apple.com,DIRECT
+  - DOMAIN,gspe12-cn-ssl.ls.apple.com,DIRECT
+  - DOMAIN,gspe19-cn-ssl.ls.apple.com,DIRECT
+  - DOMAIN,gspe19-2-cn-ssl.ls.apple.com,DIRECT
+  - DOMAIN,gspe79-cn-ssl.ls.apple.com,DIRECT
+
+http:
+  mitm:
+    - "configuration.ls.apple.com"
+    - "gspe35-ssl.ls.apple.com"
+    - "gspe35-ssl.ls.apple.cn"
+    - "gspe11-ssl.ls.apple.com"
+    - "gspe19-ssl.ls.apple.com"
+    - "gspe19-kittyhawk-ssl.ls.apple.com"
+    - "gspe79-ssl.ls.apple.com"
+  script:
+    - match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
+      name: iRingo.Maps.v6.request
+      type: request
+      argument: 'GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"'
+    - match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
+      name: iRingo.Maps.v6.response
+      type: response
+      require-body: true
+      argument: 'GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"'
+    - match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
+      name: iRingo.Maps.v6.request
+      type: request
+      argument: 'GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"'
+    - match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
+      name: iRingo.Maps.v6.response
+      type: response
+      require-body: true
+      binary-mode: true
+      argument: 'GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"'
+    - match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+      name: iRingo.Maps.v6.request
+      type: request
+      argument: 'GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"'
+    - match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+      name: iRingo.Maps.v6.response
+      type: response
+      require-body: true
+      binary-mode: true
+      argument: 'GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"'
+    - match: ^https?:\/\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\.ls\.apple\.com\/
+      name: iRingo.Maps.v6.route
+      type: request
+
+script-providers:
+  iRingo.Maps.v6.request:
+    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js
+    interval: 86400
+  iRingo.Maps.v6.response:
+    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js
+    interval: 86400
+  iRingo.Maps.v6.route:
+    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/satellite-route.js
+    interval: 86400

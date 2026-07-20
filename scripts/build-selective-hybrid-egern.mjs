@@ -12,13 +12,13 @@ const profile = mainland3DRoute
 	: mainland3DNative
 		? "selective-hybrid-mainland-3d-native.v4"
 		: "selective-hybrid.v1";
-const requestPath = `modules/assets/request.${profile}.bundle.js`;
-const responsePath = `modules/assets/response.${profile}.bundle.js`;
+const requestPath = `modules/archive/assets/request.${profile}.bundle.js`;
+const responsePath = `modules/archive/assets/response.${profile}.bundle.js`;
 const modulePath = mainland3DRoute
-	? "modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v6.yaml"
+	? "modules/archive/legacy/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v6.yaml"
 	: mainland3DNative
-		? "modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Native.Local.v4.yaml"
-		: "modules/iRingo.Maps.iOS27.Selective-Hybrid.Local.v1.yaml";
+		? "modules/archive/legacy/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Native.Local.v4.yaml"
+		: "modules/archive/legacy/iRingo.Maps.iOS27.Selective-Hybrid.Local.v1.yaml";
 
 let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
 let response = await readFile(`${releaseDirectory}/response.bundle.js`, "utf8");
@@ -58,7 +58,7 @@ response = response.replace(
 await writeFile(requestPath, request);
 await writeFile(responsePath, response);
 
-const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
+const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/archive/assets";
 const scriptingName = mainland3DNative
 	? "Maps.SelectiveHybridMainland3DNative"
 	: mainland3DRoute

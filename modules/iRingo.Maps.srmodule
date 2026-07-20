@@ -1,0 +1,34 @@
+#!name =  iRingo: 🗺️ Maps iOS 27 Hybrid
+#!desc = 自定义 Maps app\n添加国际版功能\n自定义服务版本\niOS 27 中国大陆卫星 + 国际卫星与 3D
+#!openUrl = http://boxjs.com/#/app/iRingo.Maps
+#!author = patrickyanxxxxx; VirgilClyne
+#!homepage = https://github.com/patrickyanxxxxx/Maps
+#!icon = https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
+#!category =  iRingo
+#!version = 6.0.0
+
+[Rule]
+# 🗺️ Amap
+DOMAIN-SUFFIX,is.autonavi.com,DIRECT
+# 🗺️ Maps
+DOMAIN,gspe11-2-cn-ssl.ls.apple.com,DIRECT
+DOMAIN,gspe12-cn-ssl.ls.apple.com,DIRECT
+DOMAIN,gspe19-cn-ssl.ls.apple.com,DIRECT
+DOMAIN,gspe19-2-cn-ssl.ls.apple.com,DIRECT
+DOMAIN,gspe79-cn-ssl.ls.apple.com,DIRECT
+
+[Script]
+# 🗺️ Network Defaults
+🗺️ Maps.config.defaults.request = type=http-request, pattern=^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults, script-path=https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js, argument=GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"
+🗺️ Maps.config.defaults.response = type=http-response, pattern=^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults, requires-body=1, script-path=https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js, argument=GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"
+# 🗺️ Announcements
+🗺️ Maps.config.announcements.request = type=http-request, pattern=^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements, script-path=https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js, argument=GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"
+🗺️ Maps.config.announcements.response = type=http-response, pattern=^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements, requires-body=1, binary-body-mode=1, script-path=https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js, argument=GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"
+# 🗺️ Resource Manifest
+🗺️ Maps.geo_manifest.dynamic.config.request = type=http-request, pattern=^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config, script-path=https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js, argument=GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"
+🗺️ Maps.geo_manifest.dynamic.config.response = type=http-response, pattern=^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config, requires-body=1, binary-body-mode=1, script-path=https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js, argument=GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"
+# 🗺️ iOS 27 Satellite Route
+🗺️ Maps.satellite.route.request = type=http-request, pattern=^https?:\/\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\.ls\.apple\.com\/, script-path=https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/satellite-route.js
+
+[MITM]
+hostname = %APPEND% configuration.ls.apple.com, gspe35-ssl.ls.apple.com, gspe35-ssl.ls.apple.cn, gspe11-ssl.ls.apple.com, gspe19-ssl.ls.apple.com, gspe19-kittyhawk-ssl.ls.apple.com, gspe79-ssl.ls.apple.com

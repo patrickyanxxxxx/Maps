@@ -3,9 +3,9 @@ import { copyFile, readFile, writeFile } from "node:fs/promises";
 const releaseDirectory = process.argv[2];
 if (!releaseDirectory) throw new Error("Usage: node build-local-egern.mjs <release-dir>");
 
-const requestPath = "modules/assets/request.v7.bundle.js";
-const responsePath = "modules/assets/response.v7.bundle.js";
-const modulePath = "modules/iRingo.Maps.iOS27.Local.v7.yaml";
+const requestPath = "modules/archive/assets/request.v7.bundle.js";
+const responsePath = "modules/archive/assets/response.v7.bundle.js";
+const modulePath = "modules/archive/legacy/iRingo.Maps.iOS27.Local.v7.yaml";
 
 let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
 let response = await readFile(`${releaseDirectory}/response.bundle.js`, "utf8");
@@ -57,7 +57,7 @@ response = response.replace(internationalURLInfo, chinaURLInfo);
 await writeFile(requestPath, request);
 await writeFile(responsePath, response);
 
-const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
+const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/archive/assets";
 const args = 'GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"';
 
 const module = `name: ' iRingo: 🗺️ Maps iOS 27 Local v7'

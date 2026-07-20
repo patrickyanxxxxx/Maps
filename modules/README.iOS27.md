@@ -2,15 +2,16 @@
 
 ## 推荐模块
 
-当前推荐使用：
+`modules/` 根目录只保留当前稳定版，命名和模块头部遵循原项目的多客户端结构：
 
-[`iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v6.yaml`](./iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v6.yaml)
-
-远程导入地址：
-
-```text
-https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v6.yaml
-```
+| 代理软件 | 文件 | 导入地址 |
+| --- | --- | --- |
+| Egern | [`iRingo.Maps.yaml`](./iRingo.Maps.yaml) | `https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.yaml` |
+| Surge | [`iRingo.Maps.sgmodule`](./iRingo.Maps.sgmodule) | `https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.sgmodule` |
+| Loon | [`iRingo.Maps.plugin`](./iRingo.Maps.plugin) | `https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.plugin` |
+| Shadowrocket | [`iRingo.Maps.srmodule`](./iRingo.Maps.srmodule) | `https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.srmodule` |
+| Stash | [`iRingo.Maps.stoverride`](./iRingo.Maps.stoverride) | `https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.stoverride` |
+| Quantumult X | [`iRingo.Maps.snippet`](./iRingo.Maps.snippet) | `https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.snippet` |
 
 实机已验证：
 
@@ -38,22 +39,36 @@ Hybrid.ServiceMode = APPLE
 UrlInfoSet.LocationShift = AutoNavi
 ```
 
-## 其他配置
+## 模块说明格式
+
+各客户端模块继续沿用原项目写法：
+
+- `#!name / #!desc / #!openUrl / #!author / #!homepage / #!icon / #!category / #!version`
+- Surge 使用 `#!arguments` 和 `#!arguments-desc`
+- Loon 使用 `[Argument] / [Rule] / [Script] / [MITM]`
+- Egern 使用 `compat_arguments` 和 `compat_arguments_desc`
+- 参数按原项目的 `[动态配置]`、`[URL信息集]`、`[瓦片数据集]`、`[储存]`、`[调试]` 分类说明
+
+## 旧版本
+
+全部旧模块已移入 [`archive/legacy/`](./archive/legacy/)，旧脚本和 bundle 已移入 [`archive/assets/`](./archive/assets/)；它们只用于开发对比和回归测试。
+
+旧版本定位：
 
 | 文件 | 用途 | 建议 |
 | --- | --- | --- |
-| `iRingo.Maps.iOS27.Selective-Hybrid.Local.v1.yaml` | 中国二维 + 国际 3D，不处理国内卫星路由 | 可作为回退基线 |
-| `iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Native.Local.v4.yaml` | 并存 CN/国际 selector | 会触发切换绑定，不推荐日常使用 |
-| `iRingo.Maps.China.Full.Local.yaml` | 完整 CN 优先模式 | 适合只重视中国数据时使用 |
+| `iRingo.Maps.iOS27.Selective-Hybrid.Local.v1.yaml` | 中国二维 + 国际 3D，不处理国内卫星路由 | 回退基线 |
+| `iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Native.Local.v4.yaml` | 并存 CN/国际 selector | 会触发切换绑定，不推荐 |
+| `iRingo.Maps.China.Full.Local.yaml` | 完整 CN 优先模式 | 仅重视中国数据时使用 |
 | `iRingo.Maps.International.3D.Local.yaml` | 国际能力优先模式 | 中国数据可能缺失或偏移 |
-| `iRingo.Maps.Satellite.Diagnostics.Local.v2.yaml` | 脱敏采集卫星请求 | 只在排查问题时临时启用 |
+| `iRingo.Maps.Satellite.Diagnostics.Local.v2.yaml` | 脱敏采集卫星请求 | 仅排查问题时临时启用 |
 
 v2、v3、v5 和其他实验模块保留用于开发对比，不建议与 v6 同时启用。
 
 ## 更新模块后的操作
 
 1. 停用并删除旧版 Selective Hybrid 模块。
-2. 导入 v6，并确认只有这一份 Maps 混合模块启用。
+2. 按代理软件导入 `modules/` 根目录对应的当前稳定模块，并确认只有这一份 Maps 混合模块启用。
 3. 强制退出 Apple 地图和 Egern。
 4. 若仍使用旧清单或旧 selector，重启设备后再测试。
 

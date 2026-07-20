@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
-const script = await readFile("modules/assets/request.selective-hybrid-mainland-3d-route.v6.js", "utf8");
+const script = await readFile("modules/assets/satellite-route.js", "utf8");
 
 const run = url => {
 	let result;
