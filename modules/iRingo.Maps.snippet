@@ -5,7 +5,7 @@
 #!homepage = https://github.com/patrickyanxxxxx/Maps
 #!icon = https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
 #!category =  iRingo
-#!version = 6.1.1
+#!version = 6.1.2
 
 #[filter_local]
 # 🗺️ Amap
@@ -19,16 +19,16 @@ host, gspe79-cn-ssl.ls.apple.com, direct
 
 #[rewrite_local]
 # 🗺️ Network Defaults
-^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.1.1
-^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.1.1
+^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.1.2
+^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.1.2
 # 🗺️ Announcements
-^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.1.1
-^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.1.1
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.1.2
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.1.2
 # 🗺️ Resource Manifest
-^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.1.1
-^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.1.1
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.1.2
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.1.2
 # 🗺️ iOS 27 Satellite Route
-^https?:\/\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\.ls\.apple\.com\/ url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/satellite-route.js?v=6.1.1
+^https?:\/\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\.ls\.apple\.com\/ url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/satellite-route.js?v=6.1.2
 
 #[mitm]
 hostname = configuration.ls.apple.com, gspe35-ssl.ls.apple.com, gspe35-ssl.ls.apple.cn, gspe11-ssl.ls.apple.com, gspe19-ssl.ls.apple.com, gspe19-kittyhawk-ssl.ls.apple.com, gspe79-ssl.ls.apple.com

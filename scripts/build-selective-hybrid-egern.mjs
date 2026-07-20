@@ -116,7 +116,7 @@ compat_arguments:
   TileSet.Roads: XX
   TileSet.Satellite: XX
   Hybrid.MainlandLayers: EXTENDED
-  Hybrid.ServiceMode: APPLE
+  Hybrid.ServiceMode: CN_POI
   LogLevel: WARN
 compat_arguments_desc: |
   推荐先使用默认值；CountryCode 必须保持 US 才能保留国际 3D 能力。
@@ -126,8 +126,8 @@ compat_arguments_desc: |
       └ CORE: 仅标准地图、建筑、POI 与地标，用于诊断
 
   Hybrid.ServiceMode: [中国服务完整度]
-      ├ APPLE: Apple 前台服务，仅保留大陆反向地理编码及可选坐标修正（默认，国外完全国际化）
-      ├ CN_POI: 高德地点与反向地理编码，导航保留 Apple
+      ├ CN_POI: 高德地点、POI 与反向地理编码，导航保留 Apple（默认）
+      ├ APPLE: Apple 前台服务，国外完全国际化
       └ CN_FULL: 高德地点、反向地理编码、导航与交通（国内服务最完整，但国外 POI/导航不再严格国际化）
 
 ${mainland3DRoute ? `  国内 3D 路由:

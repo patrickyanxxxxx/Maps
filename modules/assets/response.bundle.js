@@ -337,7 +337,10 @@ function applyInternationalHybrid(body, caches, settings = {}) {
 	const mainlandUrlInfo = caches.CN?.urlInfoSet?.[0];
 	if (Array.isArray(body.urlInfoSet) && internationalUrlInfo && mainlandUrlInfo) {
 		const hybridUrlInfo = clone(internationalUrlInfo);
-		const mode = String(settings?.Hybrid?.ServiceMode ?? "APPLE").toUpperCase();
+		// CN_POI is the stable default for the hybrid profile: restore mainland
+		// AutoNavi place/POI and reverse-geocoding data while keeping Apple
+		// navigation unless the module explicitly selects another mode.
+		const mode = String(settings?.Hybrid?.ServiceMode ?? "CN_POI").toUpperCase();
 		const reverseGeocodingKeys = [
 			"batchReverseGeocoderURL",
 			"backgroundRevGeoURL",
@@ -396,7 +399,7 @@ function applyInternationalHybrid(body, caches, settings = {}) {
 	if (leakedCriticalTile) console.log(`[iRingo Hybrid] warning: unexpected mainland 3D style remains: ${leakedCriticalTile.style}`);
 	if (!internationalMunin) console.log("[iRingo Hybrid] warning: international Munin metadata was not found");
 	if (mainlandMunin) console.log("[iRingo Hybrid] warning: mainland Munin metadata must remain disabled");
-	console.log(`[iRingo Hybrid] injected ${chinaTiles.length} mainland-only 2D and ${china3DTiles.length} original-coverage 3D tile sets; service mode ${settings?.Hybrid?.ServiceMode ?? "APPLE"}`);
+	console.log(`[iRingo Hybrid] injected ${chinaTiles.length} mainland-only 2D and ${china3DTiles.length} original-coverage 3D tile sets; service mode ${settings?.Hybrid?.ServiceMode ?? "CN_POI"}`);
 	return body;
 }
 
