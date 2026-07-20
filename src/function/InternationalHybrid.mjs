@@ -1,4 +1,8 @@
 const INTERNATIONAL_3D_STYLES = new Set([
+	// iOS 27 uses the formerly reserved style 98 for the international
+	// satellite selector (observed as /tile?style=98). It must remain in the
+	// single international selector set for coordinate-based CN routing.
+	"UNUSED_98",
 	"SPUTNIK_METADATA",
 	"SPUTNIK_C3M",
 	"SPUTNIK_DSM",
@@ -163,6 +167,8 @@ const saveRouteConfig = (caches, enabled) => {
 		}
 		routes.push({
 			style: internationalTile.style,
+			fromStyle: internationalTile.style,
+			toStyle: mainlandTile.style,
 			scale: internationalTile.scale,
 			size: internationalTile.size,
 			internationalBaseURL: internationalTile.baseURL,
@@ -170,7 +176,48 @@ const saveRouteConfig = (caches, enabled) => {
 			versionMap,
 		});
 	}
-	globalThis.$persistentStore.write(JSON.stringify({ updatedAt: Date.now(), routes }), "iRingo.Maps.HybridSatelliteRoute.v2");
+	// Confirmed on iOS 27: the international satellite selector is style 98,
+	// while the equivalent AutoNavi/CN selector remains RASTER_SATELLITE (7).
+	// The current protobuf schema still names 98 UNUSED_98, so it cannot be
+	// paired by the legacy same-name loop above.
+	const internationalSatellite = caches.XX?.tileSet?.find(tile => tile?.style === "UNUSED_98");
+	const mainlandSatellite = caches.CN?.tileSet?.find(tile =>
+		tile?.style === "RASTER_SATELLITE" &&
+		tile?.scale === internationalSatellite?.scale &&
+		tile?.size === internationalSatellite?.size
+	) ?? caches.CN?.tileSet?.find(tile => tile?.style === "RASTER_SATELLITE");
+	if (internationalSatellite?.baseURL && mainlandSatellite?.baseURL) {
+		const fromVersions = internationalSatellite.validVersion ?? [];
+		const toVersions = mainlandSatellite.validVersion ?? [];
+		const versionMap = {};
+		for (let index = 0; index < fromVersions.length; index++) {
+			const from = fromVersions[index]?.identifier;
+			const to = toVersions[index]?.identifier ?? toVersions[0]?.identifier;
+			if (typeof from !== "undefined" && typeof to !== "undefined") versionMap[String(from)] = String(to);
+		}
+		// Keep the observed mapping as a compatibility fallback if manifest
+		// version ordering changes or omits one side during cache warm-up.
+		versionMap["226"] ??= "68";
+		routes.push({
+			style: "UNUSED_98",
+			fromStyle: "UNUSED_98",
+			toStyle: "RASTER_SATELLITE",
+			fromStyleValue: "98",
+			toStyleValue: "7",
+			scale: internationalSatellite.scale,
+			size: internationalSatellite.size,
+			internationalBaseURL: internationalSatellite.baseURL,
+			mainlandBaseURL: mainlandSatellite.baseURL,
+			versionMap,
+			targetQuery: {
+				size: String(mainlandSatellite.size ?? 1),
+				scale: String(mainlandSatellite.scale ?? 2),
+				vertical_datum: "wgs84",
+			},
+			removeQuery: ["region", "h"],
+		});
+	}
+	globalThis.$persistentStore.write(JSON.stringify({ updatedAt: Date.now(), routes }), "iRingo.Maps.HybridSatelliteRoute.v3");
 };
 
 /**
