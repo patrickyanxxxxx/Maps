@@ -47,7 +47,8 @@
 		"@protobuf-ts/plugin": "^2.11.1",
 		"@rspack/cli": "^1.7.7",
 		"@rspack/core": "^1.7.7",
-		"node-polyfill-webpack-plugin": "^4.1.0"
+		"node-polyfill-webpack-plugin": "^4.1.0",
+		"typescript": "^6.0.3"
 	},
 	"dependencies": {
 		"@auraflare/shared": "^1.1.1",
