@@ -3,9 +3,9 @@ import { copyFile, readFile, writeFile } from "node:fs/promises";
 const releaseDirectory = process.argv[2];
 if (!releaseDirectory) throw new Error("Usage: node build-local-egern.mjs <release-dir>");
 
-const requestPath = "modules/assets/request.v4.bundle.js";
-const responsePath = "modules/assets/response.v4.bundle.js";
-const modulePath = "modules/iRingo.Maps.iOS27.Local.v4.yaml";
+const requestPath = "modules/assets/request.v5.bundle.js";
+const responsePath = "modules/assets/response.v5.bundle.js";
+const modulePath = "modules/iRingo.Maps.iOS27.Local.v5.yaml";
 
 let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
 let response = await readFile(`${releaseDirectory}/response.bundle.js`, "utf8");
@@ -24,38 +24,53 @@ response = response.replaceAll(
 );
 
 const satellite3D = 'case"SPUTNIK_METADATA":case"SPUTNIK_C3M":case"SPUTNIK_DSM":case"SPUTNIK_DSM_GLOBAL":case"SPUTNIK_VECTOR_BORDER":e=t?.XX?.tileSet?.find(t=>t.style===e.style&&t.scale===e.scale&&t.size===e.size)||t?.XX?.tileSet?.find(t=>t.style===e.style&&t.scale===e.scale)||t?.XX?.tileSet?.find(t=>t.style===e.style)||e;break;';
-const chinaBaseMap = 'case"VECTOR_STANDARD":case"RASTER_TERRAIN":case"VECTOR_BUILDINGS":case"VECTOR_BUILDINGS_V2":case"VECTOR_ROADS":case"VECTOR_VENUES":case"VECTOR_TRANSIT":case"VECTOR_TRANSIT_SELECTION":case"VECTOR_ROAD_NETWORK":case"VECTOR_STREET_LANDMARKS":case"VECTOR_POI":case"VECTOR_STREET_POI":case"VECTOR_POI_V2":case"VECTOR_POLYGON_SELECTION":case"VECTOR_POI_V2_UPDATE":if("CN"===i.TileSet.BaseMap){let a=t?.CN?.tileSet?.find(t=>t.style===e.style&&t.scale===e.scale&&t.size===e.size&&t.dataSet===e.dataSet)||t?.CN?.tileSet?.find(t=>t.style===e.style&&t.scale===e.scale&&t.size===e.size)||t?.CN?.tileSet?.find(t=>t.style===e.style&&t.scale===e.scale)||t?.CN?.tileSet?.find(t=>t.style===e.style);a&&(e=a)}break;';
 const switchMarker = 'switch(e.style){case"RASTER_SATELLITE"';
 if (!response.includes(switchMarker)) throw new Error("Satellite patch marker not found");
-response = response.replace(switchMarker, `switch(e.style){${chinaBaseMap}${satellite3D}case"RASTER_SATELLITE"`);
+response = response.replace(switchMarker, `switch(e.style){${satellite3D}case"RASTER_SATELLITE"`);
 
 const sprOriginal = 'case"VECTOR_SPR_MERCATOR":case"VECTOR_SPR_MODELS":case"VECTOR_SPR_MATERIALS":case"VECTOR_SPR_METADATA":case"SPR_ASSET_METADATA":case"VECTOR_SPR_POLAR":case"VECTOR_SPR_MODELS_OCCLUSION":M.info(`SPR style: ${e?.style}`),M.info(`SPR baseURL: ${e?.baseURL}`),M.debug(`SPR tile: ${JSON.stringify(e,null,2)}`);break;';
 const sprInternational = 'case"VECTOR_SPR_MERCATOR":case"VECTOR_SPR_MODELS":case"VECTOR_SPR_MATERIALS":case"VECTOR_SPR_METADATA":case"SPR_ASSET_METADATA":case"VECTOR_SPR_POLAR":case"VECTOR_SPR_MODELS_OCCLUSION":e=t?.XX?.tileSet?.find(t=>t.style===e.style&&t.scale===e.scale&&t.size===e.size)||t?.XX?.tileSet?.find(t=>t.style===e.style&&t.scale===e.scale)||t?.XX?.tileSet?.find(t=>t.style===e.style)||e;break;';
 if (!response.includes(sprOriginal)) throw new Error("SPR patch marker not found");
 response = response.replace(sprOriginal, sprInternational);
 
+// Keep an international request (which enables Flyover on iOS 27), but make
+// the returned CN manifest the base. This preserves China's complete map
+// datasets and coordinate behaviour before the international 3D resources
+// are merged in.
+const internationalPrimary = 'default:s.XX=u,s.CN=await tt.decodeCache(l,n.search,i),s.CN||(M.warn("Missing cache: CN"),c=!1)';
+const chinaPrimary = 'default:s.XX=u,s.CN=await tt.decodeCache(l,n.search,i),s.CN&&(u=s.CN,t="CN"),s.CN||(M.warn("Missing cache: CN"),c=!1)';
+if (!response.includes(internationalPrimary)) throw new Error("International manifest patch marker not found");
+response = response.replace(internationalPrimary, chinaPrimary);
+const internationalDataSets = 'static dataSets(e=[],t={},i="CN"){return M.log("☑️ Set DataSets"),"CN"===i&&(e=t?.XX?.dataSet),M.log("✅ Set DataSets"),e}';
+const chinaDataSets = 'static dataSets(e=[],t={},i="CN"){return M.log("☑️ Set DataSets"),M.log("✅ Set DataSets"),e}';
+if (!response.includes(internationalDataSets)) throw new Error("Dataset patch marker not found");
+response = response.replace(internationalDataSets, chinaDataSets);
+const tileGroupMarker = 'u.tileGroup=tt.tileGroups(u.tileGroup,u.tileSet,u.attribution,u.resource)';
+const hybridTileGroups = 'u.dataSet=[...(s.CN?.dataSet??[]),...(s.XX?.dataSet??[])].filter((e,t,i)=>i.findIndex(t=>t.identifier===e.identifier)===t),(()=>{let e=new Set(["RASTER_SATELLITE","RASTER_SATELLITE_NIGHT","RASTER_SATELLITE_DIGITIZE","RASTER_SATELLITE_ASTC","RASTER_SATELLITE_POLAR","RASTER_SATELLITE_POLAR_NIGHT","SPUTNIK_METADATA","SPUTNIK_C3M","SPUTNIK_DSM","SPUTNIK_DSM_GLOBAL","SPUTNIK_VECTOR_BORDER","FLYOVER_C3M_MESH","FLYOVER_C3M_JPEG_TEXTURE","FLYOVER_C3M_ASTC_TEXTURE","FLYOVER_VISIBILITY","FLYOVER_SKYBOX","FLYOVER_NAVGRAPH","FLYOVER_METADATA","MUNIN_METADATA","VECTOR_SPR_MERCATOR","VECTOR_SPR_MODELS","VECTOR_SPR_MATERIALS","VECTOR_SPR_METADATA","VECTOR_SPR_ROADS","VECTOR_SPR_STANDARD","SPR_ASSET_METADATA","VECTOR_SPR_POLAR","VECTOR_SPR_MODELS_OCCLUSION"]);for(let t of s.XX?.tileSet??[])e.has(t.style)&&!u.tileSet.some(e=>e.style===t.style&&e.scale===t.scale&&e.size===t.size&&e.dataSet===t.dataSet&&e.baseURL===t.baseURL)&&u.tileSet.push(t)})(),u.tileGroup=tt.tileGroups(u.tileGroup,u.tileSet,u.attribution,u.resource)';
+if (!response.includes(tileGroupMarker)) throw new Error("Tile group patch marker not found");
+response = response.replace(tileGroupMarker, hybridTileGroups);
+
 await writeFile(requestPath, request);
 await writeFile(responsePath, response);
 
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
-const args = 'GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.BaseMap="{{{TileSet.BaseMap}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"';
+const args = 'GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"';
 
-const module = `name: ' iRingo: 🗺️ Maps iOS 27 Local v4'
+const module = `name: ' iRingo: 🗺️ Maps iOS 27 Local v5'
 description: |-
   Egern 本地脚本配置
-  高德中国服务 + 中国基础地图 + 国际卫星、地球与 Look Around
+  完整中国地图数据 + 国际 3D 卫星、地球与 Look Around
 compat_arguments:
   GeoManifest.Dynamic.Config.CountryCode: US
   UrlInfoSet.Dispatcher: AutoNavi
   UrlInfoSet.Directions: AutoNavi
   UrlInfoSet.RAP: Apple
-  UrlInfoSet.LocationShift: AUTO
+  UrlInfoSet.LocationShift: AutoNavi
   TileSet.Earth: Apple
-  TileSet.Roads: XX
-  TileSet.Satellite: XX
+  TileSet.Roads: HYBRID
+  TileSet.Satellite: HYBRID
   TileSet.Flyover: XX
   TileSet.Munin: XX
-  TileSet.BaseMap: CN
   LogLevel: WARN
 compat_arguments_desc: |
   GeoManifest.Dynamic.Config.CountryCode: [资源清单地区]
@@ -73,18 +88,25 @@ compat_arguments_desc: |
       ├ Apple: Apple
       └ AUTO: 自动
 
+  UrlInfoSet.LocationShift: [中国坐标修正]
+      ├ AutoNavi: 使用高德 GCJ-02 修正（默认）
+      ├ Apple: 使用国际 WGS-84
+      └ AUTO: 跟随清单
+
   TileSet.Earth: [地球图像]
       ├ Apple: 国际地球与地貌
       ├ AutoNavi: 高德版
       └ AUTO: 自动
 
   TileSet.Roads: [卫星道路与 Look Around]
-      ├ XX: 国际道路与 Look Around
+      ├ HYBRID: 中国道路与国际道路并存（默认）
+      ├ XX: 仅国际道路与 Look Around
       ├ CN: 中国道路
       └ AUTO: 自动
 
   TileSet.Satellite: [2D/3D 卫星图像]
-      ├ XX: 国际卫星图像
+      ├ HYBRID: 中国与国际卫星并存（默认）
+      ├ XX: 仅国际卫星图像
       ├ CN: 中国卫星图像
       └ AUTO: 自动
 
@@ -97,10 +119,6 @@ compat_arguments_desc: |
       ├ XX: 国际 Look Around
       ├ CN: 中国资源
       └ HYBRID: 混合
-
-  TileSet.BaseMap: [标准地图底图]
-      ├ CN: 中国道路、地名、POI、建筑与公交（默认）
-      └ XX: 国际基础地图
 
   LogLevel: [日志]
       ├ WARN: 警告
@@ -132,26 +150,26 @@ scriptings:
 - http_request:
     name: 🗺️ Maps.defaults.request
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/request.v4.bundle.js
+    script_url: ${base}/request.v5.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.defaults.response
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/response.v4.bundle.js
+    script_url: ${base}/response.v5.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
 - http_request:
     name: 🗺️ Maps.announcements.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/request.v4.bundle.js
+    script_url: ${base}/request.v5.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.announcements.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/response.v4.bundle.js
+    script_url: ${base}/response.v5.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
@@ -159,13 +177,13 @@ scriptings:
 - http_request:
     name: 🗺️ Maps.manifest.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/request.v4.bundle.js
+    script_url: ${base}/request.v5.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.manifest.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/response.v4.bundle.js
+    script_url: ${base}/response.v5.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true

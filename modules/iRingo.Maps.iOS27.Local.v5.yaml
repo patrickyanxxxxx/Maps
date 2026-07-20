@@ -1,0 +1,138 @@
+name: ' iRingo: 🗺️ Maps iOS 27 Local v5'
+description: |-
+  Egern 本地脚本配置
+  完整中国地图数据 + 国际 3D 卫星、地球与 Look Around
+compat_arguments:
+  GeoManifest.Dynamic.Config.CountryCode: US
+  UrlInfoSet.Dispatcher: AutoNavi
+  UrlInfoSet.Directions: AutoNavi
+  UrlInfoSet.RAP: Apple
+  UrlInfoSet.LocationShift: AutoNavi
+  TileSet.Earth: Apple
+  TileSet.Roads: HYBRID
+  TileSet.Satellite: HYBRID
+  TileSet.Flyover: XX
+  TileSet.Munin: XX
+  LogLevel: WARN
+compat_arguments_desc: |
+  GeoManifest.Dynamic.Config.CountryCode: [资源清单地区]
+      ├ US: 国际清单（默认，解锁国际 3D）
+      ├ CN: 中国清单
+      └ AUTO: 自动
+
+  UrlInfoSet.Dispatcher: [地点数据]
+      ├ AutoNavi: 高德
+      ├ Apple: Apple
+      └ AUTO: 自动
+
+  UrlInfoSet.Directions: [导航与 ETA]
+      ├ AutoNavi: 高德
+      ├ Apple: Apple
+      └ AUTO: 自动
+
+  UrlInfoSet.LocationShift: [中国坐标修正]
+      ├ AutoNavi: 使用高德 GCJ-02 修正（默认）
+      ├ Apple: 使用国际 WGS-84
+      └ AUTO: 跟随清单
+
+  TileSet.Earth: [地球图像]
+      ├ Apple: 国际地球与地貌
+      ├ AutoNavi: 高德版
+      └ AUTO: 自动
+
+  TileSet.Roads: [卫星道路与 Look Around]
+      ├ HYBRID: 中国道路与国际道路并存（默认）
+      ├ XX: 仅国际道路与 Look Around
+      ├ CN: 中国道路
+      └ AUTO: 自动
+
+  TileSet.Satellite: [2D/3D 卫星图像]
+      ├ HYBRID: 中国与国际卫星并存（默认）
+      ├ XX: 仅国际卫星图像
+      ├ CN: 中国卫星图像
+      └ AUTO: 自动
+
+  TileSet.Flyover: [3D 城市与俯瞰]
+      ├ XX: 国际 Flyover 资源
+      ├ CN: 中国资源
+      └ HYBRID: 保留清单原值
+
+  TileSet.Munin: [Look Around]
+      ├ XX: 国际 Look Around
+      ├ CN: 中国资源
+      └ HYBRID: 混合
+
+  LogLevel: [日志]
+      ├ WARN: 警告
+      ├ INFO: 信息
+      └ DEBUG: 调试
+author: patrickyanxxxxx
+homepage: https://github.com/patrickyanxxxxx/Maps
+icon: https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
+rules:
+- domain_suffix:
+    match: is.autonavi.com
+    policy: DIRECT
+- domain:
+    match: gspe11-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe12-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe79-cn-ssl.ls.apple.com
+    policy: DIRECT
+scriptings:
+- http_request:
+    name: 🗺️ Maps.defaults.request
+    match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.v5.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+- http_response:
+    name: 🗺️ Maps.defaults.response
+    match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.v5.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+- http_request:
+    name: 🗺️ Maps.announcements.request
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.v5.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+- http_response:
+    name: 🗺️ Maps.announcements.response
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.v5.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+    binary_body: true
+- http_request:
+    name: 🗺️ Maps.manifest.request
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.v5.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+- http_response:
+    name: 🗺️ Maps.manifest.response
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.v5.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+    binary_body: true
+mitm:
+  hostnames:
+    includes:
+    - configuration.ls.apple.com
+    - gspe35-ssl.ls.apple.com
+    - gspe35-ssl.ls.apple.cn
