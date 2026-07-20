@@ -3,9 +3,13 @@ import { readFile, writeFile } from "node:fs/promises";
 const releaseDirectory = process.argv[2];
 if (!releaseDirectory) throw new Error("Usage: node build-selective-hybrid-egern.mjs <release-dir>");
 
-const requestPath = "modules/assets/request.selective-hybrid.v1.bundle.js";
-const responsePath = "modules/assets/response.selective-hybrid.v1.bundle.js";
-const modulePath = "modules/iRingo.Maps.iOS27.Selective-Hybrid.Local.v1.yaml";
+const mainland3D = process.argv[3] === "mainland-3d-route";
+const profile = mainland3D ? "selective-hybrid-mainland-3d.v2" : "selective-hybrid.v1";
+const requestPath = `modules/assets/request.${profile}.bundle.js`;
+const responsePath = `modules/assets/response.${profile}.bundle.js`;
+const modulePath = mainland3D
+	? "modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v2.yaml"
+	: "modules/iRingo.Maps.iOS27.Selective-Hybrid.Local.v1.yaml";
 
 let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
 let response = await readFile(`${releaseDirectory}/response.bundle.js`, "utf8");
@@ -46,12 +50,14 @@ await writeFile(requestPath, request);
 await writeFile(responsePath, response);
 
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
-const args = 'GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"';
+const scriptingName = mainland3D ? "Maps.SelectiveHybridMainland3D" : "Maps.SelectiveHybrid";
+const args = `GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="${mainland3D ? "ROUTE" : "DISABLED"}"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"`;
 
-const module = `name: ' iRingo: Maps iOS 27 Selective Hybrid Local v1'
+const module = `name: ' iRingo: Maps iOS 27 Selective Hybrid${mainland3D ? " + Mainland 3D Route" : ""} Local v${mainland3D ? "2" : "1"}'
 description: |-
-  Egern 本地参数模块。中国大陆保留高德二维地图、道路、地点、导航与 2D 卫星，只排除国内 3D；中国大陆以外全部使用 Apple 国际资源与服务。
+  Egern 本地参数模块。中国大陆保留高德二维地图、道路、地点、导航与 2D 卫星${mainland3D ? "，3D 瓦片按坐标改走 CN 端点" : "，只排除国内 3D"}；中国大陆以外全部使用 Apple 国际资源与服务。
   参考 Loon Hybrid Fix 的隔离思路，但继续使用本项目逻辑，并允许选择中国地点/导航服务范围。
+  请勿与另一个 Selective Hybrid 模块同时启用。
 compat_arguments:
   GeoManifest.Dynamic.Config.CountryCode: US
   UrlInfoSet.Dispatcher: AutoNavi
@@ -78,6 +84,11 @@ compat_arguments_desc: |
       ├ CN_POI: 高德地点与反向地理编码，导航保留 Apple
       └ CN_FULL: 高德地点、反向地理编码、导航与交通（国内服务最完整，但国外 POI/导航不再严格国际化）
 
+${mainland3D ? `  国内 3D 路由:
+      清单只保留一套国际 2D/3D 卫星 selector，避免从国内卫星视图直接定位国外时锁定 CN 数据源。
+      仅坐标明确落在中国大陆的卫星/3D 瓦片请求改走 CN 端点。
+
+` : ""}
   UrlInfoSet.LocationShift:
       ├ AutoNavi: 中国大陆使用 GCJ-02 修正（默认）
       └ Apple: 不注入高德坐标修正
@@ -99,58 +110,72 @@ rules:
 - domain:
     match: gspe19-2-cn-ssl.ls.apple.com
     policy: DIRECT
+- domain:
+    match: gspe79-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe11-2-cn-ssl.ls.apple.com
+    policy: DIRECT
 - domain_suffix:
     match: is.autonavi.com
     policy: DIRECT
 scriptings:
 - http_request:
-    name: Maps.SelectiveHybrid.defaults.request
+    name: ${scriptingName}.defaults.request
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/request.selective-hybrid.v1.bundle.js
+    script_url: ${base}/request.${profile}.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
-    name: Maps.SelectiveHybrid.defaults.response
+    name: ${scriptingName}.defaults.response
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/response.selective-hybrid.v1.bundle.js
+    script_url: ${base}/response.${profile}.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
 - http_request:
-    name: Maps.SelectiveHybrid.announcements.request
+    name: ${scriptingName}.announcements.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/request.selective-hybrid.v1.bundle.js
+    script_url: ${base}/request.${profile}.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
-    name: Maps.SelectiveHybrid.announcements.response
+    name: ${scriptingName}.announcements.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/response.selective-hybrid.v1.bundle.js
+    script_url: ${base}/response.${profile}.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
     binary_body: true
 - http_request:
-    name: Maps.SelectiveHybrid.manifest.request
+    name: ${scriptingName}.manifest.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/request.selective-hybrid.v1.bundle.js
+    script_url: ${base}/request.${profile}.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
-    name: Maps.SelectiveHybrid.manifest.response
+    name: ${scriptingName}.manifest.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/response.selective-hybrid.v1.bundle.js
+    script_url: ${base}/response.${profile}.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
     binary_body: true
-mitm:
+${mainland3D ? `- http_request:
+    name: Maps.SelectiveHybridMainland3D.tile-route.request
+    match: ^https?:\\/\\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\\.ls\\.apple\\.com\\/
+    script_url: ${base}/request.selective-hybrid-mainland-3d-route.v2.js
+` : ""}mitm:
   hostnames:
     includes:
     - configuration.ls.apple.com
     - gspe35-ssl.ls.apple.com
     - gspe35-ssl.ls.apple.cn
-`;
+${mainland3D ? `    - gspe19-ssl.ls.apple.com
+    - gspe19-kittyhawk-ssl.ls.apple.com
+    - gspe79-ssl.ls.apple.com
+    - gspe11-ssl.ls.apple.com
+` : ""}`;
 
 await writeFile(modulePath, module);
 console.log(`Wrote ${requestPath}, ${responsePath}, ${modulePath}`);

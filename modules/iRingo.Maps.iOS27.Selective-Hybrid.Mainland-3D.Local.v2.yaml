@@ -1,0 +1,122 @@
+name: ' iRingo: Maps iOS 27 Selective Hybrid + Mainland 3D Route Local v2'
+description: |-
+  Egern 本地参数模块。中国大陆保留高德二维地图、道路、地点、导航与 2D 卫星，3D 瓦片按坐标改走 CN 端点；中国大陆以外全部使用 Apple 国际资源与服务。
+  参考 Loon Hybrid Fix 的隔离思路，但继续使用本项目逻辑，并允许选择中国地点/导航服务范围。
+  请勿与另一个 Selective Hybrid 模块同时启用。
+compat_arguments:
+  GeoManifest.Dynamic.Config.CountryCode: US
+  UrlInfoSet.Dispatcher: AutoNavi
+  UrlInfoSet.Directions: AutoNavi
+  UrlInfoSet.RAP: Apple
+  UrlInfoSet.LocationShift: AutoNavi
+  TileSet.Earth: Apple
+  TileSet.Flyover: XX
+  TileSet.Munin: XX
+  TileSet.Roads: XX
+  TileSet.Satellite: XX
+  Hybrid.MainlandLayers: EXTENDED
+  Hybrid.ServiceMode: APPLE
+  LogLevel: WARN
+compat_arguments_desc: |
+  推荐先使用默认值；CountryCode 必须保持 US 才能保留国际 3D 能力。
+
+  Hybrid.MainlandLayers: [中国二维图层]
+      ├ EXTENDED: 完整中国二维图层，含道路、标签、交通与 2D 卫星（默认）
+      └ CORE: 仅标准地图、建筑、POI 与地标，用于诊断
+
+  Hybrid.ServiceMode: [中国服务完整度]
+      ├ APPLE: Apple 前台服务，仅保留大陆反向地理编码及可选坐标修正（默认，国外完全国际化）
+      ├ CN_POI: 高德地点与反向地理编码，导航保留 Apple
+      └ CN_FULL: 高德地点、反向地理编码、导航与交通（国内服务最完整，但国外 POI/导航不再严格国际化）
+
+  国内 3D 路由:
+      清单只保留一套国际 2D/3D 卫星 selector，避免从国内卫星视图直接定位国外时锁定 CN 数据源。
+      仅坐标明确落在中国大陆的卫星/3D 瓦片请求改走 CN 端点。
+
+
+  UrlInfoSet.LocationShift:
+      ├ AutoNavi: 中国大陆使用 GCJ-02 修正（默认）
+      └ Apple: 不注入高德坐标修正
+
+  TileSet.Flyover / TileSet.Munin / TileSet.Roads / TileSet.Satellite:
+      └ XX: 保持国际资源（默认；不建议在本模式中改为 CN）
+
+  LogLevel: WARN / INFO / DEBUG
+author: patrickyanxxxxx; VirgilClyne; Codex
+homepage: https://github.com/patrickyanxxxxx/Maps
+icon: https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
+rules:
+- domain:
+    match: gspe12-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe79-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe11-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain_suffix:
+    match: is.autonavi.com
+    policy: DIRECT
+scriptings:
+- http_request:
+    name: Maps.SelectiveHybridMainland3D.defaults.request
+    match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.selective-hybrid-mainland-3d.v2.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+- http_response:
+    name: Maps.SelectiveHybridMainland3D.defaults.response
+    match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.selective-hybrid-mainland-3d.v2.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+- http_request:
+    name: Maps.SelectiveHybridMainland3D.announcements.request
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.selective-hybrid-mainland-3d.v2.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+- http_response:
+    name: Maps.SelectiveHybridMainland3D.announcements.response
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.selective-hybrid-mainland-3d.v2.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+    binary_body: true
+- http_request:
+    name: Maps.SelectiveHybridMainland3D.manifest.request
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.selective-hybrid-mainland-3d.v2.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+- http_response:
+    name: Maps.SelectiveHybridMainland3D.manifest.response
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.selective-hybrid-mainland-3d.v2.bundle.js
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+    binary_body: true
+- http_request:
+    name: Maps.SelectiveHybridMainland3D.tile-route.request
+    match: ^https?:\/\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\.ls\.apple\.com\/
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.selective-hybrid-mainland-3d-route.v2.js
+mitm:
+  hostnames:
+    includes:
+    - configuration.ls.apple.com
+    - gspe35-ssl.ls.apple.com
+    - gspe35-ssl.ls.apple.cn
+    - gspe19-ssl.ls.apple.com
+    - gspe19-kittyhawk-ssl.ls.apple.com
+    - gspe79-ssl.ls.apple.com
+    - gspe11-ssl.ls.apple.com

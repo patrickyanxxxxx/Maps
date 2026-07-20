@@ -21,6 +21,29 @@ const INTERNATIONAL_3D_STYLES = new Set([
 	"VECTOR_SPR_MODELS_OCCLUSION",
 ]);
 
+// Mainland 3D is optional because duplicate capability styles are more
+// sensitive than ordinary 2D tiles on iOS 27. Keep Munin/Look Around and the
+// global border/polar selectors international-only even when this is enabled.
+const MAINLAND_3D_STYLES = new Set([
+	"SPUTNIK_METADATA",
+	"SPUTNIK_C3M",
+	"SPUTNIK_DSM",
+	"SPUTNIK_DSM_GLOBAL",
+	"FLYOVER_C3M_MESH",
+	"FLYOVER_C3M_JPEG_TEXTURE",
+	"FLYOVER_C3M_ASTC_TEXTURE",
+	"FLYOVER_VISIBILITY",
+	"FLYOVER_SKYBOX",
+	"FLYOVER_NAVGRAPH",
+	"FLYOVER_METADATA",
+	"VECTOR_SPR_MERCATOR",
+	"VECTOR_SPR_MODELS",
+	"VECTOR_SPR_MATERIALS",
+	"VECTOR_SPR_METADATA",
+	"SPR_ASSET_METADATA",
+	"VECTOR_SPR_MODELS_OCCLUSION",
+]);
+
 const MAINLAND_CORE_STYLES = new Set([
 	"VECTOR_STANDARD",
 	"VECTOR_BUILDINGS",
@@ -122,7 +145,20 @@ export default function applyInternationalHybrid(body, caches, settings = {}) {
 	if (!enabled || !body || !Array.isArray(body.tileSet) || !Array.isArray(caches?.CN?.tileSet)) return body;
 
 	const layerMode = String(settings?.Hybrid?.MainlandLayers ?? "EXTENDED").toUpperCase();
-	const mainlandStyles = layerMode === "CORE" ? MAINLAND_CORE_STYLES : MAINLAND_EXTENDED_STYLES;
+	const mainlandStyles = new Set(layerMode === "CORE" ? MAINLAND_CORE_STYLES : MAINLAND_EXTENDED_STYLES);
+	const mainland3DMode = String(settings?.Hybrid?.Mainland3D ?? "DISABLED").toUpperCase();
+	const coordinateRouteEnabled = mainland3DMode === "ROUTE";
+	if (coordinateRouteEnabled) {
+		// Duplicate CN/global imagery styles are sticky on iOS 27. Leave one
+		// international selector and let the request route choose CN by tile
+		// coordinate, so switching directly from China to an overseas city works.
+		for (const style of [
+			"RASTER_SATELLITE",
+			"RASTER_SATELLITE_NIGHT",
+			"RASTER_SATELLITE_DIGITIZE",
+			"RASTER_SATELLITE_ASTC",
+		]) mainlandStyles.delete(style);
+	}
 	const international3DTiles = (caches.XX?.tileSet ?? [])
 		.filter(tile => INTERNATIONAL_3D_STYLES.has(tile?.style))
 		.map(clone);
@@ -147,6 +183,20 @@ export default function applyInternationalHybrid(body, caches, settings = {}) {
 		if (!exists) body.tileSet.push(sourceTile);
 	}
 
+	const mainland3DEnabled = mainland3DMode === "ENABLED";
+	const china3DTiles = [];
+	if (mainland3DEnabled) {
+		for (const sourceTile of caches.CN.tileSet) {
+			if (!MAINLAND_3D_STYLES.has(sourceTile?.style)) continue;
+			const tile = clone(sourceTile);
+			tile.countryRegionWhitelist = [{ countryCode: "CN" }];
+			// Preserve Apple's original CN 3D availability polygons. Unlike 2D,
+			// expanding sparse model coverage to all mainland tiles would create
+			// empty meshes and could hide the international fallback.
+			if (Array.isArray(tile.validVersion) && tile.validVersion.length) china3DTiles.push(tile);
+		}
+	}
+
 	const chinaTiles = [];
 	for (const sourceTile of caches.CN.tileSet) {
 		if (!mainlandStyles.has(sourceTile?.style)) continue;
@@ -154,7 +204,7 @@ export default function applyInternationalHybrid(body, caches, settings = {}) {
 		// Keep the source dataset identity where present; iOS 27 uses it when
 		// selecting China road/label/satellite variants. Coverage is restricted by
 		// availableTiles, and an explicit CN whitelist adds a second boundary.
-		tile.countryRegionWhitelist = ["CN"];
+		tile.countryRegionWhitelist = [{ countryCode: "CN", region: "" }];
 		tile.validVersion = (tile.validVersion || []).map(version => {
 			const sourceRegions = version.availableTiles || [];
 			const sourceMinZ = Math.min(...sourceRegions.map(region => region.minZ));
@@ -168,7 +218,9 @@ export default function applyInternationalHybrid(body, caches, settings = {}) {
 		}).filter(version => version.availableTiles.length);
 		if (tile.validVersion.length) chinaTiles.push(tile);
 	}
-	body.tileSet = [...chinaTiles, ...body.tileSet];
+	// CN entries precede the international fallback only inside this optional
+	// profile. Their original coverage plus CN whitelist keeps them regional.
+	body.tileSet = [...china3DTiles, ...chinaTiles, ...body.tileSet];
 
 	// Start with the Apple international endpoint set. Then selectively restore
 	// mainland services instead of allowing a broad object merge to leak CN-only
@@ -227,11 +279,15 @@ export default function applyInternationalHybrid(body, caches, settings = {}) {
 	}
 
 	const leakedCriticalTile = body.tileSet.find(tile =>
-		INTERNATIONAL_3D_STYLES.has(tile?.style) && isMainlandEndpoint(tile?.baseURL)
+		INTERNATIONAL_3D_STYLES.has(tile?.style) &&
+		isMainlandEndpoint(tile?.baseURL) &&
+		(!mainland3DEnabled || !MAINLAND_3D_STYLES.has(tile?.style))
 	);
 	const internationalMunin = body.tileSet.find(tile => tile?.style === "MUNIN_METADATA" && !isMainlandEndpoint(tile?.baseURL));
-	if (leakedCriticalTile) console.log(`[iRingo Hybrid] warning: mainland 3D style remains: ${leakedCriticalTile.style}`);
+	const mainlandMunin = body.tileSet.find(tile => tile?.style === "MUNIN_METADATA" && isMainlandEndpoint(tile?.baseURL));
+	if (leakedCriticalTile) console.log(`[iRingo Hybrid] warning: unexpected mainland 3D style remains: ${leakedCriticalTile.style}`);
 	if (!internationalMunin) console.log("[iRingo Hybrid] warning: international Munin metadata was not found");
-	console.log(`[iRingo Hybrid] injected ${chinaTiles.length} mainland-only 2D tile sets; service mode ${settings?.Hybrid?.ServiceMode ?? "APPLE"}`);
+	if (mainlandMunin) console.log("[iRingo Hybrid] warning: mainland Munin metadata must remain disabled");
+	console.log(`[iRingo Hybrid] injected ${chinaTiles.length} mainland-only 2D and ${china3DTiles.length} original-coverage 3D tile sets; service mode ${settings?.Hybrid?.ServiceMode ?? "APPLE"}`);
 	return body;
 }
