@@ -1,0 +1,23 @@
+name: ' iRingo: Maps Satellite Request Diagnostics v1'
+description: |-
+  只记录卫星与 3D 请求，不改写任何请求或地图数据。
+  请仅在排查期间与当前 Maps 模块一起启用；完成后关闭或删除。
+author: patrickyanxxxxx; Codex
+homepage: https://github.com/patrickyanxxxxx/Maps
+scriptings:
+- http_request:
+    name: Maps.SatelliteDiagnostics.request
+    match: ^https?:\/\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79|gspe76|gsp76)(?:-cn)?-ssl\.ls\.apple\.(?:com|cn)\/
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/diagnose.satellite-requests.v1.js
+mitm:
+  hostnames:
+    includes:
+    - gspe11-ssl.ls.apple.com
+    - gspe11-2-cn-ssl.ls.apple.com
+    - gspe19-ssl.ls.apple.com
+    - gspe19-kittyhawk-ssl.ls.apple.com
+    - gspe19-cn-ssl.ls.apple.com
+    - gspe79-ssl.ls.apple.com
+    - gspe79-cn-ssl.ls.apple.com
+    - gspe76-ssl.ls.apple.com
+    - gsp76-cn-ssl.ls.apple.com
