@@ -3,9 +3,9 @@ import { copyFile, readFile, writeFile } from "node:fs/promises";
 const releaseDirectory = process.argv[2];
 if (!releaseDirectory) throw new Error("Usage: node build-local-egern.mjs <release-dir>");
 
-const requestPath = "modules/assets/request.v6.bundle.js";
-const responsePath = "modules/assets/response.v6.bundle.js";
-const modulePath = "modules/iRingo.Maps.iOS27.Local.v6.yaml";
+const requestPath = "modules/assets/request.v7.bundle.js";
+const responsePath = "modules/assets/response.v7.bundle.js";
+const modulePath = "modules/iRingo.Maps.iOS27.Local.v7.yaml";
 
 let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
 let response = await readFile(`${releaseDirectory}/response.bundle.js`, "utf8");
@@ -46,23 +46,31 @@ const hybridTileGroups = '(()=>{let e=new Set(["RASTER_SATELLITE","RASTER_SATELL
 if (!response.includes(tileGroupMarker)) throw new Error("Tile group patch marker not found");
 response = response.replace(tileGroupMarker, hybridTileGroups);
 
+// The tile pipeline needs the US capability path for 3D, but all service
+// endpoints must be merged as CN or mainland search/POI/navigation metadata
+// is lost to the international manifest.
+const internationalURLInfo = 'u.urlInfoSet=tt.urlInfoSets(u.urlInfoSet,s,o,t)';
+const chinaURLInfo = 'u.urlInfoSet=tt.urlInfoSets(u.urlInfoSet,s,o,"CN")';
+if (!response.includes(internationalURLInfo)) throw new Error("URL info patch marker not found");
+response = response.replace(internationalURLInfo, chinaURLInfo);
+
 await writeFile(requestPath, request);
 await writeFile(responsePath, response);
 
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
 const args = 'GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"';
 
-const module = `name: ' iRingo: 🗺️ Maps iOS 27 Local v6'
+const module = `name: ' iRingo: 🗺️ Maps iOS 27 Local v7'
 description: |-
   Egern 本地脚本配置
-  国际主清单 + 中国区域地图数据 + 国际 2D/3D 卫星
+  完整中国服务与底图 + 国际 2D/3D 卫星
 compat_arguments:
   GeoManifest.Dynamic.Config.CountryCode: US
   UrlInfoSet.Dispatcher: AutoNavi
   UrlInfoSet.Directions: AutoNavi
   UrlInfoSet.RAP: Apple
   UrlInfoSet.LocationShift: AutoNavi
-  TileSet.Earth: Apple
+  TileSet.Earth: AutoNavi
   TileSet.Roads: HYBRID
   TileSet.Satellite: HYBRID
   TileSet.Flyover: XX
@@ -146,26 +154,26 @@ scriptings:
 - http_request:
     name: 🗺️ Maps.defaults.request
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/request.v6.bundle.js
+    script_url: ${base}/request.v7.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.defaults.response
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/response.v6.bundle.js
+    script_url: ${base}/response.v7.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
 - http_request:
     name: 🗺️ Maps.announcements.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/request.v6.bundle.js
+    script_url: ${base}/request.v7.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.announcements.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/response.v6.bundle.js
+    script_url: ${base}/response.v7.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
@@ -173,13 +181,13 @@ scriptings:
 - http_request:
     name: 🗺️ Maps.manifest.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/request.v6.bundle.js
+    script_url: ${base}/request.v7.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.manifest.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/response.v6.bundle.js
+    script_url: ${base}/response.v7.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
