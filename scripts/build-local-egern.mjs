@@ -3,9 +3,9 @@ import { copyFile, readFile, writeFile } from "node:fs/promises";
 const releaseDirectory = process.argv[2];
 if (!releaseDirectory) throw new Error("Usage: node build-local-egern.mjs <release-dir>");
 
-const requestPath = "modules/assets/request.v2.bundle.js";
-const responsePath = "modules/assets/response.v2.bundle.js";
-const modulePath = "modules/iRingo.Maps.iOS27.Local.v2.yaml";
+const requestPath = "modules/assets/request.v3.bundle.js";
+const responsePath = "modules/assets/response.v3.bundle.js";
+const modulePath = "modules/iRingo.Maps.iOS27.Local.v3.yaml";
 
 let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
 let response = await readFile(`${releaseDirectory}/response.bundle.js`, "utf8");
@@ -17,6 +17,10 @@ request = request.replaceAll(
 response = response.replaceAll(
 	'if("gspe35-ssl.ls.apple.com"===a.hostname)',
 	'if(["gspe35-ssl.ls.apple.com","gspe35-ssl.ls.apple.cn"].includes(a.hostname))',
+);
+response = response.replaceAll(
+	'M.warn(`Missing style: ${i?.style}`)',
+	'M.info(`Added international style: ${i?.style}`)',
 );
 
 const satellite3D = 'case"SPUTNIK_METADATA":case"SPUTNIK_C3M":case"SPUTNIK_DSM":case"SPUTNIK_DSM_GLOBAL":case"SPUTNIK_VECTOR_BORDER":e=t?.XX?.tileSet?.find(t=>t.style===e.style&&t.scale===e.scale&&t.size===e.size)||t?.XX?.tileSet?.find(t=>t.style===e.style&&t.scale===e.scale)||t?.XX?.tileSet?.find(t=>t.style===e.style)||e;break;';
@@ -35,7 +39,7 @@ await writeFile(responsePath, response);
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
 const args = 'GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"';
 
-const module = `name: ' iRingo: 🗺️ Maps iOS 27 Local'
+const module = `name: ' iRingo: 🗺️ Maps iOS 27 Local v3'
 description: |-
   Egern 本地脚本配置
   高德中国服务 + 国际卫星、地球与 Look Around
@@ -122,26 +126,26 @@ scriptings:
 - http_request:
     name: 🗺️ Maps.defaults.request
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/request.v2.bundle.js
+    script_url: ${base}/request.v3.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.defaults.response
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/response.v2.bundle.js
+    script_url: ${base}/response.v3.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
 - http_request:
     name: 🗺️ Maps.announcements.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/request.v2.bundle.js
+    script_url: ${base}/request.v3.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.announcements.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/response.v2.bundle.js
+    script_url: ${base}/response.v3.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
@@ -149,13 +153,13 @@ scriptings:
 - http_request:
     name: 🗺️ Maps.manifest.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/request.v2.bundle.js
+    script_url: ${base}/request.v3.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.manifest.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/response.v2.bundle.js
+    script_url: ${base}/response.v3.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
