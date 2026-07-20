@@ -5,7 +5,7 @@ if (!releaseDirectory) throw new Error("Usage: node build-local-egern.mjs <relea
 
 const requestPath = "modules/assets/request.v2.bundle.js";
 const responsePath = "modules/assets/response.v2.bundle.js";
-const modulePath = "modules/iRingo.Maps.iOS27.Local.yaml";
+const modulePath = "modules/iRingo.Maps.iOS27.Local.v2.yaml";
 
 let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
 let response = await readFile(`${releaseDirectory}/response.bundle.js`, "utf8");
