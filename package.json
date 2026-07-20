@@ -53,6 +53,7 @@
 		"@auraflare/shared": "^1.1.1",
 		"@biomejs/biome": "^2.4.6",
 		"@nsnanocat/util": "^2.5.17",
+		"@nsringo/mapkit": "^1.0.0",
 		"@protobuf-ts/runtime": "^2.11.1",
 		"fetch-cookie": "^3.2.0",
 		"hono": "^4.12.5"
