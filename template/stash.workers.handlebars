@@ -25,11 +25,11 @@ rules:
 http:
   mitm:
     - "configuration.ls.apple.com"
-    - "gspe35-ssl.ls.apple.com"
+    - "gspe35-ssl.ls.apple.com, gspe35-ssl.ls.apple.cn"
   url-rewrite:
     # 🗺️ Network Defaults
     - ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults https://configuration-ls.nanocat.cloud/config/defaults transparent
     # 🗺️ Announcements
-    - ^https?:\/\/gspe35-ssl\.ls\.apple\.com\/config\/announcements https://gspe35-ssl-ls.nanocat.cloud/config/announcements transparent
+    - ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements https://gspe35-ssl-ls.nanocat.cloud/config/announcements transparent
     # 🗺️ Resource Manifest
-    - ^https?:\/\/gspe35-ssl\.ls\.apple\.com\/geo_manifest\/dynamic\/config https://gspe35-ssl-ls.nanocat.cloud/geo_manifest/dynamic/config transparent
+    - ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config https://gspe35-ssl-ls.nanocat.cloud/geo_manifest/dynamic/config transparent

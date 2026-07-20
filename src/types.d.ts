@@ -23,7 +23,7 @@ export interface Settings {
                  * - `'CA'` - 🇨🇦加拿大
                  * - `'IE'` - 🇮🇪爱尔兰
                  *
-                 * @defaultValue "CN"
+                 * @defaultValue "AUTO"
                  */
                 CountryCode?: 'AUTO' | 'CN' | 'HK' | 'TW' | 'SG' | 'US' | 'JP' | 'AU' | 'GB' | 'KR' | 'CA' | 'IE';
 };
@@ -42,7 +42,7 @@ export interface Settings {
          * - `'AutoNavi'` - 🧭高德（🇨🇳:互动百科/大众点评/携程 | 🇺🇳:维基百科/Yelp/Booking）
          * - `'Apple'` - Apple（维基百科/Yelp/Booking）
          *
-         * @defaultValue "AutoNavi"
+         * @defaultValue "AUTO"
          */
         Dispatcher?: 'AUTO' | 'AutoNavi' | 'Apple';
     /**
@@ -57,7 +57,7 @@ export interface Settings {
          * - `'AutoNavi'` - 🧭高德（🇨🇳:高德地图 | 🇺🇳:TomTom）
          * - `'Apple'` - Apple（🇨🇳:🈚️ | 🇺🇳:TomTom）
          *
-         * @defaultValue "AutoNavi"
+         * @defaultValue "AUTO"
          */
         Directions?: 'AUTO' | 'AutoNavi' | 'Apple';
     /**
@@ -136,7 +136,17 @@ export interface Settings {
          *
          * @defaultValue "AUTO"
          */
-        Satellite?: 'AUTO' | 'CN' | 'XX';
+    Satellite?: 'AUTO' | 'CN' | 'XX' | 'HYBRID';
+    Satellite3D?: 'AUTO' | 'CN' | 'XX' | 'HYBRID';
+    LookAround?: 'AUTO' | 'CN' | 'XX' | 'HYBRID';
+    /**
+     * [瓦片数据集] 俯瞰与四处看看模型
+     */
+    Flyover?: 'AUTO' | 'CN' | 'XX' | 'HYBRID';
+    /**
+     * [瓦片数据集] 四处看看街景
+     */
+    Munin?: 'AUTO' | 'CN' | 'XX' | 'HYBRID';
 };
     /**
      * [调试] 日志等级

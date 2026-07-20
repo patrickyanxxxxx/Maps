@@ -19,9 +19,9 @@ DOMAIN,gspe79-cn-ssl.ls.apple.com,DIRECT
 # 🗺️ Network Defaults
 ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults https://configuration-ls.nanocat.cloud/config/defaults header
 # 🗺️ Announcements
-^https?:\/\/gspe35-ssl\.ls\.apple\.com\/config\/announcements https://gspe35-ssl-ls.nanocat.cloud/config/announcements header
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements https://gspe35-ssl-ls.nanocat.cloud/config/announcements header
 # 🗺️ Resource Manifest
-^https?:\/\/gspe35-ssl\.ls\.apple\.com\/geo_manifest\/dynamic\/config https://gspe35-ssl-ls.nanocat.cloud/geo_manifest/dynamic/config header
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config https://gspe35-ssl-ls.nanocat.cloud/geo_manifest/dynamic/config header
 
 [MITM]
-hostname = %APPEND% configuration.ls.apple.com, gspe35-ssl.ls.apple.com
+hostname = %APPEND% configuration.ls.apple.com, gspe35-ssl.ls.apple.com, gspe35-ssl.ls.apple.cn

@@ -27,7 +27,7 @@ rules:
 http:
   mitm:
     - "configuration.ls.apple.com"
-    - "gspe35-ssl.ls.apple.com"
+    - "gspe35-ssl.ls.apple.com, gspe35-ssl.ls.apple.cn"
   script:
     - match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
       name: GeoServices.request

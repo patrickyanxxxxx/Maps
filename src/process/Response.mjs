@@ -111,7 +111,8 @@ export async function Response($request, $response, KV) {
                 case "application/vnd.google.protobuf":
                 case "application/octet-stream":
                     switch (url.hostname) {
-                        case "gspe35-ssl.ls.apple.com":
+                case "gspe35-ssl.ls.apple.com":
+                case "gspe35-ssl.ls.apple.cn":
                             switch (url.pathname) {
                                 case "/config/announcements":
                                     break;

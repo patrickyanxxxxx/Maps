@@ -22,18 +22,22 @@ rules:
 - domain:
     match: gspe79-cn-ssl.ls.apple.com
     policy: DIRECT
+- domain:
+    match: gspe35-ssl.ls.apple.cn
+    policy: DIRECT
 url_rewrites:
 - match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
   location: https://configuration-ls.nanocat.cloud/config/defaults
   status_code: 307
-- match: ^https?:\/\/gspe35-ssl\.ls\.apple\.com\/config\/announcements
+- match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
   location: https://gspe35-ssl-ls.nanocat.cloud/config/announcements
   status_code: 307
-- match: ^https?:\/\/gspe35-ssl\.ls\.apple\.com\/geo_manifest\/dynamic\/config
+- match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
   location: https://gspe35-ssl-ls.nanocat.cloud/geo_manifest/dynamic/config
   status_code: 307
-mitm:
-  hostnames:
+  mitm:
+    hostnames:
     includes:
     - configuration.ls.apple.com
     - gspe35-ssl.ls.apple.com
+    - gspe35-ssl.ls.apple.cn

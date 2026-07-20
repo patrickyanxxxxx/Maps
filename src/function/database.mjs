@@ -10,14 +10,16 @@ export default {
 	Maps: {
 		Settings: {
 			UrlInfoSet: {
-				Dispatcher: "AutoNavi",
-				Directions: "AutoNavi",
+				Dispatcher: "AUTO",
+				Directions: "AUTO",
 				RAP: "Apple",
 				LocationShift: "AUTO",
 			},
 			TileSet: {
 				Earth: "AUTO",
 				Flyover: "HYBRID",
+				Satellite3D: "HYBRID",
+				LookAround: "HYBRID",
 				Map: "CN",
 				Munin: "HYBRID",
 				POI: "CN",
@@ -28,13 +30,13 @@ export default {
 			GeoManifest: {
 				Dynamic: {
 					Config: {
-						CountryCode: "CN",
+						CountryCode: "AUTO",
 					},
 				},
 			},
 			Config: {
 				Announcements: {
-					"Environment:": "CN",
+					"Environment:": "AUTO",
 				},
 			},
 		},

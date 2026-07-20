@@ -35,9 +35,12 @@ export default class GEOResourceManifest {
 			Console.error("Get Cache", "Missing query string");
 			return undefined;
 		}
+		const keys = GEOResourceManifest.cacheKeys(queryString);
 		let cache = {};
-		if (KV) cache = await KV.getItem(`@iRingo.Maps.Caches.${queryString}`);
-		else cache = Storage.getItem(`@iRingo.Maps.Caches.${queryString}`);
+		for (const key of keys) {
+			cache = KV ? await KV.getItem(`@iRingo.Maps.Caches.${key}`) : Storage.getItem(`@iRingo.Maps.Caches.${key}`);
+			if (typeof cache?.base64 === "string") break;
+		}
 		switch (typeof cache?.base64) {
 			case "string":
 				Console.log("✅ Get Cache");
@@ -46,6 +49,25 @@ export default class GEOResourceManifest {
 				Console.warn("Get Cache", `Cache not found: ${queryString}`);
 				return undefined;
 		}
+	}
+
+	/**
+	 * iOS 27 adds/reorders manifest query parameters. Keep a stable fallback key
+	 * so a cached CN/US manifest can still be reused after an OS update.
+	 */
+	static cacheKeys(queryString = "") {
+		if (!queryString) return [];
+		const keys = [queryString];
+		try {
+			const params = new URLSearchParams(queryString.startsWith("?") ? queryString.slice(1) : queryString);
+			for (const name of ["timestamp", "time", "nonce", "cacheBust", "cache_bust", "etag"]) params.delete(name);
+			const canonical = [...params.entries()].sort(([a], [b]) => a.localeCompare(b));
+			const normalized = canonical.length ? `?${new URLSearchParams(canonical).toString()}` : "";
+			if (normalized && !keys.includes(normalized)) keys.push(normalized);
+		} catch {
+			// Keep the exact key when a proxy provides a non-standard query string.
+		}
+		return keys;
 	}
 
 	/**
@@ -100,10 +122,13 @@ export default class GEOResourceManifest {
 			return false;
 		}
 		let result;
-		if (KV) result = await KV.setItem(`@iRingo.Maps.Caches.${queryString}`, { eTag, base64 });
-		else {
-			result = Storage.setItem(`@iRingo.Maps.Caches`, {});
-			result = Storage.setItem(`@iRingo.Maps.Caches.${queryString}`, { eTag, base64 });
+		const values = GEOResourceManifest.cacheKeys(queryString);
+		for (const key of values) {
+			if (KV) result = await KV.setItem(`@iRingo.Maps.Caches.${key}`, { eTag, base64 });
+			else {
+				Storage.setItem(`@iRingo.Maps.Caches`, {});
+				result = Storage.setItem(`@iRingo.Maps.Caches.${key}`, { eTag, base64 });
+			}
 		}
 		Console.log("✅ Set Cache");
 		return result;
@@ -191,6 +216,27 @@ export default class GEOResourceManifest {
 		tileSet = tileSet
 			.map((tile, index) => {
 				switch (tile.style) {
+					case "SPUTNIK_METADATA": // 14 3D satellite metadata
+					case "SPUTNIK_C3M": // 15 3D satellite mesh
+					case "SPUTNIK_DSM": // 16 3D satellite DSM
+					case "SPUTNIK_DSM_GLOBAL": // 17 global 3D satellite DSM
+					case "SPUTNIK_VECTOR_BORDER": // 34 globe/border coverage
+					case "VECTOR_SPR_MERCATOR":
+					case "VECTOR_SPR_MODELS":
+					case "VECTOR_SPR_MATERIALS":
+					case "VECTOR_SPR_METADATA":
+					case "VECTOR_SPR_POLAR":
+					case "VECTOR_SPR_MODELS_OCCLUSION": {
+						// The international resource set contains the globe and 3D
+						// satellite assets that are absent from the CN manifest.
+						const sourceSetting = settings.TileSet?.Satellite3D ?? settings.TileSet?.Satellite;
+						const source = sourceSetting === "CN" ? caches?.CN : caches?.XX;
+						const match = source?.tileSet?.find(i => i.style === tile.style && i.scale === tile.scale && i.size === tile.size && (typeof tile.dataSet !== "number" || i.dataSet === tile.dataSet))
+							|| source?.tileSet?.find(i => i.style === tile.style && i.scale === tile.scale && (typeof tile.dataSet !== "number" || i.dataSet === tile.dataSet))
+							|| source?.tileSet?.find(i => i.style === tile.style);
+						if (match) tile = match;
+						break;
+					}
 					/*
 					case "VECTOR_STANDARD": // 1 标准地图
 					case "RASTER_TERRAIN": // 8 地貌与地势（绿地/城市/水体/山地不同颜色的区域）
@@ -471,7 +517,7 @@ export default class GEOResourceManifest {
 						break;
 					case "MUNIN_METADATA": // 57 四处看看 元数据
 						Console.info(`Munin style: ${tile?.style}`);
-						switch (settings.TileSet.Munin) {
+						switch (settings.TileSet.LookAround ?? settings.TileSet.Munin) {
 							case "CN":
 								tile = caches?.CN?.tileSet?.find(i => i.style === tile.style && i.scale === tile.scale && i.size === tile.size) || caches?.CN?.tileSet?.find(i => i.style === tile.style && i.scale === tile.scale) || caches?.CN?.tileSet?.find(i => i.style === tile.style) || tile;
 								break;
@@ -505,7 +551,7 @@ export default class GEOResourceManifest {
 						break;
 					case "VECTOR_SPR_ROADS": // 66 (卫星图下的道路网格和四处看看可用性)
 						Console.info(`Roads style: ${tile?.style}`);
-						switch (settings.TileSet.Roads) {
+						switch (settings.TileSet.LookAround ?? settings.TileSet.Roads) {
 							case "CN":
 								tile = caches?.CN?.tileSet?.find(i => i.style === tile.style && i.scale === tile.scale && i.size === tile.size) || caches?.CN?.tileSet?.find(i => i.style === tile.style && i.scale === tile.scale) || caches?.CN?.tileSet?.find(i => i.style === tile.style) || tile;
 								break;
@@ -882,7 +928,7 @@ export default class GEOResourceManifest {
 
 	static muninBuckets(muninBuckets = [], caches = {}, settings = {}) {
 		Console.log("☑️ Set MuninBuckets");
-		switch (settings.TileSet.Munin) {
+		switch (settings.TileSet.LookAround ?? settings.TileSet.Munin) {
 			case "CN":
 				muninBuckets = caches.CN.muninBucket;
 				break;

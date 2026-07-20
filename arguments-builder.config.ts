@@ -29,7 +29,7 @@ export default defineConfig({
 	},
 	args: [
 		{
-			defaultValue: "CN",
+			defaultValue: "AUTO",
 			description: "此选项影响“地图”整体配置内容，包括以下的地图功能与服务。",
 			key: "GeoManifest.Dynamic.Config.CountryCode",
 			name: "[动态配置] 资源清单的国家或地区代码",
@@ -50,7 +50,7 @@ export default defineConfig({
 			type: "string",
 		},
 		{
-			defaultValue: "AutoNavi",
+			defaultValue: "AUTO",
 			description:
 				"地点数据接口，此选项影响公共指南，兴趣点(POI)与位置信息等功能。",
 			key: "UrlInfoSet.Dispatcher",
@@ -67,7 +67,7 @@ export default defineConfig({
 			type: "string",
 		},
 		{
-			defaultValue: "AutoNavi",
+			defaultValue: "AUTO",
 			description: "导航与ETA服务接口，此选项影响导航与ETA(到达时间)等功能。",
 			key: "UrlInfoSet.Directions",
 			name: "[URL信息集] 导航与ETA",
@@ -139,6 +139,30 @@ export default defineConfig({
 				//{ key: "HYBRID", label: "混合（🇨🇳:2D较新 | 🇺🇳:主要城市3D）" },
 				{ key: "CN", label: "🇨🇳中国四维（仅🇨🇳）" },
 				{ key: "XX", label: "🇺🇳DigitalGlobe（全球，但🇨🇳较旧）" },
+			],
+			type: "string",
+		},
+		{
+			defaultValue: "HYBRID",
+			description: "此选项影响 3D 卫星图像、地球卫星图像与夜景资源。",
+			key: "TileSet.Satellite3D",
+			name: "[瓦片数据集] 3D 卫星与地球",
+			options: [
+				{ key: "HYBRID", label: "混合（中国地图 + 国际 3D/地球资源）" },
+				{ key: "CN", label: "🇨🇳中国资源" },
+				{ key: "XX", label: "🌐国际资源" },
+			],
+			type: "string",
+		},
+		{
+			defaultValue: "HYBRID",
+			description: "此选项影响四处看看（Look Around）及其道路覆盖。",
+			key: "TileSet.LookAround",
+			name: "[瓦片数据集] 四处看看",
+			options: [
+				{ key: "HYBRID", label: "混合（中国道路 + 国际四处看看）" },
+				{ key: "CN", label: "🇨🇳中国道路资源" },
+				{ key: "XX", label: "🌐国际四处看看资源" },
 			],
 			type: "string",
 		},
