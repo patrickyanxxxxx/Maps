@@ -2,7 +2,7 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 
 const root = process.argv[2] ?? "modules";
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
-const version = "6.1.0";
+const version = "6.1.1";
 const request = `${base}/request.bundle.js?v=${version}`;
 const response = `${base}/response.bundle.js?v=${version}`;
 const route = `${base}/satellite-route.js?v=${version}`;
@@ -317,6 +317,7 @@ await Promise.all([
 // Keep the tested Egern module under the upstream-style stable name while the
 // versioned copy is archived by the release organizer.
 const egern = await readFile(egernSource, "utf8");
+const archiveBase = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/archive/assets";
 await writeFile(`${root}/iRingo.Maps.yaml`, egern
 	.replace("Maps iOS 27 Selective Hybrid + Mainland 3D Route Local v6", "🗺️ Maps iOS 27 Hybrid")
 	.replace(/description: \|-\n(?:  .*\n)+?compat_arguments:/, `description: |-
@@ -330,9 +331,9 @@ compat_arguments:`)
 	.replace("Hybrid.ServiceMode: APPLE", "Hybrid.ServiceMode: CN_POI")
 	.replace("├ APPLE: Apple 前台服务，仅保留大陆反向地理编码及可选坐标修正（默认，国外完全国际化）", "├ CN_POI: 高德地点、POI 与反向地理编码，导航保留 Apple（默认）")
 	.replace("├ CN_POI: 高德地点与反向地理编码，导航保留 Apple", "├ APPLE: Apple 前台服务，国外完全国际化")
-	.replaceAll(`${base}/request.selective-hybrid-mainland-3d.v6.bundle.js`, request)
-	.replaceAll(`${base}/response.selective-hybrid-mainland-3d.v6.bundle.js`, response)
-	.replaceAll(`${base}/request.selective-hybrid-mainland-3d-route.v6.js`, route)
+	.replaceAll(`${archiveBase}/request.selective-hybrid-mainland-3d.v6.bundle.js`, request)
+	.replaceAll(`${archiveBase}/response.selective-hybrid-mainland-3d.v6.bundle.js`, response)
+	.replaceAll(`${archiveBase}/request.selective-hybrid-mainland-3d-route.v6.js`, route)
 );
 
 console.log("Wrote stable multi-client modules to", root);

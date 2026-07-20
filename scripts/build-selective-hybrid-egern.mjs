@@ -32,6 +32,36 @@ response = response.replaceAll(
 	'if("gspe35-ssl.ls.apple.com"===a.hostname)',
 	'if(["gspe35-ssl.ls.apple.com","gspe35-ssl.ls.apple.cn"].includes(a.hostname))',
 );
+// Make GEOResourceManifestDownload.encode idempotent. Limit replacements to
+// the encoder: decode must still turn numeric protobuf enums into symbolic
+// names because the map-merging pipeline compares those names.
+const enumGuards = [
+	['e.style=r[e.style]', '"string"==typeof e.style&&(e.style=r[e.style])'],
+	['e.scale=c[e.scale]', '"string"==typeof e.scale&&(e.scale=c[e.scale])'],
+	['e.size=u[e.size]', '"string"==typeof e.size&&(e.size=u[e.size])'],
+	['e.updateBehavior=s[e.updateBehavior]', '"string"==typeof e.updateBehavior&&(e.updateBehavior=s[e.updateBehavior])'],
+	['e.checksumType=o[e.checksumType]', '"string"==typeof e.checksumType&&(e.checksumType=o[e.checksumType])'],
+	['e.requestStyle=l[e.requestStyle]', '"string"==typeof e.requestStyle&&(e.requestStyle=l[e.requestStyle])'],
+	['e.tileType=d[e.tileType]', '"string"==typeof e.tileType&&(e.tileType=d[e.tileType])'],
+	['e.resourceType=p[e.resourceType]', '"string"==typeof e.resourceType&&(e.resourceType=p[e.resourceType])'],
+	['e.connectionType=R[e.connectionType]', '"string"==typeof e.connectionType&&(e.connectionType=R[e.connectionType])'],
+	['e.validationMethod=g[e.validationMethod]', '"string"==typeof e.validationMethod&&(e.validationMethod=g[e.validationMethod])'],
+	['e.updateMethod=h[e.updateMethod]', '"string"==typeof e.updateMethod&&(e.updateMethod=h[e.updateMethod])'],
+	['e.scale.map(e=>m[e])', 'e.scale.map(e=>"string"==typeof e?m[e]:e)'],
+	['e.scenario.map(e=>f[e])', 'e.scenario.map(e=>"string"==typeof e?f[e]:e)'],
+];
+const encoderStart = response.indexOf("static encode(e={})");
+const encoderEnd = response.indexOf("class tt", encoderStart);
+if (encoderStart < 0 || encoderEnd < 0) throw new Error("GEOResourceManifestDownload encoder boundaries not found");
+const beforeEncoder = response.slice(0, encoderStart);
+let encoder = response.slice(encoderStart, encoderEnd);
+const afterEncoder = response.slice(encoderEnd);
+for (const [from, to] of enumGuards) encoder = encoder.replaceAll(from, to);
+if (!encoder.includes('"string"==typeof e.style&&(e.style=r[e.style])'))
+	throw new Error("GEOResourceManifestDownload style guard was not applied");
+if (beforeEncoder.includes('"string"==typeof e.style&&(e.style=r[e.style])'))
+	throw new Error("GEOResourceManifestDownload decode was unexpectedly guarded");
+response = beforeEncoder + encoder + afterEncoder;
 
 hybridSource = hybridSource.replace("export default function applyInternationalHybrid", "function applyInternationalHybrid");
 const functionMarker = "async function ti(e,t,i)";
