@@ -8,14 +8,14 @@ const mainland3DRoute = variant === "mainland-3d-route";
 const mainland3DNative = variant === "mainland-3d-native";
 const mainland3D = mainland3DRoute || mainland3DNative;
 const profile = mainland3DRoute
-	? "selective-hybrid-mainland-3d.v5"
+	? "selective-hybrid-mainland-3d.v6"
 	: mainland3DNative
 		? "selective-hybrid-mainland-3d-native.v4"
 		: "selective-hybrid.v1";
 const requestPath = `modules/assets/request.${profile}.bundle.js`;
 const responsePath = `modules/assets/response.${profile}.bundle.js`;
 const modulePath = mainland3DRoute
-	? "modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v5.yaml"
+	? "modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v6.yaml"
 	: mainland3DNative
 		? "modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Native.Local.v4.yaml"
 		: "modules/iRingo.Maps.iOS27.Selective-Hybrid.Local.v1.yaml";
@@ -67,7 +67,7 @@ const scriptingName = mainland3DNative
 const mainland3DMode = mainland3DRoute ? "ROUTE" : mainland3DNative ? "NATIVE" : "DISABLED";
 const args = `GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="${mainland3DMode}"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"`;
 
-const moduleVersion = mainland3DNative ? "4" : mainland3DRoute ? "5" : "1";
+const moduleVersion = mainland3DNative ? "4" : mainland3DRoute ? "6" : "1";
 const moduleSuffix = mainland3DNative ? " + Mainland 3D Native" : mainland3DRoute ? " + Mainland 3D Route" : "";
 const module = `name: ' iRingo: Maps iOS 27 Selective Hybrid${moduleSuffix} Local v${moduleVersion}'
 description: |-
@@ -185,7 +185,7 @@ scriptings:
 ${mainland3DRoute ? `- http_request:
     name: Maps.SelectiveHybridMainland3D.tile-route.request
     match: ^https?:\\/\\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\\.ls\\.apple\\.com\\/
-    script_url: ${base}/request.selective-hybrid-mainland-3d-route.v5.js
+    script_url: ${base}/request.selective-hybrid-mainland-3d-route.v6.js
 ` : ""}mitm:
   hostnames:
     includes:

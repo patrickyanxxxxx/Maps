@@ -1,14 +1,14 @@
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
-const script = await readFile("modules/assets/request.selective-hybrid-mainland-3d-route.v5.js", "utf8");
+const script = await readFile("modules/assets/request.selective-hybrid-mainland-3d-route.v6.js", "utf8");
 
 const run = url => {
 	let result;
 	vm.runInNewContext(script, {
 		URL,
+		Number,
 		$request: { url },
-		$persistentStore: { read: () => null },
 		$done: value => { result = value; },
 	});
 	return result?.url ?? url;
@@ -25,4 +25,4 @@ const tokyoInput = "https://gspe11-ssl.ls.apple.com/tile?style=98&v=226&region=0
 const tokyo = run(tokyoInput);
 if (tokyo !== tokyoInput) throw new Error(`Tokyo request was changed: ${tokyo}`);
 
-console.log("v5 route diagnostic tests passed");
+console.log("v6 route diagnostic tests passed");

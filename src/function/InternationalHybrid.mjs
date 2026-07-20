@@ -247,7 +247,25 @@ export default function applyInternationalHybrid(body, caches, settings = {}) {
 	}
 	const international3DTiles = (caches.XX?.tileSet ?? [])
 		.filter(tile => INTERNATIONAL_3D_STYLES.has(tile?.style))
-		.map(clone);
+		.map(sourceTile => {
+			const tile = clone(sourceTile);
+			if (tile.style === "UNUSED_98" && Array.isArray(tile.validVersion)) {
+				// The iOS 27 international satellite selector normally has no CN
+				// coverage, so Maps never emits a mainland request to the route.
+				// Add the mainland tile regions to this single selector; the request
+				// router then converts only those coordinates to AutoNavi. Keep the
+				// original international coverage for every other country.
+				tile.countryRegionWhitelist = [];
+				tile.validVersion = tile.validVersion.map(version => ({
+					...version,
+					availableTiles: [
+						...(version.availableTiles ?? []),
+						...mainlandRegions(8, Math.max(22, version.availableTiles?.reduce((max, region) => Math.max(max, region.maxZ), 0) || 0)),
+					],
+				}));
+			}
+			return tile;
+		});
 	const international3DKeys = new Set(
 		[...INTERNATIONAL_3D_STYLES].map(style => style),
 	);
