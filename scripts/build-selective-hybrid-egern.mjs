@@ -3,13 +3,22 @@ import { readFile, writeFile } from "node:fs/promises";
 const releaseDirectory = process.argv[2];
 if (!releaseDirectory) throw new Error("Usage: node build-selective-hybrid-egern.mjs <release-dir>");
 
-const mainland3D = process.argv[3] === "mainland-3d-route";
-const profile = mainland3D ? "selective-hybrid-mainland-3d.v3" : "selective-hybrid.v1";
+const variant = process.argv[3] ?? "standard";
+const mainland3DRoute = variant === "mainland-3d-route";
+const mainland3DNative = variant === "mainland-3d-native";
+const mainland3D = mainland3DRoute || mainland3DNative;
+const profile = mainland3DRoute
+	? "selective-hybrid-mainland-3d.v3"
+	: mainland3DNative
+		? "selective-hybrid-mainland-3d-native.v4"
+		: "selective-hybrid.v1";
 const requestPath = `modules/assets/request.${profile}.bundle.js`;
 const responsePath = `modules/assets/response.${profile}.bundle.js`;
-const modulePath = mainland3D
+const modulePath = mainland3DRoute
 	? "modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v3.yaml"
-	: "modules/iRingo.Maps.iOS27.Selective-Hybrid.Local.v1.yaml";
+	: mainland3DNative
+		? "modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Native.Local.v4.yaml"
+		: "modules/iRingo.Maps.iOS27.Selective-Hybrid.Local.v1.yaml";
 
 let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
 let response = await readFile(`${releaseDirectory}/response.bundle.js`, "utf8");
@@ -50,12 +59,19 @@ await writeFile(requestPath, request);
 await writeFile(responsePath, response);
 
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
-const scriptingName = mainland3D ? "Maps.SelectiveHybridMainland3D" : "Maps.SelectiveHybrid";
-const args = `GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="${mainland3D ? "ROUTE" : "DISABLED"}"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"`;
+const scriptingName = mainland3DNative
+	? "Maps.SelectiveHybridMainland3DNative"
+	: mainland3DRoute
+		? "Maps.SelectiveHybridMainland3D"
+		: "Maps.SelectiveHybrid";
+const mainland3DMode = mainland3DRoute ? "ROUTE" : mainland3DNative ? "NATIVE" : "DISABLED";
+const args = `GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="${mainland3DMode}"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"`;
 
-const module = `name: ' iRingo: Maps iOS 27 Selective Hybrid${mainland3D ? " + Mainland 3D Route" : ""} Local v${mainland3D ? "3" : "1"}'
+const moduleVersion = mainland3DNative ? "4" : mainland3DRoute ? "3" : "1";
+const moduleSuffix = mainland3DNative ? " + Mainland 3D Native" : mainland3DRoute ? " + Mainland 3D Route" : "";
+const module = `name: ' iRingo: Maps iOS 27 Selective Hybrid${moduleSuffix} Local v${moduleVersion}'
 description: |-
-  Egern 本地参数模块。中国大陆保留高德二维地图、道路、地点、导航与 2D 卫星${mainland3D ? "，3D 瓦片按坐标改走 CN 端点" : "，只排除国内 3D"}；中国大陆以外全部使用 Apple 国际资源与服务。
+  Egern 本地参数模块。中国大陆保留高德二维地图、道路、地点、导航与 2D 卫星${mainland3DNative ? "，并使用带正确 CN 白名单的原生国内 3D selector" : mainland3DRoute ? "，3D 瓦片按坐标改走 CN 端点" : "，只排除国内 3D"}；中国大陆以外全部使用 Apple 国际资源与服务。
   参考 Loon Hybrid Fix 的隔离思路，但继续使用本项目逻辑，并允许选择中国地点/导航服务范围。
   请勿与另一个 Selective Hybrid 模块同时启用。
 compat_arguments:
@@ -84,9 +100,13 @@ compat_arguments_desc: |
       ├ CN_POI: 高德地点与反向地理编码，导航保留 Apple
       └ CN_FULL: 高德地点、反向地理编码、导航与交通（国内服务最完整，但国外 POI/导航不再严格国际化）
 
-${mainland3D ? `  国内 3D 路由:
+${mainland3DRoute ? `  国内 3D 路由:
       清单只保留一套国际 2D/3D 卫星 selector，避免从国内卫星视图直接定位国外时锁定 CN 数据源。
       仅坐标明确落在中国大陆的卫星/3D 瓦片请求改走 CN 端点。
+
+` : mainland3DNative ? `  国内卫星与 3D 原生选择:
+      CN 2D/3D selector 使用协议规定的 countryCode/region 对象，并保留 CN 清单原始版本号和覆盖范围。
+      不进行瓦片请求改写；国外由并存的国际 selector 回落。
 
 ` : ""}
   UrlInfoSet.LocationShift:
@@ -161,7 +181,7 @@ scriptings:
       _compat.$argument: ${args}
     body_required: true
     binary_body: true
-${mainland3D ? `- http_request:
+${mainland3DRoute ? `- http_request:
     name: Maps.SelectiveHybridMainland3D.tile-route.request
     match: ^https?:\\/\\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\\.ls\\.apple\\.com\\/
     script_url: ${base}/request.selective-hybrid-mainland-3d-route.v3.js
@@ -171,7 +191,7 @@ ${mainland3D ? `- http_request:
     - configuration.ls.apple.com
     - gspe35-ssl.ls.apple.com
     - gspe35-ssl.ls.apple.cn
-${mainland3D ? `    - gspe19-ssl.ls.apple.com
+${mainland3DRoute ? `    - gspe19-ssl.ls.apple.com
     - gspe19-kittyhawk-ssl.ls.apple.com
     - gspe79-ssl.ls.apple.com
     - gspe11-ssl.ls.apple.com

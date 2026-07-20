@@ -222,13 +222,13 @@ export default function applyInternationalHybrid(body, caches, settings = {}) {
 		if (!exists) body.tileSet.push(sourceTile);
 	}
 
-	const mainland3DEnabled = mainland3DMode === "ENABLED";
+	const mainland3DEnabled = mainland3DMode === "ENABLED" || mainland3DMode === "NATIVE";
 	const china3DTiles = [];
 	if (mainland3DEnabled) {
 		for (const sourceTile of caches.CN.tileSet) {
 			if (!MAINLAND_3D_STYLES.has(sourceTile?.style)) continue;
 			const tile = clone(sourceTile);
-			tile.countryRegionWhitelist = [{ countryCode: "CN" }];
+			tile.countryRegionWhitelist = [{ countryCode: "CN", region: "" }];
 			// Preserve Apple's original CN 3D availability polygons. Unlike 2D,
 			// expanding sparse model coverage to all mainland tiles would create
 			// empty meshes and could hide the international fallback.
