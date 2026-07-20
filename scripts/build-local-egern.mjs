@@ -3,9 +3,9 @@ import { copyFile, readFile, writeFile } from "node:fs/promises";
 const releaseDirectory = process.argv[2];
 if (!releaseDirectory) throw new Error("Usage: node build-local-egern.mjs <release-dir>");
 
-const requestPath = "modules/assets/request.v5.bundle.js";
-const responsePath = "modules/assets/response.v5.bundle.js";
-const modulePath = "modules/iRingo.Maps.iOS27.Local.v5.yaml";
+const requestPath = "modules/assets/request.v6.bundle.js";
+const responsePath = "modules/assets/response.v6.bundle.js";
+const modulePath = "modules/iRingo.Maps.iOS27.Local.v6.yaml";
 
 let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
 let response = await readFile(`${releaseDirectory}/response.bundle.js`, "utf8");
@@ -33,20 +33,16 @@ const sprInternational = 'case"VECTOR_SPR_MERCATOR":case"VECTOR_SPR_MODELS":case
 if (!response.includes(sprOriginal)) throw new Error("SPR patch marker not found");
 response = response.replace(sprOriginal, sprInternational);
 
-// Keep an international request (which enables Flyover on iOS 27), but make
-// the returned CN manifest the base. This preserves China's complete map
-// datasets and coordinate behaviour before the international 3D resources
-// are merged in.
+// Request US to unlock iOS 27 Flyover, but use the complete CN manifest as the
+// response base. Keep the original country code variable as US so the client
+// retains international capabilities, then append only international visual
+// styles (never international roads, POI or labels).
 const internationalPrimary = 'default:s.XX=u,s.CN=await tt.decodeCache(l,n.search,i),s.CN||(M.warn("Missing cache: CN"),c=!1)';
-const chinaPrimary = 'default:s.XX=u,s.CN=await tt.decodeCache(l,n.search,i),s.CN&&(u=s.CN,t="CN"),s.CN||(M.warn("Missing cache: CN"),c=!1)';
+const chinaResponseBase = 'default:s.XX=u,s.CN=await tt.decodeCache(l,n.search,i),s.CN&&(u=s.CN),s.CN||(M.warn("Missing cache: CN"),c=!1)';
 if (!response.includes(internationalPrimary)) throw new Error("International manifest patch marker not found");
-response = response.replace(internationalPrimary, chinaPrimary);
-const internationalDataSets = 'static dataSets(e=[],t={},i="CN"){return M.log("☑️ Set DataSets"),"CN"===i&&(e=t?.XX?.dataSet),M.log("✅ Set DataSets"),e}';
-const chinaDataSets = 'static dataSets(e=[],t={},i="CN"){return M.log("☑️ Set DataSets"),M.log("✅ Set DataSets"),e}';
-if (!response.includes(internationalDataSets)) throw new Error("Dataset patch marker not found");
-response = response.replace(internationalDataSets, chinaDataSets);
+response = response.replace(internationalPrimary, chinaResponseBase);
 const tileGroupMarker = 'u.tileGroup=tt.tileGroups(u.tileGroup,u.tileSet,u.attribution,u.resource)';
-const hybridTileGroups = 'u.dataSet=[...(s.CN?.dataSet??[]),...(s.XX?.dataSet??[])].filter((e,t,i)=>i.findIndex(t=>t.identifier===e.identifier)===t),(()=>{let e=new Set(["RASTER_SATELLITE","RASTER_SATELLITE_NIGHT","RASTER_SATELLITE_DIGITIZE","RASTER_SATELLITE_ASTC","RASTER_SATELLITE_POLAR","RASTER_SATELLITE_POLAR_NIGHT","SPUTNIK_METADATA","SPUTNIK_C3M","SPUTNIK_DSM","SPUTNIK_DSM_GLOBAL","SPUTNIK_VECTOR_BORDER","FLYOVER_C3M_MESH","FLYOVER_C3M_JPEG_TEXTURE","FLYOVER_C3M_ASTC_TEXTURE","FLYOVER_VISIBILITY","FLYOVER_SKYBOX","FLYOVER_NAVGRAPH","FLYOVER_METADATA","MUNIN_METADATA","VECTOR_SPR_MERCATOR","VECTOR_SPR_MODELS","VECTOR_SPR_MATERIALS","VECTOR_SPR_METADATA","VECTOR_SPR_ROADS","VECTOR_SPR_STANDARD","SPR_ASSET_METADATA","VECTOR_SPR_POLAR","VECTOR_SPR_MODELS_OCCLUSION"]);for(let t of s.XX?.tileSet??[])e.has(t.style)&&!u.tileSet.some(e=>e.style===t.style&&e.scale===t.scale&&e.size===t.size&&e.dataSet===t.dataSet&&e.baseURL===t.baseURL)&&u.tileSet.push(t)})(),u.tileGroup=tt.tileGroups(u.tileGroup,u.tileSet,u.attribution,u.resource)';
+const hybridTileGroups = '(()=>{let e=new Set(["RASTER_SATELLITE","RASTER_SATELLITE_NIGHT","RASTER_SATELLITE_DIGITIZE","RASTER_SATELLITE_ASTC","RASTER_SATELLITE_POLAR","RASTER_SATELLITE_POLAR_NIGHT","SPUTNIK_METADATA","SPUTNIK_C3M","SPUTNIK_DSM","SPUTNIK_DSM_GLOBAL","SPUTNIK_VECTOR_BORDER","FLYOVER_C3M_MESH","FLYOVER_C3M_JPEG_TEXTURE","FLYOVER_C3M_ASTC_TEXTURE","FLYOVER_VISIBILITY","FLYOVER_SKYBOX","FLYOVER_NAVGRAPH","FLYOVER_METADATA","MUNIN_METADATA","VECTOR_SPR_MERCATOR","VECTOR_SPR_MODELS","VECTOR_SPR_MATERIALS","VECTOR_SPR_METADATA","SPR_ASSET_METADATA","VECTOR_SPR_POLAR","VECTOR_SPR_MODELS_OCCLUSION"]);for(let t of s.XX?.tileSet??[])e.has(t.style)&&!u.tileSet.some(e=>e.style===t.style&&e.scale===t.scale&&e.size===t.size&&e.dataSet===t.dataSet&&e.baseURL===t.baseURL)&&u.tileSet.push(t)})(),u.tileGroup=tt.tileGroups(u.tileGroup,u.tileSet,u.attribution,u.resource)';
 if (!response.includes(tileGroupMarker)) throw new Error("Tile group patch marker not found");
 response = response.replace(tileGroupMarker, hybridTileGroups);
 
@@ -56,10 +52,10 @@ await writeFile(responsePath, response);
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
 const args = 'GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"';
 
-const module = `name: ' iRingo: 🗺️ Maps iOS 27 Local v5'
+const module = `name: ' iRingo: 🗺️ Maps iOS 27 Local v6'
 description: |-
   Egern 本地脚本配置
-  完整中国地图数据 + 国际 3D 卫星、地球与 Look Around
+  国际主清单 + 中国区域地图数据 + 国际 2D/3D 卫星
 compat_arguments:
   GeoManifest.Dynamic.Config.CountryCode: US
   UrlInfoSet.Dispatcher: AutoNavi
@@ -150,26 +146,26 @@ scriptings:
 - http_request:
     name: 🗺️ Maps.defaults.request
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/request.v5.bundle.js
+    script_url: ${base}/request.v6.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.defaults.response
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/response.v5.bundle.js
+    script_url: ${base}/response.v6.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
 - http_request:
     name: 🗺️ Maps.announcements.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/request.v5.bundle.js
+    script_url: ${base}/request.v6.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.announcements.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/response.v5.bundle.js
+    script_url: ${base}/response.v6.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
@@ -177,13 +173,13 @@ scriptings:
 - http_request:
     name: 🗺️ Maps.manifest.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/request.v5.bundle.js
+    script_url: ${base}/request.v6.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.manifest.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/response.v5.bundle.js
+    script_url: ${base}/response.v6.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
