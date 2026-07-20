@@ -25,7 +25,8 @@ rules:
 http:
   mitm:
     - "configuration.ls.apple.com"
-    - "gspe35-ssl.ls.apple.com, gspe35-ssl.ls.apple.cn"
+    - "gspe35-ssl.ls.apple.com"
+    - "gspe35-ssl.ls.apple.cn"
   url-rewrite:
     # 🗺️ Network Defaults
     - ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults https://configuration-ls.nanocat.cloud/config/defaults transparent

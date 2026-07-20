@@ -35,8 +35,8 @@ url_rewrites:
 - match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
   location: https://gspe35-ssl-ls.nanocat.cloud/geo_manifest/dynamic/config
   status_code: 307
-  mitm:
-    hostnames:
+mitm:
+  hostnames:
     includes:
     - configuration.ls.apple.com
     - gspe35-ssl.ls.apple.com
