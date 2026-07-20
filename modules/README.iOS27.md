@@ -35,7 +35,7 @@ TileSet.Flyover = XX
 TileSet.Munin = XX
 TileSet.Roads = XX
 Hybrid.MainlandLayers = EXTENDED
-Hybrid.ServiceMode = APPLE
+Hybrid.ServiceMode = CN_POI
 UrlInfoSet.LocationShift = AutoNavi
 ```
 

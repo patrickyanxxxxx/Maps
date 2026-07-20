@@ -43,7 +43,7 @@ v6 的重点不是同时向地图 App 暴露两套卫星选择器，而是只保
    - `TileSet.Munin: XX`
    - `TileSet.Roads: XX`
    - `Hybrid.MainlandLayers: EXTENDED`
-   - `Hybrid.ServiceMode: APPLE`
+   - `Hybrid.ServiceMode: CN_POI`
    - `UrlInfoSet.LocationShift: AutoNavi`
 
 4. 只启用一份 Selective Hybrid 模块。
@@ -107,8 +107,8 @@ style=7, v=68, size=1, scale=2, vertical_datum=wgs84
 
 - `Hybrid.MainlandLayers=EXTENDED`：加入较完整的中国二维道路、建筑、POI、标签、交通和卫星相关图层。
 - `Hybrid.MainlandLayers=CORE`：仅保留标准地图、建筑、POI 和地标，用于排查重复标签等问题。
-- `Hybrid.ServiceMode=APPLE`：国外服务最完整，也是当前推荐默认值。
-- `Hybrid.ServiceMode=CN_POI`：中国地点与反向地理编码使用 CN 服务，导航仍使用 Apple。
+- `Hybrid.ServiceMode=CN_POI`：中国地点、POI 与反向地理编码使用 CN 服务，导航仍使用 Apple；当前推荐默认值。
+- `Hybrid.ServiceMode=APPLE`：所有前台地点服务优先使用国际 Apple，中国标准地图的 POI 信息可能减少。
 - `Hybrid.ServiceMode=CN_FULL`：地点、反向地理编码、导航和交通尽量使用 CN 服务，但国外体验不再保证完全国际化。
 
 ### 5. 缓存和系统兼容

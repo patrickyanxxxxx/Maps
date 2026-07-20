@@ -2,14 +2,14 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 
 const root = process.argv[2] ?? "modules";
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
-const request = `${base}/request.bundle.js`;
-const response = `${base}/response.bundle.js`;
-const route = `${base}/satellite-route.js`;
+const version = "6.1.0";
+const request = `${base}/request.bundle.js?v=${version}`;
+const response = `${base}/response.bundle.js?v=${version}`;
+const route = `${base}/satellite-route.js?v=${version}`;
 const homepage = "https://github.com/patrickyanxxxxx/Maps";
 const icon = "https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png";
-const version = "6.0.0";
 const description = "自定义 Maps app\\n添加国际版功能\\n自定义服务版本\\niOS 27 中国大陆卫星 + 国际卫星与 3D";
-const argument = 'GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="APPLE"&Storage="Argument"&LogLevel="WARN"';
+const argument = 'GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="Apple"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="CN_POI"&Storage="Argument"&LogLevel="WARN"';
 const mapPattern = "^https?:\\/\\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\\.ls\\.apple\\.com\\/";
 const defaultsPattern = "^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults";
 const announcementsPattern = "^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements";
@@ -47,8 +47,8 @@ Hybrid.MainlandLayers: [瓦片数据集] 中国大陆二维图层
     ├ EXTENDED: 道路、地点、标签、交通与卫星（默认）
     └ CORE: 标准地图、建筑、POI 与地标
 Hybrid.ServiceMode: [URL信息集] 中国服务范围
-    ├ APPLE: 国际前台服务优先（默认）
-    ├ CN_POI: 中国地点与反向地理编码
+    ├ CN_POI: 中国地点、POI 与反向地理编码，导航保持 Apple（默认）
+    ├ APPLE: 国际前台服务优先
     └ CN_FULL: 中国地点、导航与交通
 TileSet.Flyover / Munin / Roads / Satellite: [瓦片数据集]
     └ XX: 保持 Apple 国际资源（默认）
@@ -69,7 +69,7 @@ const surge = `#!name =  iRingo: 🗺️ Maps iOS 27 Hybrid
 #!icon = ${icon}
 #!category =  iRingo
 #!version = ${version}
-#!arguments = GeoManifest.Dynamic.Config.CountryCode=US&UrlInfoSet.Dispatcher=AutoNavi&UrlInfoSet.Directions=AutoNavi&UrlInfoSet.RAP=Apple&UrlInfoSet.LocationShift=AutoNavi&TileSet.Earth=Apple&TileSet.Flyover=XX&TileSet.Munin=XX&TileSet.Roads=XX&TileSet.Satellite=XX&Hybrid.MainlandLayers=EXTENDED&Hybrid.ServiceMode=APPLE&LogLevel=WARN
+#!arguments = GeoManifest.Dynamic.Config.CountryCode=US&UrlInfoSet.Dispatcher=AutoNavi&UrlInfoSet.Directions=Apple&UrlInfoSet.RAP=Apple&UrlInfoSet.LocationShift=AutoNavi&TileSet.Earth=Apple&TileSet.Flyover=XX&TileSet.Munin=XX&TileSet.Roads=XX&TileSet.Satellite=XX&Hybrid.MainlandLayers=EXTENDED&Hybrid.ServiceMode=CN_POI&LogLevel=WARN
 #!arguments-desc = ${argumentsDesc.replaceAll("\n", "\\n")}
 
 [Rule]
@@ -109,10 +109,10 @@ const loon = `#!name =  iRingo: 🗺️ Maps iOS 27 Hybrid
 [Argument]
 GeoManifest.Dynamic.Config.CountryCode = select,"US","US",tag=[动态配置] 资源清单的国家或地区代码,desc=必须保持 US 以保留国际卫星、3D、Flyover 与四处看看。
 UrlInfoSet.Dispatcher = select,"AutoNavi","AutoNavi","Apple",tag=[URL信息集] 调度器,desc=此选项影响公共指南、兴趣点与位置信息等地点数据。
-UrlInfoSet.Directions = select,"AutoNavi","AutoNavi","Apple",tag=[URL信息集] 导航与ETA,desc=此选项影响导航与 ETA 到达时间服务。
+UrlInfoSet.Directions = select,"Apple","Apple","AutoNavi",tag=[URL信息集] 导航与ETA,desc=CN_POI 默认保留 Apple 导航与 ETA，避免中国服务影响国外导航。
 UrlInfoSet.LocationShift = select,"AutoNavi","AutoNavi","Apple",tag=[URL信息集] 定位漂移,desc=AutoNavi 在中国大陆使用 GCJ-02 坐标修正。
 Hybrid.MainlandLayers = select,"EXTENDED","EXTENDED","CORE",tag=[瓦片数据集] 中国大陆二维图层,desc=EXTENDED 包含道路、地点、标签、交通与卫星；CORE 用于诊断。
-Hybrid.ServiceMode = select,"APPLE","APPLE","CN_POI","CN_FULL",tag=[URL信息集] 中国服务范围,desc=APPLE 保持国外完全国际化；CN_POI 或 CN_FULL 会增加中国服务。
+Hybrid.ServiceMode = select,"CN_POI","CN_POI","APPLE","CN_FULL",tag=[URL信息集] 中国服务范围,desc=CN_POI 恢复中国地点、POI 与反向地理编码并保持 Apple 导航；CN_FULL 还会切换导航与交通。
 LogLevel = select,"WARN","WARN","INFO","DEBUG",tag=[调试] 日志等级,desc=选择脚本日志的输出等级。
 
 [Rule]
@@ -326,6 +326,10 @@ await writeFile(`${root}/iRingo.Maps.yaml`, egern
   iOS 27 中国大陆卫星 + 国际卫星与 3D
 compat_arguments:`)
 	.replace("author: patrickyanxxxxx; VirgilClyne; Codex", "author: patrickyanxxxxx; VirgilClyne")
+	.replace("UrlInfoSet.Directions: AutoNavi", "UrlInfoSet.Directions: Apple")
+	.replace("Hybrid.ServiceMode: APPLE", "Hybrid.ServiceMode: CN_POI")
+	.replace("├ APPLE: Apple 前台服务，仅保留大陆反向地理编码及可选坐标修正（默认，国外完全国际化）", "├ CN_POI: 高德地点、POI 与反向地理编码，导航保留 Apple（默认）")
+	.replace("├ CN_POI: 高德地点与反向地理编码，导航保留 Apple", "├ APPLE: Apple 前台服务，国外完全国际化")
 	.replaceAll(`${base}/request.selective-hybrid-mainland-3d.v6.bundle.js`, request)
 	.replaceAll(`${base}/response.selective-hybrid-mainland-3d.v6.bundle.js`, response)
 	.replaceAll(`${base}/request.selective-hybrid-mainland-3d-route.v6.js`, route)
