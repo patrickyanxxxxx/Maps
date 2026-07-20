@@ -24,6 +24,7 @@
 	"directories": {
 		"example": "example"
 	},
+	"type": "module",
 	"scripts": {
 		"dev:pages": "npx wrangler pages dev --port 8787",
 		"dev:workers": "npx wrangler dev -c wrangler.workers.jsonc",
