@@ -11,6 +11,8 @@ compat_arguments:
   TileSet.Earth: Apple
   TileSet.Roads: XX
   TileSet.Satellite: XX
+  TileSet.Flyover: XX
+  TileSet.Munin: XX
   LogLevel: WARN
 compat_arguments_desc: |
   GeoManifest.Dynamic.Config.CountryCode: [资源清单地区]
@@ -43,6 +45,16 @@ compat_arguments_desc: |
       ├ CN: 中国卫星图像
       └ AUTO: 自动
 
+  TileSet.Flyover: [3D 城市与俯瞰]
+      ├ XX: 国际 Flyover 资源
+      ├ CN: 中国资源
+      └ HYBRID: 保留清单原值
+
+  TileSet.Munin: [Look Around]
+      ├ XX: 国际 Look Around
+      ├ CN: 中国资源
+      └ HYBRID: 混合
+
   LogLevel: [日志]
       ├ WARN: 警告
       ├ INFO: 信息
@@ -73,42 +85,42 @@ scriptings:
 - http_request:
     name: 🗺️ Maps.defaults.request
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.v2.bundle.js
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: 🗺️ Maps.defaults.response
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.v2.bundle.js
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
 - http_request:
     name: 🗺️ Maps.announcements.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.v2.bundle.js
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: 🗺️ Maps.announcements.response
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.v2.bundle.js
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
     binary_body: true
 - http_request:
     name: 🗺️ Maps.manifest.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.v2.bundle.js
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: 🗺️ Maps.manifest.response
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.v2.bundle.js
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
     binary_body: true
 mitm:

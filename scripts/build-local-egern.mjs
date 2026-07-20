@@ -3,8 +3,8 @@ import { copyFile, readFile, writeFile } from "node:fs/promises";
 const releaseDirectory = process.argv[2];
 if (!releaseDirectory) throw new Error("Usage: node build-local-egern.mjs <release-dir>");
 
-const requestPath = "modules/assets/request.bundle.js";
-const responsePath = "modules/assets/response.bundle.js";
+const requestPath = "modules/assets/request.v2.bundle.js";
+const responsePath = "modules/assets/response.v2.bundle.js";
 const modulePath = "modules/iRingo.Maps.iOS27.Local.yaml";
 
 let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
@@ -33,7 +33,7 @@ await writeFile(requestPath, request);
 await writeFile(responsePath, response);
 
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
-const args = 'GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"';
+const args = 'GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"';
 
 const module = `name: ' iRingo: 🗺️ Maps iOS 27 Local'
 description: |-
@@ -48,6 +48,8 @@ compat_arguments:
   TileSet.Earth: Apple
   TileSet.Roads: XX
   TileSet.Satellite: XX
+  TileSet.Flyover: XX
+  TileSet.Munin: XX
   LogLevel: WARN
 compat_arguments_desc: |
   GeoManifest.Dynamic.Config.CountryCode: [资源清单地区]
@@ -80,6 +82,16 @@ compat_arguments_desc: |
       ├ CN: 中国卫星图像
       └ AUTO: 自动
 
+  TileSet.Flyover: [3D 城市与俯瞰]
+      ├ XX: 国际 Flyover 资源
+      ├ CN: 中国资源
+      └ HYBRID: 保留清单原值
+
+  TileSet.Munin: [Look Around]
+      ├ XX: 国际 Look Around
+      ├ CN: 中国资源
+      └ HYBRID: 混合
+
   LogLevel: [日志]
       ├ WARN: 警告
       ├ INFO: 信息
@@ -110,26 +122,26 @@ scriptings:
 - http_request:
     name: 🗺️ Maps.defaults.request
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/request.bundle.js
+    script_url: ${base}/request.v2.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.defaults.response
     match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
-    script_url: ${base}/response.bundle.js
+    script_url: ${base}/response.v2.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
 - http_request:
     name: 🗺️ Maps.announcements.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/request.bundle.js
+    script_url: ${base}/request.v2.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.announcements.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
-    script_url: ${base}/response.bundle.js
+    script_url: ${base}/response.v2.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
@@ -137,13 +149,13 @@ scriptings:
 - http_request:
     name: 🗺️ Maps.manifest.request
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/request.bundle.js
+    script_url: ${base}/request.v2.bundle.js
     env:
       _compat.$argument: ${args}
 - http_response:
     name: 🗺️ Maps.manifest.response
     match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
-    script_url: ${base}/response.bundle.js
+    script_url: ${base}/response.v2.bundle.js
     env:
       _compat.$argument: ${args}
     body_required: true
