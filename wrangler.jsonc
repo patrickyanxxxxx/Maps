@@ -1,13 +1,21 @@
 {
-  "name": "maps",
-  "main": "src/Hono.js",
+  "name": "iringo-maps-ios27",
+  "main": "dist/maps-worker.mjs",
   "compatibility_date": "2025-11-21",
+  "routes": [
+    {
+      "pattern": "maps.yanchn.dpdns.org",
+      "custom_domain": true
+    }
+  ],
   "kv_namespaces": [
     {
-      "binding": "PersistentStore"
+      "binding": "PersistentStore",
+      "id": "71ebcdc1a0434ad1b2a5dae39779bd6c"
     },
     {
-      "binding": "Maps"
+      "binding": "Maps",
+      "id": "0ecd7b67dedc44728a17e70c1446a42c"
     }
   ],
   "observability": {

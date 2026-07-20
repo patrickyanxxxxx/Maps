@@ -27,13 +27,13 @@ rules:
     policy: DIRECT
 url_rewrites:
 - match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-  location: https://configuration-ls.nanocat.cloud/config/defaults
+  location: https://maps.yanchn.dpdns.org/config/defaults
   status_code: 307
 - match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
-  location: https://gspe35-ssl-ls.nanocat.cloud/config/announcements
+  location: https://maps.yanchn.dpdns.org/config/announcements
   status_code: 307
 - match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-  location: https://gspe35-ssl-ls.nanocat.cloud/geo_manifest/dynamic/config
+  location: https://maps.yanchn.dpdns.org/geo_manifest/dynamic/config
   status_code: 307
 mitm:
   hostnames:
