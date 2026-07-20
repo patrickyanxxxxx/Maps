@@ -1,0 +1,156 @@
+import { readFile, writeFile } from "node:fs/promises";
+
+const releaseDirectory = process.argv[2];
+if (!releaseDirectory) throw new Error("Usage: node build-selective-hybrid-egern.mjs <release-dir>");
+
+const requestPath = "modules/assets/request.selective-hybrid.v1.bundle.js";
+const responsePath = "modules/assets/response.selective-hybrid.v1.bundle.js";
+const modulePath = "modules/iRingo.Maps.iOS27.Selective-Hybrid.Local.v1.yaml";
+
+let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
+let response = await readFile(`${releaseDirectory}/response.bundle.js`, "utf8");
+let hybridSource = await readFile("src/function/InternationalHybrid.mjs", "utf8");
+
+request = request.replaceAll(
+	'case"gspe35-ssl.ls.apple.com":',
+	'case"gspe35-ssl.ls.apple.com":case"gspe35-ssl.ls.apple.cn":',
+);
+response = response.replaceAll(
+	'if("gspe35-ssl.ls.apple.com"===a.hostname)',
+	'if(["gspe35-ssl.ls.apple.com","gspe35-ssl.ls.apple.cn"].includes(a.hostname))',
+);
+
+hybridSource = hybridSource.replace("export default function applyInternationalHybrid", "function applyInternationalHybrid");
+const functionMarker = "async function ti(e,t,i)";
+if (!response.includes(functionMarker)) throw new Error("Response function marker not found");
+response = response.replace(functionMarker, `${hybridSource}\n${functionMarker}`);
+
+const pipelineMarker = "u.displayString=tt.displayStrings(u.displayString,s,t),u.tileGroup=tt.tileGroups(u.tileGroup,u.tileSet,u.attribution,u.resource)";
+if (!response.includes(pipelineMarker)) throw new Error("Response pipeline marker not found");
+const pipelineStartMarker = "u.tileSet=tt.tileSets(u.tileSet,s,o,t)";
+if (!response.includes(pipelineStartMarker)) throw new Error("Response pipeline start marker not found");
+response = response.replace(pipelineStartMarker, `s.XX=clone(s.XX),${pipelineStartMarker}`);
+response = response.replace(
+	pipelineMarker,
+	"u.displayString=tt.displayStrings(u.displayString,s,t),u=applyInternationalHybrid(u,s,o),u.tileGroup=tt.tileGroups(u.tileGroup,u.tileSet,u.attribution,u.resource)",
+);
+
+const encodeMarker = "M.debug(`releaseInfo: ${u.releaseInfo}`),e=te.encode(u)";
+if (!response.includes(encodeMarker)) throw new Error("Response encode marker not found");
+response = response.replace(
+	encodeMarker,
+	'M.debug(`releaseInfo: ${u.releaseInfo}`),e=te.encode(u),$response.headers=$response.headers??{},$response.headers["Cache-Control"]="no-store, no-cache, must-revalidate, max-age=0",$response.headers.Pragma="no-cache",$response.headers.Expires="0",delete $response.headers.ETag,delete $response.headers.etag,delete $response.headers["Last-Modified"],delete $response.headers["last-modified"],delete $response.headers["Content-Length"],delete $response.headers["content-length"]',
+);
+
+await writeFile(requestPath, request);
+await writeFile(responsePath, response);
+
+const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
+const args = 'GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"';
+
+const module = `name: ' iRingo: Maps iOS 27 Selective Hybrid Local v1'
+description: |-
+  Egern 本地参数模块。中国大陆保留高德二维地图、道路、地点、导航与 2D 卫星，只排除国内 3D；中国大陆以外全部使用 Apple 国际资源与服务。
+  参考 Loon Hybrid Fix 的隔离思路，但继续使用本项目逻辑，并允许选择中国地点/导航服务范围。
+compat_arguments:
+  GeoManifest.Dynamic.Config.CountryCode: US
+  UrlInfoSet.Dispatcher: AutoNavi
+  UrlInfoSet.Directions: AutoNavi
+  UrlInfoSet.RAP: Apple
+  UrlInfoSet.LocationShift: AutoNavi
+  TileSet.Earth: Apple
+  TileSet.Flyover: XX
+  TileSet.Munin: XX
+  TileSet.Roads: XX
+  TileSet.Satellite: XX
+  Hybrid.MainlandLayers: EXTENDED
+  Hybrid.ServiceMode: APPLE
+  LogLevel: WARN
+compat_arguments_desc: |
+  推荐先使用默认值；CountryCode 必须保持 US 才能保留国际 3D 能力。
+
+  Hybrid.MainlandLayers: [中国二维图层]
+      ├ EXTENDED: 完整中国二维图层，含道路、标签、交通与 2D 卫星（默认）
+      └ CORE: 仅标准地图、建筑、POI 与地标，用于诊断
+
+  Hybrid.ServiceMode: [中国服务完整度]
+      ├ APPLE: Apple 前台服务，仅保留大陆反向地理编码及可选坐标修正（默认，国外完全国际化）
+      ├ CN_POI: 高德地点与反向地理编码，导航保留 Apple
+      └ CN_FULL: 高德地点、反向地理编码、导航与交通（国内服务最完整，但国外 POI/导航不再严格国际化）
+
+  UrlInfoSet.LocationShift:
+      ├ AutoNavi: 中国大陆使用 GCJ-02 修正（默认）
+      └ Apple: 不注入高德坐标修正
+
+  TileSet.Flyover / TileSet.Munin / TileSet.Roads / TileSet.Satellite:
+      └ XX: 保持国际资源（默认；不建议在本模式中改为 CN）
+
+  LogLevel: WARN / INFO / DEBUG
+author: patrickyanxxxxx; VirgilClyne; Codex
+homepage: https://github.com/patrickyanxxxxx/Maps
+icon: https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
+rules:
+- domain:
+    match: gspe12-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain_suffix:
+    match: is.autonavi.com
+    policy: DIRECT
+scriptings:
+- http_request:
+    name: Maps.SelectiveHybrid.defaults.request
+    match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
+    script_url: ${base}/request.selective-hybrid.v1.bundle.js
+    env:
+      _compat.$argument: ${args}
+- http_response:
+    name: Maps.SelectiveHybrid.defaults.response
+    match: ^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults
+    script_url: ${base}/response.selective-hybrid.v1.bundle.js
+    env:
+      _compat.$argument: ${args}
+    body_required: true
+- http_request:
+    name: Maps.SelectiveHybrid.announcements.request
+    match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
+    script_url: ${base}/request.selective-hybrid.v1.bundle.js
+    env:
+      _compat.$argument: ${args}
+- http_response:
+    name: Maps.SelectiveHybrid.announcements.response
+    match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements
+    script_url: ${base}/response.selective-hybrid.v1.bundle.js
+    env:
+      _compat.$argument: ${args}
+    body_required: true
+    binary_body: true
+- http_request:
+    name: Maps.SelectiveHybrid.manifest.request
+    match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
+    script_url: ${base}/request.selective-hybrid.v1.bundle.js
+    env:
+      _compat.$argument: ${args}
+- http_response:
+    name: Maps.SelectiveHybrid.manifest.response
+    match: ^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/geo_manifest\\/dynamic\\/config
+    script_url: ${base}/response.selective-hybrid.v1.bundle.js
+    env:
+      _compat.$argument: ${args}
+    body_required: true
+    binary_body: true
+mitm:
+  hostnames:
+    includes:
+    - configuration.ls.apple.com
+    - gspe35-ssl.ls.apple.com
+    - gspe35-ssl.ls.apple.cn
+`;
+
+await writeFile(modulePath, module);
+console.log(`Wrote ${requestPath}, ${responsePath}, ${modulePath}`);
