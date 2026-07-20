@@ -2,7 +2,7 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 
 const root = process.argv[2] ?? "modules";
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
-const version = "6.1.2";
+const version = "6.2.0";
 const request = `${base}/request.bundle.js?v=${version}`;
 const response = `${base}/response.bundle.js?v=${version}`;
 const route = `${base}/satellite-route.js?v=${version}`;
