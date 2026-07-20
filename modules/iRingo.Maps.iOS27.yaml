@@ -1,0 +1,40 @@
+name: ' iRingo: 🗺️ Maps iOS 27 International'
+description: 高德中国服务 + 国际 2D/3D 卫星、地球与 Look Around
+author: patrickyanxxxxx
+homepage: https://github.com/patrickyanxxxxx/Maps
+icon: https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
+rules:
+- domain_suffix:
+    match: is.autonavi.com
+    policy: DIRECT
+- domain:
+    match: gspe11-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe12-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe79-cn-ssl.ls.apple.com
+    policy: DIRECT
+url_rewrites:
+- match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
+  location: https://maps.yanchn.dpdns.org/config/defaults
+  status_code: 307
+- match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
+  location: https://maps.yanchn.dpdns.org/config/announcements
+  status_code: 307
+- match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+  location: https://maps.yanchn.dpdns.org/geo_manifest/dynamic/config
+  status_code: 307
+mitm:
+  hostnames:
+    includes:
+    - configuration.ls.apple.com
+    - gspe35-ssl.ls.apple.com
+    - gspe35-ssl.ls.apple.cn

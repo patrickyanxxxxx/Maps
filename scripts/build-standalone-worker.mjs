@@ -96,6 +96,15 @@ export default {
 		const KV = kvAdapter(env);
 		const incomingURL = new URL(request.url);
 		if (incomingURL.pathname === "/health") return new Response("ok", { status: 200 });
+		if (incomingURL.pathname === "/status") {
+			const status = await env.PersistentStore.get("diagnostics", { type: "json" });
+			return Response.json(status ?? { message: "No Maps request has reached this Worker yet" });
+		}
+		const diagnostic = {
+			path: incomingURL.pathname,
+			query: incomingURL.search,
+			startedAt: new Date().toISOString(),
+		};
 		const upstreamHost = incomingURL.pathname === "/config/defaults" ? "configuration.ls.apple.com" : "gspe35-ssl.ls.apple.com";
 		incomingURL.hostname = upstreamHost;
 		incomingURL.protocol = "https:";
@@ -108,6 +117,7 @@ export default {
 		};
 		const processed = await globalThis.__iRingoMapsRequest(proxyRequest, KV);
 		proxyRequest = processed.$request;
+		diagnostic.upstreamURL = proxyRequest.url;
 		if (processed.$response) return new Response(processed.$response.body, processed.$response);
 		const upstream = await fetch(proxyRequest.url, {
 			method: proxyRequest.method,
@@ -115,7 +125,11 @@ export default {
 			body: proxyRequest.method === "GET" || proxyRequest.method === "HEAD" ? undefined : proxyRequest.body,
 			redirect: "follow",
 		});
+		diagnostic.upstreamStatus = upstream.status;
+		diagnostic.upstreamContentType = upstream.headers.get("content-type");
 		if (!upstream.ok || upstream.status === 204) {
+			diagnostic.completedAt = new Date().toISOString();
+			await env.PersistentStore.put("diagnostics", JSON.stringify(diagnostic));
 			return new Response(upstream.body, { status: upstream.status, headers: upstream.headers });
 		}
 		let proxyResponse = {
@@ -124,6 +138,9 @@ export default {
 			body: await responseBody(upstream),
 		};
 		proxyResponse = await globalThis.__iRingoMapsResponse(proxyRequest, proxyResponse, KV);
+		diagnostic.completedAt = new Date().toISOString();
+		diagnostic.outputBytes = proxyResponse.body?.byteLength ?? proxyResponse.body?.length ?? 0;
+		await env.PersistentStore.put("diagnostics", JSON.stringify(diagnostic));
 		const responseHeaders = new Headers(proxyResponse.headers ?? {});
 		responseHeaders.delete("content-length");
 		responseHeaders.delete("content-encoding");
