@@ -139,6 +139,44 @@ const copyKeys = (target, source, keys) => {
 	}
 };
 
+const saveRouteConfig = (caches, enabled) => {
+	if (!enabled || !globalThis.$persistentStore?.write) return;
+	const routedStyles = new Set([
+		"RASTER_SATELLITE",
+		"RASTER_SATELLITE_NIGHT",
+		"RASTER_SATELLITE_DIGITIZE",
+		"RASTER_SATELLITE_ASTC",
+		...MAINLAND_3D_STYLES,
+	]);
+	const routes = [];
+	for (const internationalTile of caches.XX?.tileSet ?? []) {
+		if (!routedStyles.has(internationalTile?.style) || !internationalTile?.baseURL) continue;
+		const mainlandTile = caches.CN?.tileSet?.find(tile =>
+			tile?.style === internationalTile.style &&
+			tile?.scale === internationalTile.scale &&
+			tile?.size === internationalTile.size
+		) ?? caches.CN?.tileSet?.find(tile => tile?.style === internationalTile.style);
+		if (!mainlandTile?.baseURL) continue;
+		const internationalVersions = internationalTile.validVersion ?? [];
+		const mainlandVersions = mainlandTile.validVersion ?? [];
+		const versionMap = {};
+		for (let index = 0; index < internationalVersions.length; index++) {
+			const from = internationalVersions[index]?.identifier;
+			const to = mainlandVersions[index]?.identifier ?? mainlandVersions[0]?.identifier;
+			if (typeof from !== "undefined" && typeof to !== "undefined") versionMap[String(from)] = String(to);
+		}
+		routes.push({
+			style: internationalTile.style,
+			scale: internationalTile.scale,
+			size: internationalTile.size,
+			internationalBaseURL: internationalTile.baseURL,
+			mainlandBaseURL: mainlandTile.baseURL,
+			versionMap,
+		});
+	}
+	globalThis.$persistentStore.write(JSON.stringify({ updatedAt: Date.now(), routes }), "iRingo.Maps.HybridSatelliteRoute.v2");
+};
+
 /**
  * Keep the international manifest authoritative while adding mainland-only
  * rendering and service data. Inspired by the supplied Loon hybrid fix, but
@@ -162,6 +200,7 @@ function applyInternationalHybrid(body, caches, settings = {}) {
 			"RASTER_SATELLITE_DIGITIZE",
 			"RASTER_SATELLITE_ASTC",
 		]) mainlandStyles.delete(style);
+		saveRouteConfig(caches, true);
 	}
 	const international3DTiles = (caches.XX?.tileSet ?? [])
 		.filter(tile => INTERNATIONAL_3D_STYLES.has(tile?.style))

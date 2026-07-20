@@ -4,11 +4,11 @@ const releaseDirectory = process.argv[2];
 if (!releaseDirectory) throw new Error("Usage: node build-selective-hybrid-egern.mjs <release-dir>");
 
 const mainland3D = process.argv[3] === "mainland-3d-route";
-const profile = mainland3D ? "selective-hybrid-mainland-3d.v2" : "selective-hybrid.v1";
+const profile = mainland3D ? "selective-hybrid-mainland-3d.v3" : "selective-hybrid.v1";
 const requestPath = `modules/assets/request.${profile}.bundle.js`;
 const responsePath = `modules/assets/response.${profile}.bundle.js`;
 const modulePath = mainland3D
-	? "modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v2.yaml"
+	? "modules/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v3.yaml"
 	: "modules/iRingo.Maps.iOS27.Selective-Hybrid.Local.v1.yaml";
 
 let request = await readFile(`${releaseDirectory}/request.bundle.js`, "utf8");
@@ -53,7 +53,7 @@ const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/module
 const scriptingName = mainland3D ? "Maps.SelectiveHybridMainland3D" : "Maps.SelectiveHybrid";
 const args = `GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="${mainland3D ? "ROUTE" : "DISABLED"}"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"`;
 
-const module = `name: ' iRingo: Maps iOS 27 Selective Hybrid${mainland3D ? " + Mainland 3D Route" : ""} Local v${mainland3D ? "2" : "1"}'
+const module = `name: ' iRingo: Maps iOS 27 Selective Hybrid${mainland3D ? " + Mainland 3D Route" : ""} Local v${mainland3D ? "3" : "1"}'
 description: |-
   Egern 本地参数模块。中国大陆保留高德二维地图、道路、地点、导航与 2D 卫星${mainland3D ? "，3D 瓦片按坐标改走 CN 端点" : "，只排除国内 3D"}；中国大陆以外全部使用 Apple 国际资源与服务。
   参考 Loon Hybrid Fix 的隔离思路，但继续使用本项目逻辑，并允许选择中国地点/导航服务范围。
@@ -164,7 +164,7 @@ scriptings:
 ${mainland3D ? `- http_request:
     name: Maps.SelectiveHybridMainland3D.tile-route.request
     match: ^https?:\\/\\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\\.ls\\.apple\\.com\\/
-    script_url: ${base}/request.selective-hybrid-mainland-3d-route.v2.js
+    script_url: ${base}/request.selective-hybrid-mainland-3d-route.v3.js
 ` : ""}mitm:
   hostnames:
     includes:
