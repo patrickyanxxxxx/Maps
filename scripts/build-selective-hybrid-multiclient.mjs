@@ -7,6 +7,8 @@ const surgeVersion = "6.2.2";
 const request = `${base}/request.bundle.js?v=${version}`;
 const response = `${base}/response.bundle.js?v=${version}`;
 const route = `${base}/satellite-route.js?v=${version}`;
+const egernRequest = `${base}/request.bundle.js?v=6.2.3`;
+const egernResponse = `${base}/response.bundle.js?v=6.2.3`;
 const homepage = "https://github.com/patrickyanxxxxx/Maps";
 const icon = "https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png";
 const description = "自定义 Maps app\\n添加国际版功能\\n自定义服务版本\\niOS 27 中国大陆卫星 + 国际卫星与 3D";
@@ -330,13 +332,17 @@ await writeFile(`${root}/iRingo.Maps.yaml`, egern
   iOS 27 中国大陆卫星 + 国际卫星与 3D
 compat_arguments:`)
 	.replace("author: patrickyanxxxxx; VirgilClyne; Codex", "author: patrickyanxxxxx; VirgilClyne")
+	.replace("  UrlInfoSet.Directions: AutoNavi\n", "")
 	.replace("Hybrid.ServiceMode: APPLE", "Hybrid.ServiceMode: CN_POI")
-	.replace("├ APPLE: Apple 前台服务，仅保留大陆反向地理编码及可选坐标修正（默认，国外完全国际化）", "├ CN_POI: 高德地点、POI 与反向地理编码；导航服务由“UrlInfoSet.Directions”控制（默认高德）")
-	.replace("├ CN_POI: 高德地点、POI 与反向地理编码，导航保留 Apple（默认）", "├ CN_POI: 高德地点、POI 与反向地理编码；导航服务由“UrlInfoSet.Directions”控制（默认高德）")
+	.replace("├ APPLE: Apple 前台服务，仅保留大陆反向地理编码及可选坐标修正（默认，国外完全国际化）", "├ CN_POI: 高德地点、POI 与反向地理编码；本 Egern 版本固定使用高德导航")
+	.replace("├ CN_POI: 高德地点、POI 与反向地理编码，导航保留 Apple（默认）", "├ CN_POI: 高德地点、POI 与反向地理编码；本 Egern 版本固定使用高德导航")
 	.replace("├ CN_POI: 高德地点与反向地理编码，导航保留 Apple", "├ APPLE: Apple 前台服务，国外完全国际化")
-	.replace("  UrlInfoSet.LocationShift:\n", "  UrlInfoSet.Directions:\n      ├ AutoNavi: 高德导航与 ETA（默认，确保中国大陆可正常规划路线）\n      └ Apple: Apple 导航与 ETA（中国大陆不可用，国外仍使用 TomTom）\n\n  UrlInfoSet.LocationShift:\n")
+	.replace("  UrlInfoSet.LocationShift:\n", "  导航与 ETA:\n      └ 固定为 AutoNavi：中国大陆使用高德，国外仍使用 TomTom；不再读取旧模块缓存中的 Apple 参数。\n\n  UrlInfoSet.LocationShift:\n")
+	.replaceAll('UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"', 'UrlInfoSet.Directions="AutoNavi"')
 	.replaceAll(`${archiveBase}/request.selective-hybrid-mainland-3d.v6.bundle.js`, request)
 	.replaceAll(`${archiveBase}/response.selective-hybrid-mainland-3d.v6.bundle.js`, response)
+	.replaceAll(request, egernRequest)
+	.replaceAll(response, egernResponse)
 	.replaceAll(`${archiveBase}/request.selective-hybrid-mainland-3d-route.v6.js`, route)
 );
 
