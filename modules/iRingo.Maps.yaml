@@ -94,7 +94,7 @@ scriptings:
 - http_request:
     name: Maps.SelectiveHybridMainland3D.defaults.request
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.3.0
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.3.1
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
@@ -107,7 +107,7 @@ scriptings:
 - http_request:
     name: Maps.SelectiveHybridMainland3D.announcements.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.3.0
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.3.1
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
@@ -121,7 +121,7 @@ scriptings:
 - http_request:
     name: Maps.SelectiveHybridMainland3D.manifest.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.3.0
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.3.1
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
@@ -135,7 +135,7 @@ scriptings:
 - http_request:
     name: Maps.SelectiveHybridMainland3D.tile-route.request
     match: ^https?:\/\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\.ls\.apple\.com\/
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/satellite-route.js?v=6.3.0
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/satellite-route.js?v=6.3.1
 mitm:
   hostnames:
     includes:

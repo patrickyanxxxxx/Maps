@@ -2,7 +2,7 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 
 const root = process.argv[2] ?? "modules";
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
-const version = "6.3.0";
+const version = "6.3.1";
 const surgeVersion = version;
 const request = `${base}/request.bundle.js?v=${version}`;
 const response = `${base}/response.bundle.js?v=${version}`;
@@ -407,8 +407,14 @@ const egernSource = await firstExisting([
 	`${root}/iRingo.Maps.iOS27.Selective-Hybrid.Mainland-3D.Local.v6.yaml`,
 ]);
 const embeddedArgument = `globalThis.$argument=globalThis.$argument??${JSON.stringify(argument)};`;
+const patchLoonManifestDownload = source => {
+	const original = 'class ti{static async download(e=$request,t="CN"){F.log("☑️ Download");let i={...e};i.url=new URL(i.url),i.url.searchParams.set("country_code","XX"===t?"US":t),i.url=i.url.toString(),i["binary-mode"]=!0;let a=await Y(i),n=a.bodyBytes?new Uint8Array(a.bodyBytes):a.body??new Uint8Array;';
+	const replacement = 'class ti{static async download(e=$request,t="CN"){F.log("☑️ Download");let i=new URL(e.url);i.searchParams.set("country_code","XX"===t?"US":t);let a;if("$loon"in globalThis){let t=e.headers??{};a={url:i.toString(),method:"GET",headers:{Accept:"application/octet-stream","Accept-Language":t["Accept-Language"]??t["accept-language"]??"en-US","User-Agent":t["User-Agent"]??t["user-agent"]??"geod/1"},timeout:e.timeout??10,"binary-mode":!0}}else a={...e,url:i.toString(),"binary-mode":!0};let n=await Y(a),r=n.bodyBytes?new Uint8Array(n.bodyBytes):n.body??new Uint8Array;';
+	if (!source.includes(original)) throw new Error("Stable request bundle no longer matches the Loon GeoManifest patch target");
+	return source.replace(original, replacement).replace('return F.log("✅ Download"),{status:a.status??a.statusCode??0,eTag:a.headers?.Etag??a.headers?.etag,body:n}}static async getCache', 'return F.log("✅ Download"),{status:n.status??n.statusCode??0,eTag:n.headers?.Etag??n.headers?.etag,body:r}}static async getCache');
+};
 await Promise.all([
-	writeFile(`${root}/assets/request.bundle.js`, embeddedArgument + await readFile(requestSource, "utf8")),
+	writeFile(`${root}/assets/request.bundle.js`, embeddedArgument + patchLoonManifestDownload(await readFile(requestSource, "utf8"))),
 	writeFile(`${root}/assets/response.bundle.js`, embeddedArgument + await readFile(responseSource, "utf8")),
 	writeFile(`${root}/assets/satellite-route.js`, await readFile(routeSource, "utf8")),
 ]);

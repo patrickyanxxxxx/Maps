@@ -10,11 +10,30 @@ export default class GEOResourceManifest {
 	 */
 	static async download(request = $request, countryCode = "CN") {
 		Console.log("☑️ Download");
-		const newRequest = { ...request };
-		newRequest.url = new URL(newRequest.url);
-		newRequest.url.searchParams.set("country_code", countryCode === "XX" ? "US" : countryCode);
-		newRequest.url = newRequest.url.toString();
-		newRequest["binary-mode"] = true;
+		const targetURL = new URL(request.url);
+		targetURL.searchParams.set("country_code", countryCode === "XX" ? "US" : countryCode);
+		const isLoon = "$loon" in globalThis;
+		let newRequest;
+		if (isLoon) {
+			// Loon 3.5 may retain HTTP/2 pseudo headers (especially :path) from
+			// the intercepted request even after `url` is replaced. That sends the
+			// original CN URL and can also turn a conditional request into an empty
+			// response. Build a clean, unconditional binary request for Loon only.
+			const sourceHeaders = request.headers ?? {};
+			newRequest = {
+				url: targetURL.toString(),
+				method: "GET",
+				headers: {
+					Accept: "application/octet-stream",
+					"Accept-Language": sourceHeaders["Accept-Language"] ?? sourceHeaders["accept-language"] ?? "en-US",
+					"User-Agent": sourceHeaders["User-Agent"] ?? sourceHeaders["user-agent"] ?? "geod/1",
+				},
+				timeout: request.timeout ?? 10,
+				"binary-mode": true,
+			};
+		} else {
+			newRequest = { ...request, url: targetURL.toString(), "binary-mode": true };
+		}
 		const response = await fetch(newRequest);
 		const rawBody = response.bodyBytes ? new Uint8Array(response.bodyBytes) : (response.body ?? new Uint8Array());
 		Console.log("✅ Download");
