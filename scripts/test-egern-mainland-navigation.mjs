@@ -15,4 +15,8 @@ if (!responseText.includes(navigationMerge)) {
 	throw new Error("Hybrid response merge does not restore mainland navigation for AutoNavi");
 }
 
+const pinnedResponse = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/41741c3/modules/assets/response.bundle.js";
+const pinnedCount = moduleText.split(pinnedResponse).length - 1;
+if (pinnedCount !== 3) throw new Error(`Expected 3 pinned Egern response scripts, got ${pinnedCount}`);
+
 console.log("Egern mainland navigation regression tests passed");
