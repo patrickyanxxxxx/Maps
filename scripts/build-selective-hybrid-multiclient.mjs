@@ -3,6 +3,7 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 const root = process.argv[2] ?? "modules";
 const base = "https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets";
 const version = "6.2.1";
+const surgeVersion = "6.2.2";
 const request = `${base}/request.bundle.js?v=${version}`;
 const response = `${base}/response.bundle.js?v=${version}`;
 const route = `${base}/satellite-route.js?v=${version}`;
@@ -10,6 +11,8 @@ const homepage = "https://github.com/patrickyanxxxxx/Maps";
 const icon = "https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png";
 const description = "自定义 Maps app\\n添加国际版功能\\n自定义服务版本\\niOS 27 中国大陆卫星 + 国际卫星与 3D";
 const argument = 'GeoManifest.Dynamic.Config.CountryCode="US"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="Apple"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="Apple"&TileSet.Flyover="XX"&TileSet.Munin="XX"&TileSet.Roads="XX"&TileSet.Satellite="XX"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="EXTENDED"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="CN_POI"&Storage="Argument"&LogLevel="WARN"';
+const surgeArguments = 'GeoManifest.Dynamic.Config.CountryCode:"US",UrlInfoSet.Dispatcher:"AutoNavi",UrlInfoSet.Directions:"Apple",UrlInfoSet.LocationShift:"AutoNavi",Hybrid.MainlandLayers:"EXTENDED",Hybrid.ServiceMode:"CN_POI",TileSet.Flyover:"XX",TileSet.Munin:"XX",TileSet.Roads:"XX",TileSet.Satellite:"XX",LogLevel:"WARN"';
+const surgeArgument = 'GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"&UrlInfoSet.RAP="Apple"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="Apple"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"';
 const mapPattern = "^https?:\\/\\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\\.ls\\.apple\\.com\\/";
 const defaultsPattern = "^https?:\\/\\/configuration\\.ls\\.apple\\.com\\/config\\/defaults";
 const announcementsPattern = "^https?:\\/\\/gspe35-ssl\\.ls\\.apple\\.(com|cn)\\/config\\/announcements";
@@ -38,8 +41,8 @@ UrlInfoSet.Dispatcher: [URL信息集] 调度器
     ├ AutoNavi: 高德地点数据（默认）
     └ Apple: Apple 地点数据
 UrlInfoSet.Directions: [URL信息集] 导航与ETA
-    ├ AutoNavi: 高德导航与 ETA（默认）
-    └ Apple: Apple 导航与 ETA
+    ├ Apple: Apple 导航与 ETA（默认）
+    └ AutoNavi: 高德导航与 ETA
 UrlInfoSet.LocationShift: [URL信息集] 定位漂移
     ├ AutoNavi: 中国大陆使用 GCJ-02 修正（默认）
     └ Apple: 使用 WGS-84
@@ -68,8 +71,8 @@ const surge = `#!name =  iRingo: 🗺️ Maps iOS 27 Hybrid
 #!homepage = ${homepage}
 #!icon = ${icon}
 #!category =  iRingo
-#!version = ${version}
-#!arguments = GeoManifest.Dynamic.Config.CountryCode=US&UrlInfoSet.Dispatcher=AutoNavi&UrlInfoSet.Directions=Apple&UrlInfoSet.RAP=Apple&UrlInfoSet.LocationShift=AutoNavi&TileSet.Earth=Apple&TileSet.Flyover=XX&TileSet.Munin=XX&TileSet.Roads=XX&TileSet.Satellite=XX&Hybrid.MainlandLayers=EXTENDED&Hybrid.ServiceMode=CN_POI&LogLevel=WARN
+#!version = ${surgeVersion}
+#!arguments = ${surgeArguments}
 #!arguments-desc = ${argumentsDesc.replaceAll("\n", "\\n")}
 
 [Rule]
@@ -80,14 +83,14 @@ ${ruleLines}
 
 [Script]
 # 🗺️ Network Defaults
-🗺️ Maps.config.defaults.request = type=http-request, pattern=${defaultsPattern}, script-path=${request}, argument=${argument}
-🗺️ Maps.config.defaults.response = type=http-response, pattern=${defaultsPattern}, requires-body=1, engine=webview, script-path=${response}, argument=${argument}
+🗺️ Maps.config.defaults.request = type=http-request, pattern=${defaultsPattern}, script-path=${request}, argument=${surgeArgument}
+🗺️ Maps.config.defaults.response = type=http-response, pattern=${defaultsPattern}, requires-body=1, engine=webview, script-path=${response}, argument=${surgeArgument}
 # 🗺️ Announcements
-🗺️ Maps.config.announcements.request = type=http-request, pattern=${announcementsPattern}, script-path=${request}, argument=${argument}
-🗺️ Maps.config.announcements.response = type=http-response, pattern=${announcementsPattern}, requires-body=1, binary-body-mode=1, engine=webview, script-path=${response}, argument=${argument}
+🗺️ Maps.config.announcements.request = type=http-request, pattern=${announcementsPattern}, script-path=${request}, argument=${surgeArgument}
+🗺️ Maps.config.announcements.response = type=http-response, pattern=${announcementsPattern}, requires-body=1, binary-body-mode=1, engine=webview, script-path=${response}, argument=${surgeArgument}
 # 🗺️ Resource Manifest
-🗺️ Maps.geo_manifest.dynamic.config.request = type=http-request, pattern=${manifestPattern}, script-path=${request}, argument=${argument}
-🗺️ Maps.geo_manifest.dynamic.config.response = type=http-response, pattern=${manifestPattern}, requires-body=1, binary-body-mode=1, engine=webview, script-path=${response}, argument=${argument}
+🗺️ Maps.geo_manifest.dynamic.config.request = type=http-request, pattern=${manifestPattern}, script-path=${request}, argument=${surgeArgument}
+🗺️ Maps.geo_manifest.dynamic.config.response = type=http-response, pattern=${manifestPattern}, requires-body=1, binary-body-mode=1, engine=webview, script-path=${response}, argument=${surgeArgument}
 # 🗺️ iOS 27 Satellite Route
 🗺️ Maps.satellite.route.request = type=http-request, pattern=${mapPattern}, script-path=${route}
 
