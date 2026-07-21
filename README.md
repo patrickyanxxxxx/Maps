@@ -6,7 +6,11 @@
 
 自定义服务版本
 
-本仓库基于 [NSRingo/Maps](https://github.com/NSRingo/Maps)，针对 iOS 27 的地图资源清单、卫星样式、导航、四处看看和地区切换行为进行适配。
+这是一个基于 [NSRingo/Maps](https://github.com/NSRingo/Maps) 进行适配与改造的第三方项目，主要针对 iOS 27 的地图资源清单、卫星样式、导航、四处看看和地区切换行为进行兼容处理，并提供 Egern、Surge、Loon、Shadowrocket、Stash 与 Quantumult X 模块。
+
+本项目包含对 NSRingo/Maps 中采用 [Apache License 2.0](LICENSE) 许可的源码及发布构建产物进行适配和修改的部分；当前 request/response 脚本以上游 `v4.6.1` 发布产物为基础。具体许可信息请参阅 [LICENSE](LICENSE) 及项目 Git 历史。本项目为独立第三方项目，与 Apple Inc.、高德（AutoNavi）及 NSRingo 不存在官方关联、认可、授权或赞助关系。
+
+> 本项目不提供 Apple 或高德服务、账号、授权凭证、访问密钥或地图数据访问权限。使用者应仅处理其依法且依约有权访问的数据，并自行遵守适用法律、相关服务条款及第三方数据源的使用要求。
 
 > [!IMPORTANT]
 > 本 Fork 不是 Apple、高德或 NSRingo 的官方项目。地图数据、3D、Flyover 与 Look Around 的覆盖范围仍由 Apple 服务器决定。
