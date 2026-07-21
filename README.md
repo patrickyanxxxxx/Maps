@@ -10,6 +10,8 @@
 
 > [!IMPORTANT]
 > 本 Fork 不是 Apple、高德或 NSRingo 的官方项目。地图数据、3D、Flyover 与 Look Around 的覆盖范围仍由 Apple 服务器决定。
+>
+> **兼容性与测试声明：本项目的主要功能以 Egern 进行开发和实机测试。Surge、Loon、Shadowrocket、Stash、Quantumult X 等其他代理软件仅提供兼容模板，功能可能不完整；如遇兼容性或功能缺失问题，请使用者自行排查并解决。**
 
 ## 功能
 
