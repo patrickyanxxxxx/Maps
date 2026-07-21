@@ -10,7 +10,7 @@ author: |-
 homepage: "https://github.com/patrickyanxxxxx/Maps"
 icon: "https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png"
 category: " iRingo"
-version: "6.2.0"
+version: "6.2.1"
 
 rules:
   # 🗺️ Amap
@@ -67,11 +67,11 @@ http:
 
 script-providers:
   iRingo.Maps.v6.request:
-    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.2.0
+    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.2.1
     interval: 86400
   iRingo.Maps.v6.response:
-    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.2.0
+    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.2.1
     interval: 86400
   iRingo.Maps.v6.route:
-    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/satellite-route.js?v=6.2.0
+    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/satellite-route.js?v=6.2.1
     interval: 86400
