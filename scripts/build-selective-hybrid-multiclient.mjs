@@ -8,7 +8,7 @@ const request = `${base}/request.bundle.js?v=${version}`;
 const response = `${base}/response.bundle.js?v=${version}`;
 const route = `${base}/satellite-route.js?v=${version}`;
 const egernRequest = `${base}/request.bundle.js?v=6.2.3`;
-const egernResponse = `${base}/response.bundle.js?v=6.2.3`;
+const egernResponse = `${base}/response.bundle.js?v=6.2.4`;
 const homepage = "https://github.com/patrickyanxxxxx/Maps";
 const icon = "https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png";
 const description = "自定义 Maps app\\n添加国际版功能\\n自定义服务版本\\niOS 27 中国大陆卫星 + 国际卫星与 3D";

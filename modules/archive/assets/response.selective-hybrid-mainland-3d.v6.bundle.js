@@ -338,8 +338,8 @@ function applyInternationalHybrid(body, caches, settings = {}) {
 	if (Array.isArray(body.urlInfoSet) && internationalUrlInfo && mainlandUrlInfo) {
 		const hybridUrlInfo = clone(internationalUrlInfo);
 		// CN_POI is the stable default for the hybrid profile: restore mainland
-		// AutoNavi place/POI and reverse-geocoding data while keeping Apple
-		// navigation unless the module explicitly selects another mode.
+		// AutoNavi place/POI and reverse-geocoding data. Navigation remains Apple
+		// unless Egern explicitly selects AutoNavi or the full CN profile is used.
 		const mode = String(settings?.Hybrid?.ServiceMode ?? "CN_POI").toUpperCase();
 		const reverseGeocodingKeys = [
 			"batchReverseGeocoderURL",
@@ -366,7 +366,9 @@ function applyInternationalHybrid(body, caches, settings = {}) {
 		];
 		copyKeys(hybridUrlInfo, mainlandUrlInfo, reverseGeocodingKeys);
 		if (mode === "CN_POI" || mode === "CN_FULL") copyKeys(hybridUrlInfo, mainlandUrlInfo, placeKeys);
-		if (mode === "CN_FULL") copyKeys(hybridUrlInfo, mainlandUrlInfo, navigationKeys);
+		if (mode === "CN_FULL" || (X === "Egern" && settings?.UrlInfoSet?.Directions === "AutoNavi")) {
+			copyKeys(hybridUrlInfo, mainlandUrlInfo, navigationKeys);
+		}
 		if (settings?.UrlInfoSet?.LocationShift === "AutoNavi") {
 			copyKeys(hybridUrlInfo, mainlandUrlInfo, [
 				"polyLocationShiftURL",
