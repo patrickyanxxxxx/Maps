@@ -7,7 +7,7 @@ description: |-
 compat_arguments:
   GeoManifest.Dynamic.Config.CountryCode: US
   UrlInfoSet.Dispatcher: AutoNavi
-  UrlInfoSet.Directions: Apple
+  UrlInfoSet.Directions: AutoNavi
   UrlInfoSet.RAP: Apple
   UrlInfoSet.LocationShift: AutoNavi
   TileSet.Earth: Apple
@@ -26,7 +26,7 @@ compat_arguments_desc: |
       └ CORE: 仅标准地图、建筑、POI 与地标，用于诊断
 
   Hybrid.ServiceMode: [中国服务完整度]
-      ├ CN_POI: 高德地点、POI 与反向地理编码，导航保留 Apple（默认）
+      ├ CN_POI: 高德地点、POI 与反向地理编码；导航服务由“UrlInfoSet.Directions”控制（默认高德）
       ├ APPLE: Apple 前台服务，国外完全国际化
       └ CN_FULL: 高德地点、反向地理编码、导航与交通（国内服务最完整，但国外 POI/导航不再严格国际化）
 
@@ -35,6 +35,10 @@ compat_arguments_desc: |
       仅坐标明确落在中国大陆的卫星/3D 瓦片请求改走 CN 端点。
       iOS 27 已确认的国际 style=98/v=226 会在大陆坐标转换为 CN style=7/v=68；国外保持原请求。
 
+
+  UrlInfoSet.Directions:
+      ├ AutoNavi: 高德导航与 ETA（默认，确保中国大陆可正常规划路线）
+      └ Apple: Apple 导航与 ETA（中国大陆不可用，国外仍使用 TomTom）
 
   UrlInfoSet.LocationShift:
       ├ AutoNavi: 中国大陆使用 GCJ-02 修正（默认）

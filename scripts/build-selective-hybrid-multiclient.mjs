@@ -330,10 +330,11 @@ await writeFile(`${root}/iRingo.Maps.yaml`, egern
   iOS 27 中国大陆卫星 + 国际卫星与 3D
 compat_arguments:`)
 	.replace("author: patrickyanxxxxx; VirgilClyne; Codex", "author: patrickyanxxxxx; VirgilClyne")
-	.replace("UrlInfoSet.Directions: AutoNavi", "UrlInfoSet.Directions: Apple")
 	.replace("Hybrid.ServiceMode: APPLE", "Hybrid.ServiceMode: CN_POI")
-	.replace("├ APPLE: Apple 前台服务，仅保留大陆反向地理编码及可选坐标修正（默认，国外完全国际化）", "├ CN_POI: 高德地点、POI 与反向地理编码，导航保留 Apple（默认）")
+	.replace("├ APPLE: Apple 前台服务，仅保留大陆反向地理编码及可选坐标修正（默认，国外完全国际化）", "├ CN_POI: 高德地点、POI 与反向地理编码；导航服务由“UrlInfoSet.Directions”控制（默认高德）")
+	.replace("├ CN_POI: 高德地点、POI 与反向地理编码，导航保留 Apple（默认）", "├ CN_POI: 高德地点、POI 与反向地理编码；导航服务由“UrlInfoSet.Directions”控制（默认高德）")
 	.replace("├ CN_POI: 高德地点与反向地理编码，导航保留 Apple", "├ APPLE: Apple 前台服务，国外完全国际化")
+	.replace("  UrlInfoSet.LocationShift:\n", "  UrlInfoSet.Directions:\n      ├ AutoNavi: 高德导航与 ETA（默认，确保中国大陆可正常规划路线）\n      └ Apple: Apple 导航与 ETA（中国大陆不可用，国外仍使用 TomTom）\n\n  UrlInfoSet.LocationShift:\n")
 	.replaceAll(`${archiveBase}/request.selective-hybrid-mainland-3d.v6.bundle.js`, request)
 	.replaceAll(`${archiveBase}/response.selective-hybrid-mainland-3d.v6.bundle.js`, response)
 	.replaceAll(`${archiveBase}/request.selective-hybrid-mainland-3d-route.v6.js`, route)
