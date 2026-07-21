@@ -1,182 +1,214 @@
-#  iRingo Maps — iOS 27 中国/国际混合地图
+#  iRingo: 🗺 Maps
 
-本仓库是 [NSRingo/Maps](https://github.com/NSRingo/Maps) 的个人 Fork，针对 iOS 27 上 Apple 地图资源清单、卫星瓦片样式和区域选择行为进行了适配。
+自定义 Maps app
 
-项目的当前目标是：在同一份 Egern 本地模块中，让中国大陆继续使用适合国内坐标和数据环境的地图内容，同时保留中国大陆以外的 Apple 国际卫星、3D、Flyover 与 Look Around 能力。
+添加国际版功能
 
-> 本项目不是 Apple、高德或 NSRingo 的官方项目。Apple 地图服务能力、覆盖范围和接口版本可能随系统及服务器端配置变化。
+自定义服务版本
 
-## 当前推荐版本
+本仓库基于 [NSRingo/Maps](https://github.com/NSRingo/Maps)，针对 iOS 27 的地图资源清单、卫星样式和地区切换行为进行适配。当前稳定版以 [d162741](https://github.com/patrickyanxxxxx/Maps/commit/d1627413c18c9f126eef4696fc950ce535b69ee4) 为基线。
 
-### Selective Hybrid Mainland 3D Route Local v6
+> [!IMPORTANT]
+> 本 Fork 不是 Apple、高德或 NSRingo 的官方项目。地图数据、3D、Flyover 与 Look Around 的覆盖范围仍由 Apple 服务器决定。
 
-[点击导入 Egern 本地模块](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.yaml)
+## 功能
 
-其他代理软件：
+- 中国大陆保留标准地图、道路、地点、POI、坐标修正和 CN 2D 卫星图像。
+- 中国大陆以外使用 Apple 国际地图、2D 卫星、3D 卫星、Flyover、地球和 Look Around 数据。
+- 支持从国内卫星视图直接搜索并定位国外城市，不需要先切换到标准地图。
+- 默认使用 `CN_POI`：中国地点、POI 和反向地理编码使用 CN 服务，导航与 ETA 保持 Apple。
+- 提供 Egern、Surge、Loon、Shadowrocket、Stash 和 Quantumult X 模块。
+- 旧模块与诊断资源集中归档，不与当前稳定版混放。
 
-| 客户端 | 模块 |
+## 安装
+
+### Egern
+
+[点击导入 Egern 模块](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.yaml)
+
+### 其他代理软件
+
+| 代理软件 | 模块 |
 | --- | --- |
-| Surge | [`iRingo.Maps.sgmodule`](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.sgmodule) |
-| Loon | [`iRingo.Maps.plugin`](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.plugin) |
-| Shadowrocket | [`iRingo.Maps.srmodule`](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.srmodule) |
-| Stash | [`iRingo.Maps.stoverride`](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.stoverride) |
-| Quantumult X | [`iRingo.Maps.snippet`](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.snippet) |
+| Surge | [iRingo.Maps.sgmodule](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.sgmodule) |
+| Loon | [iRingo.Maps.plugin](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.plugin) |
+| Shadowrocket | [iRingo.Maps.srmodule](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.srmodule) |
+| Stash | [iRingo.Maps.stoverride](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.stoverride) |
+| Quantumult X | [iRingo.Maps.snippet](https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/iRingo.Maps.snippet) |
 
-已经在 iOS 27 实机验证：
+当前模块发布和缓存版本为 `6.2.1`；脚本内部仍显示原项目基础 bundle 版本 `4.6.1`，这是正常现象。
 
-| 地区 | 标准地图 | 卫星地图 | 3D / Flyover | Look Around |
-| --- | --- | --- | --- | --- |
-| 中国大陆 | 中国地图图层、道路、地点和坐标修正 | 高德/CN 2D 卫星可显示 | 国内 3D 不作为本版本保证目标 | 使用国际能力，实际可用性取决于 Apple 覆盖 |
-| 中国大陆以外 | Apple 国际数据 | Apple 国际卫星 | Apple 国际 3D / Flyover 正常 | Apple 国际数据 |
-
-v6 的重点不是同时向地图 App 暴露两套卫星选择器，而是只保留一套国际选择器，再按瓦片坐标把中国大陆卫星请求转换到 CN 端点。这样可以避免 iOS 27 将当前会话永久绑定到国内卫星源，解决“必须先切回标准地图，移动到国外后再进入 3D”的问题。
-
-## 安装方式
-
-1. 在 Egern 中停用或删除旧的 Maps 混合模块，尤其是 v3、v4、v5 和卫星诊断模块。
-2. 导入上方 v6 本地模块。
-3. 保持推荐参数：
-
-   - `GeoManifest.Dynamic.Config.CountryCode: US`
-   - `TileSet.Satellite: XX`
-   - `TileSet.Flyover: XX`
-   - `TileSet.Munin: XX`
-   - `TileSet.Roads: XX`
-   - `Hybrid.MainlandLayers: EXTENDED`
-   - `Hybrid.ServiceMode: CN_POI`
-   - `UrlInfoSet.LocationShift: AutoNavi`
-
-4. 只启用一份 Selective Hybrid 模块。
-5. 强制退出 Apple 地图和 Egern。首次更换资源清单时建议重启设备，以清除 iOS 缓存的 GeoManifest 和卫星选择状态。
-
-本版本是本地可编辑 Egern 模块，不依赖 Cloudflare Worker。仓库中的 Worker 支持仅作为可选部署方式保留。
-
-## 与原项目的主要区别
-
-对比基准为原仓库 `NSRingo/Maps` 的 `main` 分支（对比时上游提交 `8f2c75c`）。本 Fork 保留原项目的请求/响应处理、资源清单解码、参数系统和多代理客户端模板，并增加以下内容：
-
-| 项目 | 原项目 | 本 Fork |
-| --- | --- | --- |
-| iOS 27 新卫星样式 | 主要按旧版命名样式选择，例如 `RASTER_SATELLITE` | 识别 iOS 27 国际卫星 `style=98`（当前协议枚举名为 `UNUSED_98`） |
-| 中国/国际卫星共存 | 传统 CN/XX selector 替换或并存 | 单国际 selector + 中国大陆坐标路由，避免会话绑定 |
-| 已确认的瓦片转换 | 无专门转换 | `98/226 → 7/68`，并转换主机、路径和必要参数 |
-| 中国覆盖 | 依赖原始国际清单范围 | 给国际卫星 selector 补充大陆覆盖，使地图能够实际发出国内请求 |
-| 国外 3D | 可能受 CN 清单或 selector 选择影响 | 国际 3D、Flyover、地球和 Look Around 资源保持国际版 |
-| Egern 使用方式 | 以通用模块和 Worker 模板为主 | 增加参数化、可直接导入的 iOS 27 本地模块 |
-| 清单缓存 | 使用完整查询字符串作为缓存键 | 对 iOS 27 新增或重排的查询参数进行标准化回退 |
-| Apple 清单域名 | 主要处理 `.apple.com` | 同时处理 `gspe35-ssl.ls.apple.com` 与 `.apple.cn` |
-| 调试 | 通用日志 | 增加脱敏的卫星请求诊断模块和可重复的路由测试 |
-
-## 核心实现
-
-### 1. 国际资源清单作为主体
-
-`src/function/InternationalHybrid.mjs` 以国际清单作为卫星、3D、Flyover、地球和 Look Around 能力的主体，只按需加入中国大陆二维地图图层与服务数据。
-
-这避免了以 CN 清单作为主体时，国际 3D selector、覆盖元数据或 Munin 数据被裁掉的问题。
-
-### 2. 单一卫星选择器
-
-iOS 27 会在进入卫星/3D 模式时缓存所选 selector。若清单中同时存在国内和国际两套重复能力，地图可能在中国进入 3D 后一直锁定 CN 数据源，即使随后搜索东京等国外城市也不会重新选择国际源。
-
-v6 因此不再插入第二套 CN 卫星 selector。它保留国际 `style=98` selector，并为它补充中国大陆的 `availableTiles` 覆盖，同时清除只允许特定国家使用的限制。
-
-### 3. 按瓦片坐标路由
-
-`modules/assets/satellite-route.js` 根据 `z/x/y` 判断请求是否位于中国大陆：
+## 推荐设置
 
 ```text
-国际请求
-gspe11-ssl.ls.apple.com/tile
-style=98, v=226
-
-中国大陆坐标时转换为
-gspe11-2-cn-ssl.ls.apple.com/2/tiles
-style=7, v=68, size=1, scale=2, vertical_datum=wgs84
+GeoManifest.Dynamic.Config.CountryCode = US
+UrlInfoSet.Dispatcher = AutoNavi
+UrlInfoSet.Directions = Apple
+UrlInfoSet.LocationShift = AutoNavi
+TileSet.Earth = Apple
+TileSet.Flyover = XX
+TileSet.Munin = XX
+TileSet.Roads = XX
+TileSet.Satellite = XX
+Hybrid.MainlandLayers = EXTENDED
+Hybrid.ServiceMode = CN_POI
 ```
 
-同时删除国际端点使用、但 CN 端点不需要的 `region` 与 `h` 参数。`z/x/y`、`preflight` 和临时授权参数保持不变。
+设备日志中偶尔仍可能看到 `country_code=CN`。该参数表示当前请求的资源清单地区，不等于正在查看的地图位置；稳定版响应脚本会配合缓存的 CN/US 清单生成混合结果。
 
-中国大陆以外的请求不做修改，因此东京等海外城市继续访问 Apple 国际卫星端点。
+## 使用方法
 
-目前只转换实机日志已经确认的 `style=98`。其他 iOS 27 新样式不会被批量猜测转换，以避免误伤 Flyover、夜景、模型或材质资源。
+1. 删除旧版 Maps、Selective Hybrid 和卫星诊断模块。
+2. 重新导入 `modules/` 根目录中对应代理软件的稳定模块。
+3. 确认只启用一份 Maps 混合模块。
+4. Egern 用户确认响应脚本地址包含 `response.bundle.js?v=6.2.1`。
+5. 强制退出 Apple 地图和代理软件后重新打开；若系统继续使用旧 GeoManifest，可重启设备。
 
-### 4. 中国地图与服务隔离
+## 实机验证
 
-混合逻辑区分地图图层与前台服务：
+| 地区 | 标准地图与 POI | 卫星地图 | 3D / Flyover | Look Around |
+| --- | --- | --- | --- | --- |
+| 中国大陆 | CN 图层、道路、地点与坐标修正 | CN 2D 卫星 | 国内 3D 不作为稳定版保证目标 | 取决于 Apple 实际覆盖 |
+| 中国大陆以外 | Apple 国际数据 | Apple 国际卫星 | Apple 国际 3D / Flyover | Apple 国际数据 |
 
-- `Hybrid.MainlandLayers=EXTENDED`：加入较完整的中国二维道路、建筑、POI、标签、交通和卫星相关图层。
-- `Hybrid.MainlandLayers=CORE`：仅保留标准地图、建筑、POI 和地标，用于排查重复标签等问题。
-- `Hybrid.ServiceMode=CN_POI`：中国地点、POI 与反向地理编码使用 CN 服务，导航仍使用 Apple；当前推荐默认值。
-- `Hybrid.ServiceMode=APPLE`：所有前台地点服务优先使用国际 Apple，中国标准地图的 POI 信息可能减少。
-- `Hybrid.ServiceMode=CN_FULL`：地点、反向地理编码、导航和交通尽量使用 CN 服务，但国外体验不再保证完全国际化。
+已确认的 iOS 27 卫星请求：
 
-### 5. 缓存和系统兼容
+```text
+国际：gspe11-ssl.ls.apple.com/tile
+      style=98, v=226
 
-本 Fork 还增加了：
+中国：gspe11-2-cn-ssl.ls.apple.com/2/tiles
+      style=7, v=68, size=1, scale=2, vertical_datum=wgs84
+```
 
-- iOS 27 GeoManifest 查询参数标准化缓存键。
-- `.apple.cn` 清单域名支持。
-- GeoManifest 响应禁用缓存，方便本地模块更新后尽快生效。
-- 独立的 Egern 构建脚本和稳定配置生成脚本。
-- Cloudflare Worker 独立构建入口及相关客户端模板。
+稳定版只保留一套国际卫星 selector，并为其补充中国大陆覆盖。当 `z/x/y` 落在中国大陆时，`satellite-route.js` 将已确认的 `style=98/v=226` 请求转换为 CN `style=7/v=68`；国外请求保持原样。这样可以避免 iOS 27 在国内进入卫星模式后将整个会话锁定到 CN 数据源。
 
-## 主要新增和修改文件
+## 与原项目的区别
 
-| 路径 | 用途 |
+对比基准为上游 [NSRingo/Maps](https://github.com/NSRingo/Maps) `main` 分支提交 [`8f2c75c`](https://github.com/NSRingo/Maps/commit/8f2c75c4daa1f6eb46f35eba354bf0cd113367d7)。上游 README 仅保留项目标题，本说明根据源码、模块和当前稳定版的实际差异生成。
+
+| 项目 | 原项目 | 本 Fork 当前稳定版 |
+| --- | --- | --- |
+| iOS 27 国际卫星样式 | 未单独处理 `style=98` | 识别当前协议中的 `UNUSED_98`，对应实机 `style=98/v=226` |
+| 国内外卫星共存 | 依赖 CN/XX 清单和 selector 切换 | 单国际 selector，并按瓦片坐标将中国请求路由到 CN |
+| 地区切换 | 可能在卫星会话中绑定当前数据源 | 支持从国内卫星视图直接定位国外城市 |
+| 中国标准地图 | 使用原项目通用 CN/国际选择 | 注入大陆限定的二维图层，并默认恢复 CN POI/反向地理编码 |
+| 国外能力 | 可能随 CN 主清单减少 | 保留国际卫星、3D、Flyover、地球与 Look Around 资源 |
+| GeoManifest 编码 | 原始枚举转换流程 | 保持 v6 合并流程，并仅在编码阶段保护已为数字的枚举，避免 `invalid int 32: string` |
+| iOS 27 缓存 | 完整查询字符串缓存 | 增加查询参数标准化和 CN/US 清单缓存回退 |
+| 清单域名 | 主要面向 `.apple.com` | 同时匹配 `gspe35-ssl.ls.apple.com` 与 `.apple.cn` |
+| Egern | 原项目通用配置 | 增加可本地编辑、带参数说明的稳定 Egern 模块 |
+| 多客户端发布 | 原项目模板 | 同步生成 Surge、Loon、Shadowrocket、Stash、Quantumult X 版本 |
+| 历史版本 | 无本 Fork 的实验记录 | 统一保存至 `modules/archive/legacy` 和 `modules/archive/assets` |
+
+## 实现说明
+
+### 国际清单主体
+
+`src/function/InternationalHybrid.mjs` 保留国际地图的卫星、3D、Flyover、地球和 Look Around 能力，再加入中国大陆限定的二维图层及服务数据。大陆图层使用区域白名单和可用瓦片范围，避免影响国外地图。
+
+### 中国服务范围
+
+- `CN_POI`：默认值。中国地点、POI、搜索和反向地理编码使用 CN 服务，导航与 ETA 保持 Apple。
+- `APPLE`：优先使用 Apple 国际前台服务，中国 POI 可能减少。
+- `CN_FULL`：地点、导航和交通尽量使用 CN 服务，但国外服务不再保证完全国际化。
+
+### 安全编码
+
+iOS 27/Egern 处理混合清单时，部分枚举字段可能已经是数字。若再次反向查表，会将数字转换为枚举名称字符串，protobuf 随后报错：
+
+```text
+Error: invalid int 32: string
+```
+
+当前稳定版保留原 v6 的解码和合并行为，只在 `GEOResourceManifestDownload.encode` 阶段判断字段类型：字符串枚举转换为数字，已有数字保持不变。
+
+## 目录结构
+
+```text
+modules/
+├── README.iOS27.md
+├── iRingo.Maps.yaml
+├── iRingo.Maps.sgmodule
+├── iRingo.Maps.plugin
+├── iRingo.Maps.srmodule
+├── iRingo.Maps.stoverride
+├── iRingo.Maps.snippet
+├── assets/
+│   ├── request.bundle.js
+│   ├── response.bundle.js
+│   └── satellite-route.js
+└── archive/
+    ├── legacy/
+    └── assets/
+```
+
+`modules/` 根目录只放当前稳定版；历史模块和诊断脚本仅用于对比、回归和排错，不建议日常启用。
+
+## 主要更改文件
+
+| 文件 | 说明 |
 | --- | --- |
-| `src/function/InternationalHybrid.mjs` | 中国二维数据与国际 3D 的选择性合并、卫星路由配置和大陆覆盖扩展 |
-| `modules/iRingo.Maps.yaml` | 当前推荐的 Egern 本地模块 |
-| `modules/iRingo.Maps.sgmodule` | Surge 模块 |
-| `modules/iRingo.Maps.plugin` | Loon 插件 |
-| `modules/iRingo.Maps.srmodule` | Shadowrocket 模块 |
-| `modules/iRingo.Maps.stoverride` | Stash 覆写 |
-| `modules/iRingo.Maps.snippet` | Quantumult X 片段 |
-| `modules/assets/satellite-route.js` | iOS 27 卫星瓦片坐标识别与 CN 路由 |
-| `modules/assets/request.bundle.js` | 当前稳定请求处理 bundle，内置 v6 默认参数 |
-| `modules/assets/response.bundle.js` | 当前稳定资源清单响应处理 bundle，内置 v6 默认参数 |
-| `scripts/build-selective-hybrid-egern.mjs` | 生成 Selective Hybrid 本地模块和 bundle |
-| `scripts/test-selective-hybrid-route-v6.mjs` | 回放中国与东京卫星请求，验证路由边界 |
-| `src/class/GEOResourceManifest.mjs` | iOS 27 缓存兼容及国际 3D/Look Around 资源选择 |
-| `src/process/Request.mjs` / `Response.mjs` | `.apple.com`、`.apple.cn` 清单请求与响应兼容 |
-| `modules/archive/assets/diagnose.satellite-requests.v2.js` | 已归档的脱敏卫星请求诊断脚本 |
+| `src/function/InternationalHybrid.mjs` | 国际清单主体、中国二维图层注入、CN 服务选择和路由配置 |
+| `src/class/GEOResourceManifest.mjs` | CN/US 清单缓存和资源选择兼容 |
+| `src/process/Request.mjs` | iOS 27 清单请求、缓存预取和 `.apple.cn` 兼容 |
+| `src/process/Response.mjs` | 混合清单响应处理 |
+| `modules/assets/satellite-route.js` | 根据卫星瓦片坐标选择国际或 CN 端点 |
+| `modules/assets/request.bundle.js` | 当前稳定请求脚本 |
+| `modules/assets/response.bundle.js` | 当前稳定响应脚本，含安全枚举编码 |
+| `scripts/build-selective-hybrid-egern.mjs` | 构建 Egern v6 混合模块和稳定 bundle |
+| `scripts/build-selective-hybrid-multiclient.mjs` | 生成全部代理软件的当前稳定模块 |
+| `scripts/test-selective-hybrid-route-v6.mjs` | 验证中国坐标路由和海外请求保持不变 |
 
-## 版本说明
+## 历史版本
 
 | 版本 | 状态 | 说明 |
 | --- | --- | --- |
-| Selective Hybrid v1 | 保留 | 中国二维 + 国际 3D，不保留国内卫星路由；早期稳定基线 |
-| Mainland 3D Route v3/v5 | 实验记录 | 完成早期坐标路由和 `style=98` 映射，但未解决国际 selector 的中国覆盖限制 |
-| Mainland 3D Native v4 | 不推荐 | 国内卫星/3D selector 可用，但会触发 iOS 27 会话绑定，直接切换国外不可靠 |
-| Mainland 3D Route v6 | **当前推荐** | 国内外卫星均可显示，国外 3D 正常，支持从国内直接定位国外城市 |
+| Selective Hybrid v1 | 归档 | 中国二维 + 国际 3D 的早期基线 |
+| Mainland 3D Route v3/v5 | 归档 | 早期坐标路由实验，国际 selector 的大陆覆盖不完整 |
+| Mainland 3D Native v4 | 不推荐 | CN/国际 selector 并存，会触发 iOS 27 会话绑定 |
+| Mainland 3D Route v6 / module 6.2.1 | **当前稳定版** | 国内外 2D 卫星、国外 3D、国内 POI 与跨地区直接切换均已确认 |
 
-旧版本保留在仓库中用于对比和回归测试，不建议同时启用。
+历史文件说明见 [`modules/archive/README.md`](modules/archive/README.md)。
 
 ## 验证
 
-路由测试使用两类实机请求：
-
-- 中国大陆坐标必须转换为 CN 主机、路径、样式和版本。
-- 东京坐标必须保持原始国际请求不变。
-
-本地验证命令：
-
 ```bash
+node --check modules/assets/request.bundle.js
+node --check modules/assets/response.bundle.js
 node --check modules/assets/satellite-route.js
 node scripts/test-selective-hybrid-route-v6.mjs
 ```
 
+稳定版构建时还会检查：
+
+- decode 继续将数字枚举转换为名称，以供地图样式匹配。
+- encode 仅转换字符串枚举，已有数字不会再次反向查表。
+- 中国大陆卫星坐标转换到 CN 主机、路径、样式和版本。
+- 东京等海外坐标保持国际请求不变。
+
 ## 已知限制
 
-- 当前已确认并路由的是 iOS 27 `style=98` 的二维卫星瓦片；国内 3D 模型不是 v6 的保证范围。
-- Apple 可能通过服务端清单改变样式、版本号、覆盖范围或访问控制，届时需要重新采集脱敏诊断日志。
-- Look Around、Flyover 和 3D 的实际覆盖范围由 Apple 决定，模块只能保留能力，不能为没有数据的地区创建内容。
-- 多个 Maps 模块同时启用会重复修改同一份清单，容易产生缺图、重复标签、偏移或加载缓慢。
-- 更换配置后，iOS 可能继续使用已缓存的 GeoManifest 或 selector；必要时需要重启设备。
+- 当前只路由实机确认的 iOS 27 `style=98/v=226` 卫星请求，不猜测转换未知的 3D、夜景、模型或材质样式。
+- 国内 3D 模型不是本稳定版的保证目标。
+- Look Around、Flyover 和 3D 的可用城市由 Apple 决定。
+- Apple 可以随时调整服务端样式、版本、覆盖范围和访问控制。
+- 多个 Maps 模块同时启用会导致重复改写、标签重叠、偏移、缺图或加载缓慢。
+- 更新模块后 iOS 可能继续缓存旧清单；必要时需要删除旧模块、重启代理软件或设备。
 
-## 上游、署名与许可证
+## 免责声明
 
-- 上游项目：[NSRingo/Maps](https://github.com/NSRingo/Maps)
-- Fork：[patrickyanxxxxx/Maps](https://github.com/patrickyanxxxxx/Maps)
-- 原项目作者与贡献者信息继续保留在模块、源码和 Git 历史中。
-- 本仓库继续遵循原项目的 [Apache License 2.0](LICENSE)。
+- 本项目仅用于学习与技术研究，请自行承担使用风险。
+- 本项目不提供、存储或分发 Apple、高德的地图数据。
+- 请遵守所在地区法律法规及相关服务条款。
+
+## 鸣谢
+
+- [NSRingo/Maps](https://github.com/NSRingo/Maps)
+- [ iRingo](https://github.com/NSRingo)
+- Apple Maps 与 AutoNavi 相关服务
+- 参与 iOS 27 实机测试与日志验证的用户
+
+## 许可证
+
+本项目继续遵循原项目的 [Apache License 2.0](LICENSE)，原作者、贡献者信息及 Git 历史均予以保留。
