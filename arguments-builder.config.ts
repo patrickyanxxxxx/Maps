@@ -29,8 +29,8 @@ export default defineConfig({
 	},
 	args: [
 		{
-			defaultValue: "AUTO",
-			description: "此选项影响“地图”整体配置内容，包括以下的地图功能与服务。",
+			defaultValue: "US",
+			description: "默认 US。以国际清单为主体，保留国际卫星、3D、Flyover 与四处看看；本混合模式不建议改为 CN。",
 			key: "GeoManifest.Dynamic.Config.CountryCode",
 			name: "[动态配置] 资源清单的国家或地区代码",
 			options: [
@@ -50,9 +50,9 @@ export default defineConfig({
 			type: "string",
 		},
 		{
-			defaultValue: "AUTO",
+			defaultValue: "AutoNavi",
 			description:
-				"地点数据接口，此选项影响公共指南，兴趣点(POI)与位置信息等功能。",
+				"默认 AutoNavi。国内地点、搜索、公共指南与 POI 使用高德；选择 Apple 后国内地点数据可能减少。",
 			key: "UrlInfoSet.Dispatcher",
 			name: "[URL信息集] 调度器",
 			options: [
@@ -67,8 +67,8 @@ export default defineConfig({
 			type: "string",
 		},
 		{
-			defaultValue: "AUTO",
-			description: "导航与ETA服务接口，此选项影响导航与ETA(到达时间)等功能。",
+			defaultValue: "Apple",
+			description: "默认 Apple。国际导航使用 TomTom；中国大陆如需高德导航请选择 AutoNavi。Egern 稳定模块固定为 AutoNavi。",
 			key: "UrlInfoSet.Directions",
 			name: "[URL信息集] 导航与ETA",
 			options: [
@@ -80,7 +80,7 @@ export default defineConfig({
 		},
 		{
 			defaultValue: "Apple",
-			description: "评分和照片服务接口，此选项影响评分和照片服务以及照片使用。",
+			description: "默认 Apple。保留国际评分、照片与反馈服务；高德相关评分和照片接口未完全开放。",
 			key: "UrlInfoSet.RAP",
 			name: "[URL信息集] 评分和照片",
 			options: [
@@ -91,9 +91,9 @@ export default defineConfig({
 			type: "string",
 		},
 		{
-			defaultValue: "AUTO",
+			defaultValue: "AutoNavi",
 			description:
-				"定位漂移修正服务接口，控制定位漂移和🧭指南针与📍坐标的经纬度。",
+				"默认 AutoNavi。中国大陆使用 GCJ-02 坐标修正；Apple 使用 WGS-84，可能出现大陆道路和地点偏移。",
 			key: "UrlInfoSet.LocationShift",
 			name: "[URL信息集] 定位漂移",
 			options: [
@@ -104,8 +104,8 @@ export default defineConfig({
 			type: "string",
 		},
 		{
-			defaultValue: "AUTO",
-			description: "此选项影响地球视图下行政区划、地貌等信息的显示。",
+			defaultValue: "Apple",
+			description: "默认 Apple。保留国际地球视图中的城市、行政区划与地貌资源。",
 			key: "TileSet.Earth",
 			name: "[瓦片数据集] 地球图像",
 			options: [
@@ -117,8 +117,8 @@ export default defineConfig({
 			type: "string",
 		},
 		{
-			defaultValue: "AUTO",
-			description: "此选项影响卫星视图下的道路图像与四处看看可用路段。",
+			defaultValue: "XX",
+			description: "默认 XX。保留国际卫星道路与四处看看能力；中国大陆道路由混合二维图层补充。",
 			key: "TileSet.Roads",
 			name: "[瓦片数据集] 道路图像与四处看看",
 			options: [
@@ -130,8 +130,8 @@ export default defineConfig({
 			type: "string",
 		},
 		{
-			defaultValue: "AUTO",
-			description: "此选项影响 2D 卫星图像的版本。",
+			defaultValue: "XX",
+			description: "默认 XX。保留国际卫星 selector；落在中国大陆的卫星坐标由路由脚本自动转换为 CN 卫星请求。",
 			key: "TileSet.Satellite",
 			name: "[瓦片数据集] 卫星图像",
 			options: [
@@ -143,26 +143,47 @@ export default defineConfig({
 			type: "string",
 		},
 		{
-			defaultValue: "HYBRID",
-			description: "此选项影响 3D 卫星图像、地球卫星图像与夜景资源。",
-			key: "TileSet.Satellite3D",
-			name: "[瓦片数据集] 3D 卫星与地球",
+			defaultValue: "XX",
+			description: "默认 XX。保留 Apple 国际 Flyover 与 3D 城市资源；不建议在当前混合模式中选择 CN。",
+			key: "TileSet.Flyover",
+			name: "[瓦片数据集] 3D 城市与 Flyover",
 			options: [
-				{ key: "HYBRID", label: "混合（中国地图 + 国际 3D/地球资源）" },
 				{ key: "CN", label: "🇨🇳中国资源" },
-				{ key: "XX", label: "🌐国际资源" },
+				{ key: "XX", label: "🌐Apple 国际资源（默认）" },
 			],
 			type: "string",
 		},
 		{
-			defaultValue: "HYBRID",
-			description: "此选项影响四处看看（Look Around）及其道路覆盖。",
-			key: "TileSet.LookAround",
-			name: "[瓦片数据集] 四处看看",
+			defaultValue: "XX",
+			description: "默认 XX。保留 Apple 国际 Munin / Look Around 元数据、资源入口和可用路段。",
+			key: "TileSet.Munin",
+			name: "[瓦片数据集] 四处看看（Munin）",
 			options: [
-				{ key: "HYBRID", label: "混合（中国道路 + 国际四处看看）" },
-				{ key: "CN", label: "🇨🇳中国道路资源" },
-				{ key: "XX", label: "🌐国际四处看看资源" },
+				{ key: "CN", label: "🇨🇳中国资源（国外四处看看可能消失）" },
+				{ key: "XX", label: "🌐Apple 国际四处看看（默认）" },
+			],
+			type: "string",
+		},
+		{
+			defaultValue: "EXTENDED",
+			description: "默认 EXTENDED。向国际清单注入大陆限定的道路、地点、标签、交通与 2D 卫星；CORE 仅用于诊断。",
+			key: "Hybrid.MainlandLayers",
+			name: "[瓦片数据集] 中国大陆二维图层",
+			options: [
+				{ key: "EXTENDED", label: "完整大陆二维图层（默认）" },
+				{ key: "CORE", label: "仅标准地图、建筑、POI 与地标" },
+			],
+			type: "string",
+		},
+		{
+			defaultValue: "CN_POI",
+			description: "默认 CN_POI。国内地点、POI 与反向地理编码使用 CN；APPLE 偏国际服务；CN_FULL 还强制使用 CN 导航与交通。",
+			key: "Hybrid.ServiceMode",
+			name: "[URL信息集] 中国服务范围",
+			options: [
+				{ key: "CN_POI", label: "国内地点/POI/反向地理编码（默认）" },
+				{ key: "APPLE", label: "Apple 国际前台服务优先" },
+				{ key: "CN_FULL", label: "国内地点、导航与交通全部使用 CN" },
 			],
 			type: "string",
 		},
@@ -176,14 +197,14 @@ export default defineConfig({
 				{ key: "PersistentStore", label: "只使用来自 BoxJs 等，由 $persistentStore 提供的配置" },
 				{ key: "database", label: "只使用由作者的 database.mjs 文件提供的默认配置，其他任何自定义配置不再起作用" },
 			],
-			description: "选择要使用的配置类型。未设置此选项或不通过此选项的旧版本的配置顺序依旧是 $persistentStore (BoxJs) > $argument > database。",
+			description: "默认 Argument。优先使用模块或插件参数，未传入的项目再从 PersistentStore（BoxJs）读取。",
 		},
 		{
 			key: "LogLevel",
 			name: "[调试] 日志等级",
 			type: "string",
 			defaultValue: "WARN",
-			description: "选择脚本日志的输出等级，低于所选等级的日志将全部输出。",
+			description: "默认 WARN，仅输出警告与错误；排错时临时选择 INFO 或 DEBUG。",
 			options: [
 				{ key: "OFF", label: "关闭" },
 				{ key: "ERROR", label: "❌ 错误" },

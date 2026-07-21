@@ -6,6 +6,9 @@
 #!category = {{@package 'organizationName'}}
 #!date = {{now "yyyy-MM-dd HH:mm:ss"}}
 
+# 参数说明：Rewrite 版本不提供本地交互参数，实际默认值由远端 Worker 配置决定。
+# 需要本地参数时请使用非 Rewrite 的 Shadowrocket 模块，并修改 Script argument。
+
 [Rule]
 # 🗺️ Amap
 DOMAIN-SUFFIX,is.autonavi.com,DIRECT

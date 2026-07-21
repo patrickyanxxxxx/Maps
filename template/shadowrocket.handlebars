@@ -8,6 +8,11 @@
 #!date = {{now "yyyy-MM-dd HH:mm:ss"}}
 #!version = {{@package 'version'}}
 
+# 参数说明：Shadowrocket 模块没有统一的交互参数面板，请修改各 Script 行的 argument。
+# 默认：CountryCode=US；Dispatcher=AutoNavi；Directions=Apple；RAP=Apple；LocationShift=AutoNavi
+# 默认：Earth=Apple；Flyover/Munin/Roads/Satellite=XX；MainlandLayers=EXTENDED；ServiceMode=CN_POI
+# 默认：Storage=Argument；LogLevel=WARN；固定 Hybrid.Enabled=true、Hybrid.Mainland3D=ROUTE
+
 [Rule]
 # 🗺️ Amap
 DOMAIN-SUFFIX,is.autonavi.com,DIRECT
@@ -20,11 +25,11 @@ DOMAIN,gspe79-cn-ssl.ls.apple.com,DIRECT
 
 [Script]
 # 🗺️ Network Defaults
-🗺️ Maps.config.defaults.request = type=http-request, pattern=^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults, script-path=https://github.com/NSRingo/GeoServices/releases/download/v{{@package 'version'}}/request.bundle.js, argument=
+🗺️ Maps.config.defaults.request = type=http-request, pattern=^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults, script-path=https://github.com/NSRingo/GeoServices/releases/download/v{{@package 'version'}}/request.bundle.js, argument={{{scriptParams}}}
 # 🗺️ Announcements
-🗺️ Maps.config.announcements.request = type=http-request, pattern=^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements, script-path=https://github.com/NSRingo/GeoServices/releases/download/v{{@package 'version'}}/request.bundle.js, argument=
+🗺️ Maps.config.announcements.request = type=http-request, pattern=^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements, script-path=https://github.com/NSRingo/GeoServices/releases/download/v{{@package 'version'}}/request.bundle.js, argument={{{scriptParams}}}
 # 🗺️ Resource Manifest
-🗺️ Maps.geo_manifest.dynamic.config.request = type=http-request, pattern=^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config, script-path=https://github.com/NSRingo/GeoServices/releases/download/v{{@package 'version'}}/request.bundle.js, argument=
+🗺️ Maps.geo_manifest.dynamic.config.request = type=http-request, pattern=^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config, script-path=https://github.com/NSRingo/GeoServices/releases/download/v{{@package 'version'}}/request.bundle.js, argument={{{scriptParams}}}
 
 [MITM]
 hostname = %APPEND% configuration.ls.apple.com, gspe35-ssl.ls.apple.com, gspe35-ssl.ls.apple.cn

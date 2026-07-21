@@ -8,6 +8,9 @@
 #!date = {{now "yyyy-MM-dd HH:mm:ss"}}
 #!system_version = {{ @package 'systemVersion'}}
 
+# 参数说明：Rewrite 版本不读取本地脚本参数，实际默认值由远端 Worker 配置决定。
+# 本地参数版请使用非 Rewrite 的 Loon 插件；其 [Argument] 会显示每个参数的默认值和效果。
+
 [Rule]
 # 🗺️ Amap
 DOMAIN-SUFFIX,is.autonavi.com,DIRECT

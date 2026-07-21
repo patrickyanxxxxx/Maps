@@ -14,6 +14,11 @@ category: "{{@package 'organizationName'}}"
 date: "{{now "yyyy-MM-dd HH:mm:ss"}}"
 version: "{{@package 'version'}}"
 
+# 参数说明：Stash override 无交互参数面板，请修改下方 script 的 argument。
+# 默认：CountryCode=US；Dispatcher=AutoNavi；Directions=Apple；RAP=Apple；LocationShift=AutoNavi
+# 默认：Earth=Apple；Flyover/Munin/Roads/Satellite=XX；MainlandLayers=EXTENDED；ServiceMode=CN_POI
+# 默认：Storage=Argument；LogLevel=WARN；固定 Hybrid.Enabled=true、Hybrid.Mainland3D=ROUTE
+
 rules:
   # 🗺️ Amap
   - DOMAIN-SUFFIX,is.autonavi.com,DIRECT
@@ -32,32 +37,32 @@ http:
     - match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
       name: GeoServices.request
       type: request
-      argument:
+      argument: '{{{scriptParams}}}'
     - match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
       name: GeoServices.response
       type: response
       require-body: true
-      argument:
+      argument: '{{{scriptParams}}}'
     - match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
       name: GeoServices.request
       type: request
-      argument:
+      argument: '{{{scriptParams}}}'
     - match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
       name: GeoServices.response
       type: response
       require-body: true
       binary-mode: true
-      argument:
+      argument: '{{{scriptParams}}}'
     - match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
       name: GeoServices.request
       type: request
-      argument:
+      argument: '{{{scriptParams}}}'
     - match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
       name: GeoServices.response
       type: response
       require-body: true
       binary-mode: true
-      argument:
+      argument: '{{{scriptParams}}}'
 
 script-providers:
   GeoServices.request:
