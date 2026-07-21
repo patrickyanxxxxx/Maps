@@ -334,8 +334,9 @@ export default function applyInternationalHybrid(body, caches, settings = {}) {
 	if (Array.isArray(body.urlInfoSet) && internationalUrlInfo && mainlandUrlInfo) {
 		const hybridUrlInfo = clone(internationalUrlInfo);
 		// CN_POI is the stable default for the hybrid profile: restore mainland
-		// AutoNavi place/POI and reverse-geocoding data while keeping Apple
-		// navigation unless the module explicitly selects another mode.
+		// AutoNavi place/POI and reverse-geocoding data. Navigation follows the
+		// explicit Directions selector so every supported client can use mainland
+		// AutoNavi navigation without switching the whole manifest to CN_FULL.
 		const mode = String(settings?.Hybrid?.ServiceMode ?? "CN_POI").toUpperCase();
 		const reverseGeocodingKeys = [
 			"batchReverseGeocoderURL",
@@ -362,22 +363,15 @@ export default function applyInternationalHybrid(body, caches, settings = {}) {
 		];
 		copyKeys(hybridUrlInfo, mainlandUrlInfo, reverseGeocodingKeys);
 		if (mode === "CN_POI" || mode === "CN_FULL") copyKeys(hybridUrlInfo, mainlandUrlInfo, placeKeys);
-		if (
-			mode === "CN_FULL" ||
-			(typeof globalThis.Egern !== "undefined" && settings?.UrlInfoSet?.Directions === "AutoNavi")
-		) {
+		if (mode === "CN_FULL" || settings?.UrlInfoSet?.Directions === "AutoNavi") {
 			copyKeys(hybridUrlInfo, mainlandUrlInfo, navigationKeys);
 		}
-		// Egern's hybrid profile still needs mainland place/navigation endpoints,
-		// but Look Around is advertised and loaded through the international Munin
-		// service and alternate resource list. Restore those two capability fields
-		// after the CN_POI merge so enabling AutoNavi does not hide Look Around.
-		if (typeof globalThis.Egern !== "undefined") {
-			copyKeys(hybridUrlInfo, internationalUrlInfo, [
-				"muninBaseURL",
-				"alternateResourcesURL",
-			]);
-		}
+		// AutoNavi place/navigation endpoints must not replace Look Around's Apple
+		// international Munin service or alternate resource list on any client.
+		copyKeys(hybridUrlInfo, internationalUrlInfo, [
+			"muninBaseURL",
+			"alternateResourcesURL",
+		]);
 		if (settings?.UrlInfoSet?.LocationShift === "AutoNavi") {
 			copyKeys(hybridUrlInfo, mainlandUrlInfo, [
 				"polyLocationShiftURL",

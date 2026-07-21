@@ -13,12 +13,12 @@ for (const text of [sourceText, responseText]) {
 	}
 }
 
-const egernRestore = 'if (X === "Egern")';
-if (!responseText.includes(egernRestore)) {
-	throw new Error("Look Around endpoint restoration is not limited to Egern");
+const globalRestore = 'copyKeys(hybridUrlInfo, internationalUrlInfo, [\n\t\t\t"muninBaseURL",\n\t\t\t"alternateResourcesURL",';
+if (!sourceText.includes(globalRestore)) {
+	throw new Error("Look Around endpoints are not restored for every client");
 }
 
-const navigationMerge = 'mode === "CN_FULL" || (X === "Egern" && settings?.UrlInfoSet?.Directions === "AutoNavi")';
+const navigationMerge = 'mode === "CN_FULL" || settings?.UrlInfoSet?.Directions === "AutoNavi"';
 if (!responseText.includes(navigationMerge)) {
 	throw new Error("Egern mainland navigation regression detected");
 }

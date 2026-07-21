@@ -17,8 +17,8 @@ for (const [label, contents] of [["source", source], ["bundle", bundle]]) {
 if (!source.includes('method: "GET"')) throw new Error("source: clean Loon request must use GET");
 if (!source.includes('url: targetURL.toString()')) throw new Error("source: clean Loon request must use the rewritten URL");
 if (!bundle.includes('url:i.toString(),method:"GET"')) throw new Error("bundle: clean rewritten Loon URL was not generated");
-if (!plugin.includes("#!version = 6.3.1")) throw new Error("plugin: version was not bumped to 6.3.1");
-if (!plugin.includes("request.bundle.js?v=6.3.1")) throw new Error("plugin: request cache-buster was not updated");
+if (!plugin.includes("#!version = 6.4.0")) throw new Error("plugin: version was not bumped to 6.4.0");
+if (!plugin.includes("request.bundle.js?v=6.4.0")) throw new Error("plugin: request cache-buster was not updated");
 
 let capturedRequest;
 await new Promise((resolve, reject) => {

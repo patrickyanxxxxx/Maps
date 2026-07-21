@@ -10,7 +10,7 @@ if (moduleText.includes('UrlInfoSet.Directions="{{{UrlInfoSet.Directions}}}"')) 
 	throw new Error("Egern navigation is still controlled by a cached module argument");
 }
 
-const navigationMerge = 'mode === "CN_FULL" || (X === "Egern" && settings?.UrlInfoSet?.Directions === "AutoNavi")';
+const navigationMerge = 'mode === "CN_FULL" || settings?.UrlInfoSet?.Directions === "AutoNavi"';
 if (!responseText.includes(navigationMerge)) {
 	throw new Error("Hybrid response merge does not restore mainland navigation for AutoNavi");
 }

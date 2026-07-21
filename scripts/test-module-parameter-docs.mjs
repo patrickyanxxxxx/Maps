@@ -16,6 +16,7 @@ const parameterKeys = [
 	"Storage",
 	"LogLevel",
 ];
+const fixedParameterKeys = ["Hybrid.Enabled", "Hybrid.Mainland3D"];
 
 const surge = await readFile("modules/iRingo.Maps.sgmodule", "utf8");
 const loon = await readFile("modules/iRingo.Maps.plugin", "utf8");
@@ -42,6 +43,17 @@ if (!egern.includes("Storage=Argument")) {
 for (const file of ["iRingo.Maps.srmodule", "iRingo.Maps.stoverride", "iRingo.Maps.snippet"]) {
 	const text = await readFile(`modules/${file}`, "utf8");
 	if (!text.includes("参数与默认值")) throw new Error(`${file} has no default parameter notes`);
+	for (const key of [...parameterKeys, ...fixedParameterKeys]) {
+		if (!text.includes(`${key}=`)) throw new Error(`${file} parameter description missing: ${key}`);
+	}
+}
+
+if (!surge.includes('UrlInfoSet.Directions:"AutoNavi"')) throw new Error("Surge navigation default is not AutoNavi");
+if (!loon.includes('UrlInfoSet.Directions = select,"AutoNavi","AutoNavi","Apple"')) throw new Error("Loon navigation default is not AutoNavi");
+if (!readme.includes('| `UrlInfoSet.Directions` | `AutoNavi` |')) throw new Error("README navigation default is not AutoNavi");
+for (const key of fixedParameterKeys) {
+	if (!surge.includes(`${key}=`)) throw new Error(`Surge fixed parameter description missing: ${key}`);
+	if (!loon.includes(`${key}=`)) throw new Error(`Loon fixed parameter description missing: ${key}`);
 }
 
 console.log("Multi-client parameter documentation tests passed");
