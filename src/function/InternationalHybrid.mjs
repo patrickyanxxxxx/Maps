@@ -362,7 +362,22 @@ export default function applyInternationalHybrid(body, caches, settings = {}) {
 		];
 		copyKeys(hybridUrlInfo, mainlandUrlInfo, reverseGeocodingKeys);
 		if (mode === "CN_POI" || mode === "CN_FULL") copyKeys(hybridUrlInfo, mainlandUrlInfo, placeKeys);
-		if (mode === "CN_FULL") copyKeys(hybridUrlInfo, mainlandUrlInfo, navigationKeys);
+		if (
+			mode === "CN_FULL" ||
+			(typeof globalThis.Egern !== "undefined" && settings?.UrlInfoSet?.Directions === "AutoNavi")
+		) {
+			copyKeys(hybridUrlInfo, mainlandUrlInfo, navigationKeys);
+		}
+		// Egern's hybrid profile still needs mainland place/navigation endpoints,
+		// but Look Around is advertised and loaded through the international Munin
+		// service and alternate resource list. Restore those two capability fields
+		// after the CN_POI merge so enabling AutoNavi does not hide Look Around.
+		if (typeof globalThis.Egern !== "undefined") {
+			copyKeys(hybridUrlInfo, internationalUrlInfo, [
+				"muninBaseURL",
+				"alternateResourcesURL",
+			]);
+		}
 		if (settings?.UrlInfoSet?.LocationShift === "AutoNavi") {
 			copyKeys(hybridUrlInfo, mainlandUrlInfo, [
 				"polyLocationShiftURL",

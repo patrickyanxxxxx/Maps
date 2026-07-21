@@ -369,6 +369,14 @@ function applyInternationalHybrid(body, caches, settings = {}) {
 		if (mode === "CN_FULL" || (X === "Egern" && settings?.UrlInfoSet?.Directions === "AutoNavi")) {
 			copyKeys(hybridUrlInfo, mainlandUrlInfo, navigationKeys);
 		}
+		// Keep Look Around on Apple's international Munin/resource endpoints even
+		// while Egern uses AutoNavi for mainland places and navigation.
+		if (X === "Egern") {
+			copyKeys(hybridUrlInfo, internationalUrlInfo, [
+				"muninBaseURL",
+				"alternateResourcesURL",
+			]);
+		}
 		if (settings?.UrlInfoSet?.LocationShift === "AutoNavi") {
 			copyKeys(hybridUrlInfo, mainlandUrlInfo, [
 				"polyLocationShiftURL",
