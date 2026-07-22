@@ -1,0 +1,148 @@
+name: ' iRingo: 🗺️ Maps iOS 27 International-All Test'
+description: |-
+  自定义 Maps app
+  添加国际版功能
+  自定义服务版本
+  iOS 27 国际全功能实验版：国内数据保留 + 国际卫星、3D、Flyover、环视与地球
+compat_arguments:
+  GeoManifest.Dynamic.Config.CountryCode: US
+  UrlInfoSet.Dispatcher: AutoNavi
+  UrlInfoSet.RAP: Apple
+  UrlInfoSet.LocationShift: AutoNavi
+  TileSet.Earth: Apple
+  TileSet.Flyover: XX
+  TileSet.Munin: XX
+  TileSet.Roads: XX
+  TileSet.Satellite: XX
+  Hybrid.MainlandLayers: EXTENDED
+  Hybrid.ServiceMode: CN_POI
+  LogLevel: WARN
+compat_arguments_desc: |
+  下列值均为模块当前默认值。建议先保持默认设置；CountryCode=US 是保留国际 3D、Flyover 与四处看看的关键。
+
+  GeoManifest.Dynamic.Config.CountryCode: [动态配置] 资源清单地区
+      └ US: 国际清单主体（默认），保留国际卫星、3D、Flyover 与四处看看
+
+  UrlInfoSet.Dispatcher: [URL信息集] 地点与 POI
+      ├ AutoNavi: 国内地点、搜索与 POI 使用高德（默认）
+      └ Apple: Apple 国际地点服务，国内地点信息可能减少
+
+  UrlInfoSet.RAP: [URL信息集] 评分和照片
+      └ Apple: 保留国际评分、照片和反馈服务（默认）
+
+  UrlInfoSet.LocationShift: [URL信息集] 坐标修正
+      ├ AutoNavi: 中国大陆使用 GCJ-02（默认）
+      └ Apple: 使用 WGS-84，中国道路和地点可能产生偏移
+
+  TileSet.Earth: [瓦片数据集] 地球图像
+      └ Apple: 国际地球、城市与地貌资源（默认）
+
+  TileSet.Flyover: [瓦片数据集] 3D 城市
+      └ XX: Apple 国际 Flyover / 3D 城市资源（默认）
+
+  TileSet.Munin: [瓦片数据集] 四处看看
+      └ XX: Apple 国际 Munin / Look Around 资源（默认）
+
+  TileSet.Roads: [瓦片数据集] 卫星道路
+      └ XX: 保留国际道路能力，大陆道路由混合图层补充（默认）
+
+  TileSet.Satellite: [瓦片数据集] 卫星图像
+      └ XX: 国际卫星 selector；大陆坐标自动路由到 CN 卫星（默认）
+
+  Hybrid.MainlandLayers: [瓦片数据集] 大陆二维图层
+      ├ EXTENDED: 完整道路、地点、标签、交通与 2D 卫星（默认）
+      └ CORE: 仅标准地图、建筑、POI 与地标，用于诊断
+
+  Hybrid.ServiceMode: [URL信息集] 中国服务范围
+      ├ CN_POI: 国内地点、POI 与反向地理编码使用 CN（默认）
+      ├ APPLE: 国际前台服务优先，国内地点可能减少
+      └ CN_FULL: 国内地点、导航与交通全部使用 CN 服务
+
+  LogLevel: [调试] 日志等级
+      ├ WARN: 仅警告和错误（默认）
+      ├ INFO: 输出一般运行信息
+      └ DEBUG: 输出详细排错信息
+
+  固定内部参数:
+      ├ UrlInfoSet.Directions=AutoNavi: 国内高德导航，国外 TomTom
+      ├ Hybrid.Enabled=true: 启用混合清单
+      ├ Hybrid.Mainland3D=ROUTE: 大陆卫星按坐标转到 CN，国外保持国际资源
+      └ Storage=Argument: 优先使用模块参数
+author: patrickyanxxxxx; VirgilClyne
+homepage: https://github.com/patrickyanxxxxx/Maps
+icon: https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
+rules:
+- domain:
+    match: gspe12-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe79-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe11-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain_suffix:
+    match: is.autonavi.com
+    policy: DIRECT
+scriptings:
+- http_request:
+    name: Maps.SelectiveHybridMainland3D.defaults.request
+    match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.4.0
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+- http_response:
+    name: Maps.SelectiveHybridMainland3D.defaults.response
+    match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.4.0
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+- http_request:
+    name: Maps.SelectiveHybridMainland3D.announcements.request
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.4.0
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+- http_response:
+    name: Maps.SelectiveHybridMainland3D.announcements.response
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.4.0
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+    binary_body: true
+- http_request:
+    name: Maps.SelectiveHybridMainland3D.manifest.request
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.4.0
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+- http_response:
+    name: Maps.SelectiveHybridMainland3D.manifest.response
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.4.0
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="{{{UrlInfoSet.Dispatcher}}}"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="{{{TileSet.Earth}}}"&TileSet.Flyover="{{{TileSet.Flyover}}}"&TileSet.Munin="{{{TileSet.Munin}}}"&TileSet.Roads="{{{TileSet.Roads}}}"&TileSet.Satellite="{{{TileSet.Satellite}}}"&Hybrid.Enabled="true"&Hybrid.MainlandLayers="{{{Hybrid.MainlandLayers}}}"&Hybrid.Mainland3D="ROUTE"&Hybrid.ServiceMode="{{{Hybrid.ServiceMode}}}"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+    binary_body: true
+- http_request:
+    name: Maps.SelectiveHybridMainland3D.tile-route.request
+    match: ^https?:\/\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\.ls\.apple\.com\/
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/satellite-route.js?v=6.4.0
+mitm:
+  hostnames:
+    includes:
+    - configuration.ls.apple.com
+    - gspe35-ssl.ls.apple.com
+    - gspe35-ssl.ls.apple.cn
+    - gspe19-ssl.ls.apple.com
+    - gspe19-kittyhawk-ssl.ls.apple.com
+    - gspe79-ssl.ls.apple.com
+    - gspe11-ssl.ls.apple.com

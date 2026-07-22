@@ -1,0 +1,52 @@
+#!name =  iRingo: 🗺️ Maps iOS 27 International-All Test
+#!desc = 自定义 Maps app\n添加国际版功能\n自定义服务版本\niOS 27 国际全功能实验版：国内数据保留 + 国际卫星、3D、Flyover、环视与地球
+#!openUrl = http://boxjs.com/#/app/iRingo.Maps
+#!author = patrickyanxxxxx; VirgilClyne
+#!homepage = https://github.com/patrickyanxxxxx/Maps
+#!icon = https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
+#!category =  iRingo
+#!version = 6.4.0-test.1
+
+# 参数与默认值（Quantumult X snippet 无交互参数面板；默认值内置于 request/response bundle）
+# GeoManifest.Dynamic.Config.CountryCode=US：国际清单主体，保留国际卫星、3D、Flyover 与四处看看；不建议改为 CN
+# UrlInfoSet.Dispatcher=AutoNavi：国内地点、搜索与 POI 使用高德；Apple 会减少国内地点数据
+# UrlInfoSet.Directions=AutoNavi：中国大陆高德导航、国外 TomTom；Apple 在大陆可能不可用
+# UrlInfoSet.RAP=Apple：国际评分、照片与反馈；AutoNavi 相关能力未完全开放
+# UrlInfoSet.LocationShift=AutoNavi：中国大陆使用 GCJ-02；Apple/WGS-84 可能造成道路与地点偏移
+# TileSet.Earth=Apple：国际地球、城市与地貌资源
+# TileSet.Flyover=XX：国际 Flyover 与 3D 城市；CN 可能减少国外 3D
+# TileSet.Munin=XX：国际 Munin/四处看看；CN 会失去国外四处看看
+# TileSet.Roads=XX：国际道路与四处看看道路能力，大陆道路由混合图层补充
+# TileSet.Satellite=XX：国际卫星 selector，大陆坐标自动路由到 CN 卫星
+# Hybrid.MainlandLayers=EXTENDED：完整大陆道路、地点、标签、交通与 2D 卫星；CORE 仅用于诊断
+# Hybrid.ServiceMode=CN_POI：国内地点/POI/反向地理编码使用 CN，导航遵循 Directions
+# Storage=Argument：优先模块内置参数，缺失项再读取持久化配置
+# LogLevel=WARN：仅输出警告与错误；INFO/DEBUG 仅用于排错
+# Hybrid.Enabled=true：固定启用混合清单
+# Hybrid.Mainland3D=ROUTE：固定按坐标路由大陆卫星，国外保持国际资源；修改 bundle 内置 argument 后生效
+
+#[filter_local]
+# 🗺️ Amap
+host-suffix, is.autonavi.com, direct
+# 🗺️ Maps
+host, gspe11-2-cn-ssl.ls.apple.com, direct
+host, gspe12-cn-ssl.ls.apple.com, direct
+host, gspe19-cn-ssl.ls.apple.com, direct
+host, gspe19-2-cn-ssl.ls.apple.com, direct
+host, gspe79-cn-ssl.ls.apple.com, direct
+
+#[rewrite_local]
+# 🗺️ Network Defaults
+^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.4.0
+^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.4.0
+# 🗺️ Announcements
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.4.0
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.4.0
+# 🗺️ Resource Manifest
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/request.bundle.js?v=6.4.0
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/response.bundle.js?v=6.4.0
+# 🗺️ iOS 27 Satellite Route
+^https?:\/\/(?:gspe11|gspe19(?:-kittyhawk)?|gspe79)-ssl\.ls\.apple\.com\/ url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/main/modules/assets/satellite-route.js?v=6.4.0
+
+#[mitm]
+hostname = configuration.ls.apple.com, gspe35-ssl.ls.apple.com, gspe35-ssl.ls.apple.cn, gspe11-ssl.ls.apple.com, gspe19-ssl.ls.apple.com, gspe19-kittyhawk-ssl.ls.apple.com, gspe79-ssl.ls.apple.com
