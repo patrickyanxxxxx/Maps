@@ -155,14 +155,7 @@ for (const style of ["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT", "SPUTNIK_META
 	const descriptors = cnResult.tileSet.filter(item => item.style === style);
 	if (!descriptors.some(item => item.baseURL.includes("gspe11-ssl"))) throw new Error(`international visual descriptor was not restored: ${style}`);
 	if (style.startsWith("RASTER_SATELLITE")) {
-		const cnDescriptors = descriptors.filter(item => item.baseURL.includes("-cn-ssl"));
-		if (style === "RASTER_SATELLITE" && !cnDescriptors.length) throw new Error(`native CN satellite descriptor was not preserved: ${style}`);
-		if (cnDescriptors.length && !descriptors[0].baseURL.includes("-cn-ssl")) throw new Error(`regional CN satellite is not mainland-first: ${style}`);
-		for (const descriptor of cnDescriptors) {
-			const regions = descriptor.validVersion.flatMap(version => version.availableTiles || []);
-			if (!regions.length || regions.some(region => region.minZ < 8)) throw new Error(`CN satellite descriptor was not restricted to mainland detail zooms: ${style}`);
-			if (regions.some(region => region.minX === 0 && region.minY === 0)) throw new Error(`CN satellite descriptor still advertises global coverage: ${style}`);
-		}
+		if (descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`CN satellite descriptor still shadows international imagery: ${style}`);
 	} else if (descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`CN non-mainland visual descriptor still shadows international imagery: ${style}`);
 }
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_ROADS" && item.baseURL.includes("-cn-ssl"))) throw new Error("native mainland road selector was lost");
@@ -396,12 +389,13 @@ if (tokyoSatelliteRoad.action !== "passthrough") throw new Error("foreign Look A
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.9-cn-regional-hybrid",
+	"6.4.0-test.10-international-selector-route",
 	"CountryCode:\"CN\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
+	"assets/satellite-route.js",
 	"assets/cn-satellite-road.js",
 ]) {
 	if (!moduleText.includes(marker)) throw new Error(`Surge module is missing ${marker}`);
@@ -426,15 +420,15 @@ for (const marker of [
 	"modules/test/international-all-v2/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
+	"assets/satellite-route.js",
 	"assets/cn-satellite-road.js",
 	"binary_body: true",
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("test.9-cn-regional-hybrid")) throw new Error("Egern module does not expose the regional-hybrid test9 cache identity");
+if (!egernText.includes("test.10-international-selector-route")) throw new Error("Egern module does not expose the single-selector test10 cache identity");
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
-if (egernText.includes("assets/satellite-route.js")) throw new Error("Egern still rewrites native CN satellite requests");
 if (egernText.includes("surge-adaptive-v1.4.0")) throw new Error("Egern module references the retired directory");
-if (egernText.includes("match: gspe11-ssl.ls.apple.com")) throw new Error("Egern module direct-routes international 3D tiles and may make them unreachable");
+if (egernText.includes("policy: DIRECT\n- domain:\n    match: gspe11-ssl.ls.apple.com")) throw new Error("Egern module direct-routes international 3D tiles and may make them unreachable");
 
 console.log("International-All v2 Egern-first integration tests passed");

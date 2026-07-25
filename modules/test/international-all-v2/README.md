@@ -26,6 +26,7 @@
 - `test.9-cn-satellite-native` 根据实机“标准地图正确、卫星定位偏移”结果，恢复 CN 清单原生 2D 卫星描述符作为大陆第一选择，并追加 US 卫星作为国外回退；国际 3D/Flyover 仍完全采用 US 描述符。模块不再引用 `satellite-route.js`，避免把 US `style 98` 的瓦片坐标直接改投 CN `style 7`。
 - `test.9-cn-satellite-roads-native` 根据实机“卫星底图与定位正确、道路偏移”结果，继续保留 CN 原生 `VECTOR_SPR_ROADS` 作为大陆卫星道路覆盖层，同时追加 US 同名描述符供国外卫星地图及四处看看使用；不改变标准地图、POI、定位和国际 3D 逻辑。
 - `test.9-cn-regional-hybrid` 根据实机“国外到处看看消失且卫星加载慢”结果，将 CN 2D 卫星描述符的覆盖范围收窄到中国大陆，避免国外先等待 CN 节点超时；清单恢复国际 `VECTOR_SPR_ROADS`，仅当道路瓦片坐标位于大陆时由 `cn-satellite-road.js` 原坐标路由到 CN 服务，国外道路和到处看看保持国际直连。
+- `test.10-international-selector-route` 根据实机“只剩国内卫星、国外卫星加载慢、标准地图国外四处看看消失”结果，撤销同 style 的 CN/国际双卫星描述符。最终清单只保留国际卫星、Sputnik、Flyover、Munin 与完整 SPR/四处看看 selector，并保持国际清单原生顺序；仅当 `style=98` 卫星瓦片坐标位于中国大陆时，由 `satellite-route.js` 保留原 `x/y/z` 路由到 CN `style=7` 服务。这样国外标准地图与卫星地图均直接使用国际能力链，不再等待 CN selector 超时。
 - 测试模块和四个脚本全部放在本目录，避免覆盖稳定 `modules/assets/`。
 - Egern 只公开脚本真正读取的三个参数，其余服务组合固定，避免旧 BoxJs/持久化配置覆盖测试结果。
 - 所有脚本地址指向远程 `test/international-all-v2` 分支；分支上传前不可直接通过远程链接导入。
@@ -37,7 +38,7 @@
 - `assets/request.bundle.js`：AUTO 清单分支与另一份清单预热。
 - `assets/response.bundle.js`：自适应 CN/国际资源合并和环视隔离。
 - `assets/cn-native-road.js`：保留的上一轮诊断脚本；`test.9-cn-native` 模块不再引用。
-- `assets/satellite-route.js`：保留的旧版诊断脚本；当前原生卫星版本不再引用。
+- `assets/satellite-route.js`：清单使用单一国际卫星 selector；仅将中国大陆坐标内的 `style=98` 2D 卫星请求按原 `x/y/z` 路由至 CN `style=7`，国外请求不修改。
 - `assets/cn-satellite-road.js`：仅将中国大陆坐标内的卫星道路覆盖请求路由至 CN 原生道路服务；国外请求原样放行。
 
 ## Egern 默认参数
@@ -48,7 +49,7 @@
 | `UrlInfoSet.RAP` | `Apple` | 使用国际评分、照片与反馈服务 |
 | `LogLevel` | `WARN` | 仅记录警告和错误 |
 
-Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`，`Map/POI/Traffic=CN`，`Flyover/Munin/Roads=XX`，`Satellite=HYBRID`，`Storage=Argument`。CN 分支保持原生主体和坐标语义；国际功能以附加描述符形式补充。
+Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`，`Map/POI/Traffic=CN`，`Flyover/Munin/Roads=XX`，`Satellite=HYBRID`，`Storage=Argument`。CN 分支保持国内标准地图、POI、导航和定位的原生主体及坐标语义；卫星、3D、Flyover、Munin/SPR 与四处看看 selector 全部使用国际清单，只有大陆 2D 卫星和卫星道路请求按坐标路由到 CN。
 
 ## 建议测试方式
 
@@ -62,7 +63,8 @@ Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`�
 - 参考版本说明以 iOS 26 + Surge 为主要验证环境；本组合版针对 Egern 模块格式和 iOS 27 卫星路由进行了整合，但仍需实机验证所有组合能力。
 - 国内道路重写依赖 Apple 地图先产生有效的 CN 道路请求并取得授权；没有有效授权时会原样放行国际道路请求。
 - 标准底图/道路路由覆盖 `z12-z18`；更远的世界级缩放保持国际请求，避免边界误判影响国外地图。
-- 国内卫星数据较旧，仍可能存在数据源自身的清晰度、覆盖和固有坐标偏移；本测试版本只能保证不再由路由脚本二次改写瓦片坐标。
+- 国内卫星数据较旧，仍可能存在数据源自身的清晰度、覆盖和固有坐标偏移；本测试版本只保留原始 `x/y/z`，不执行人工坐标换算。
+- 国际卫星、3D 和四处看看依赖国际 Apple 地图节点；若用户网络或代理规则无法访问对应域名，仍可能加载缓慢或功能不可用。本模块不会强制将国际节点设为直连。
 - 当前仅保证以 Egern 进行主要测试；Surge 模块属于兼容输出，其他代理软件暂未生成，也不保证功能完整。
 - 不要与稳定 Maps 模块或其他 Maps 测试模块同时启用。
 
