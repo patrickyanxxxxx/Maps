@@ -59,6 +59,8 @@ const cn = {
 		tile("VECTOR_TRAFFIC", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("VECTOR_TRAFFIC_SKELETON", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("VECTOR_ROADS", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
+		tile("VECTOR_ROAD_NETWORK", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
+		tile("VECTOR_ROAD_SELECTION", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("MUNIN_METADATA", "https://gsp76-cn-ssl.ls.apple.com/munin"),
 		tile("RASTER_SATELLITE", "https://gspe11-2-cn-ssl.ls.apple.com/2/tiles"),
 		tile("RASTER_SATELLITE_NIGHT", "https://gspe11-2-cn-ssl.ls.apple.com/2/tiles"),
@@ -189,6 +191,15 @@ for (const descriptor of xxResult.tileSet.filter(item => item.baseURL.includes("
 	if (descriptor.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error(`mainland geometry layer does not share the CN coordinate identity: ${descriptor.style}`);
 }
 if (xxResult.urlInfoSet[0].polyLocationShiftURL !== cnURLInfo.polyLocationShiftURL) throw new Error("AutoNavi mainland location-shift service was not preserved");
+for (const style of ["VECTOR_ROADS", "VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTION"]) {
+	const mainlandRoad = xxResult.tileSet.find(item => item.style === style && item.baseURL.includes("-cn-ssl"));
+	if (!mainlandRoad) throw new Error(`mainland coordinate road layer is missing: ${style}`);
+	if (mainlandRoad.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error(`mainland coordinate road layer does not use CN identity: ${style}`);
+	if (!mainlandRoad.validVersion?.every(version => version.availableTiles?.length && !version.availableTiles.some(region => region.minZ === 8 && region.maxX === 255))) throw new Error(`mainland coordinate road coverage is not regionalized: ${style}`);
+	if (!xxResult.tileSet.some(item => item.style === style && !item.baseURL.includes("-cn-ssl"))) throw new Error(`international road fallback is missing: ${style}`);
+}
+if (xxResult.tileSet.some(item => item.style === "VECTOR_SPR_ROADS" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland SPR road leaked into international Look Around");
+if (!xxResult.tileSet.some(item => item.style === "VECTOR_SPR_ROADS" && !item.baseURL.includes("-cn-ssl"))) throw new Error("international SPR road was lost while aligning mainland roads");
 for (const filename of ["POITypeMapping-CN-1.json", "POITypeMapping-CN-2.json", "China.cms-lpr"]) {
 	const resource = xxResult.resource.find(item => item.filename === filename);
 	if (!resource) throw new Error(`mainland POI resource is missing: ${filename}`);
@@ -233,6 +244,11 @@ if (!firstCombinedTile.baseURL.includes("-cn-ssl")) throw new Error("mainland de
 for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_POI_V2", "VECTOR_POI_V2_UPDATE"]) {
 	if (!combinedRefs.some(ref => singleGroupResult.tileSet[ref.tileSetIndex]?.style === style && singleGroupResult.tileSet[ref.tileSetIndex]?.baseURL.includes("-cn-ssl"))) {
 		throw new Error(`combined iOS 27 group is missing mainland selector: ${style}`);
+	}
+}
+for (const style of ["VECTOR_ROADS", "VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTION"]) {
+	if (!combinedRefs.some(ref => singleGroupResult.tileSet[ref.tileSetIndex]?.style === style && singleGroupResult.tileSet[ref.tileSetIndex]?.baseURL.includes("-cn-ssl"))) {
+		throw new Error(`combined iOS 27 group is missing mainland coordinate road selector: ${style}`);
 	}
 }
 if (!responseText.includes("u.tileGroup=Array.from(u.tileGroup??[])")) throw new Error("legacy tile-group rebuilder was not bypassed");
@@ -294,7 +310,7 @@ const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
 	"6.4.0-test.8",
-	"cnpoi4",
+	"cnroad1",
 	"CountryCode:\"US\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
