@@ -1,8 +1,18 @@
-# Maps International-All Test v3（当前：test23）
+# Maps International-All Test v3（当前：test24）
 
 这是与 `test/international-all-v2` 并行的独立测试线，基于 test19（`e3f6c3f`）的代码继续修改。目标不变：国内标准地图 POI 完整且道路/POI 不偏移；国内卫星图影像/道路/POI/定位对齐、导航正常；国外标准地图 POI 完整、3D 卫星、四处看看与导航正常。
 
-## test23-satellite-style7-cn-roads（当前版本）
+## test24-observable-satellite-route（当前版本）
+
+test23 实机反馈：仍无 `gspe11-2-cn-ssl` 请求、大陆 `style=7` 请求原样发到国际端点。但��反馈中的失败 URL（z=15, x=25859, y=13463 → z8 折算 (202,105)，命中大陆网格）直接输入 test23 路由脚本，**它会被正确改写**——结论：设备当时执行的不是 test23 脚本（Egern 模块/脚本缓存未刷新，或脚本拉取失败被静默跳过）。
+
+test24 不改路由逻辑，把脚本改造成**自证**：每个请求都输出一行决策日志（`rewrite` / `pass (foreign)` / `pass (style=…)` / `pass (bad coords)`），前缀 `[iRingo SatRoute test.24]`。在 Egern 日志里搜索该前缀：
+
+- **搜不到** → 脚本根本没被执行（模块未更新/脚本拉取失败/规则未命中），问题在安装链路而不是逻辑；
+- **看到 `rewrite` 行但没有 `gspe11-2-cn` 连接** → 改写结果被 Egern 丢弃，问题在客户端行为；
+- **看到 `pass` 行** → 逻辑分支判断有误，按日志内容修。
+
+## test23-satellite-style7-cn-roads（已被 test24 继承）
 
 test22 实机结果：国外四处看看/3D 依旧正常；国内标准地图道路与 POI 漂移、卫星模式不贴合仍在——但 Egern 连接日志（2026-07-26 03:13-03:19）首次给出了直接证据：
 

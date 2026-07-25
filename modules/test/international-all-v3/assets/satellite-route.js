@@ -2,17 +2,31 @@
  * Confirmed on device (2026-07-26 Egern logs): with no CN satellite
  * descriptor in the manifest, geod requests mainland imagery through BOTH
  * the style=98 (v=226) selector and the legacy style=7 (v=10421)
- * international selector. The style=7 mainland requests fail outright on
- * gspe11-ssl (0 KB), so both styles must be routed to the CN endpoint. */
+ * international selector, so both styles are routed to the CN endpoint.
+ * test24: every decision is logged so Egern logs prove whether this script
+ * is installed and which branch each request took. */
 (() => {
+	const TAG = "[iRingo SatRoute test.24]";
 	const req = globalThis.$request;
 	if (!req?.url) return $done({});
-	const url = new URL(req.url);
+	let url;
+	try {
+		url = new URL(req.url);
+	} catch (error) {
+		console.log(`${TAG} unparsable url: ${String(req.url).slice(0, 120)}`);
+		return $done({});
+	}
 	const style = url.searchParams.get("style") ?? url.searchParams.get("tile_style");
-	if (url.hostname !== "gspe11-ssl.ls.apple.com" || url.pathname !== "/tile" || (style !== "98" && style !== "7")) return $done({});
+	if (url.hostname !== "gspe11-ssl.ls.apple.com" || url.pathname !== "/tile" || (style !== "98" && style !== "7")) {
+		console.log(`${TAG} pass (style=${style}) ${url.hostname}${url.pathname}`);
+		return $done({});
+	}
 	const n = key => Number(url.searchParams.get(key));
 	const x = n("x"), y = n("y"), z = n("z");
-	if (![x, y, z].every(Number.isInteger) || z < 1 || z > 30) return $done({});
+	if (![x, y, z].every(Number.isInteger) || z < 1 || z > 30) {
+		console.log(`${TAG} pass (bad coords) style=${style} z=${z} x=${x} y=${y}`);
+		return $done({});
+	}
 	const factor = z >= 8 ? 2 ** (z - 8) : 1 / 2 ** (8 - z);
 	const x8 = Math.floor(x / factor), y8 = Math.floor(y / factor);
 	const mainland = [
@@ -25,7 +39,10 @@
 		[187,106,215,106],[189,107,193,107],[197,107,213,107],[198,108,213,108],[197,109,213,109],
 		[197,110,213,110],[198,111,213,111],[204,112,209,112],[205,113,207,113],[205,114,206,114],[205,115,207,115],
 	];
-	if (!mainland.some(([a,b,c,d]) => x8 >= a && x8 <= c && y8 >= b && y8 <= d)) return $done({});
+	if (!mainland.some(([a,b,c,d]) => x8 >= a && x8 <= c && y8 >= b && y8 <= d)) {
+		console.log(`${TAG} pass (foreign) style=${style} z=${z} x8=${x8} y8=${y8}`);
+		return $done({});
+	}
 	url.hostname = "gspe11-2-cn-ssl.ls.apple.com";
 	url.pathname = "/2/tiles";
 	url.searchParams.set("style", "7");
@@ -35,5 +52,6 @@
 	url.searchParams.set("vertical_datum", "wgs84");
 	url.searchParams.delete("region");
 	url.searchParams.delete("h");
+	console.log(`${TAG} rewrite style=${style} z=${z} x=${x} y=${y} -> gspe11-2-cn-ssl`);
 	$done({ url: url.toString() });
 })();

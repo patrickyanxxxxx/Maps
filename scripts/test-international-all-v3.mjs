@@ -292,7 +292,7 @@ if (!responseText.includes("u.tileGroup=Array.from(u.tileGroup??[])")) throw new
 const routeText = await readFile(`${root}/assets/satellite-route.js`, "utf8");
 const runRoute = url => {
 	let output;
-	const context = { URL, URLSearchParams, Number, Math, globalThis: undefined, $request: { url }, $done: value => { output = value; } };
+	const context = { URL, URLSearchParams, Number, Math, console, globalThis: undefined, $request: { url }, $done: value => { output = value; } };
 	context.globalThis = context;
 	vm.runInNewContext(routeText, context);
 	return output;
@@ -340,7 +340,7 @@ if (existsSync(realCNPath) && existsSync(realUSPath)) {
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v3",
-	"6.4.0-test.23-satellite-style7-cn-roads",
+	"6.4.0-test.24-observable-satellite-route",
 	'CountryCode:"US"',
 	'TileSet.Satellite:"ROUTE"',
 	"modules/test/international-all-v3/assets/",
@@ -374,7 +374,7 @@ for (const marker of [
 	"assets/satellite-route.js",
 	"binary_body: true",
 	"- gspe11-ssl.ls.apple.com",
-	"test23-satellite-style7-cn-roads",
+	"test24-observable-satellite-route",
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
