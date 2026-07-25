@@ -24,7 +24,7 @@ const cnURLInfo = {
 	backgroundRevGeoURL: "https://reverse.is.autonavi.com/reverse",
 	addressCorrectionInitURL: "https://address.is.autonavi.com/init",
 	addressCorrectionUpdateURL: "https://address.is.autonavi.com/update",
-	polyLocationShiftURL: "https://shift.is.autonavi.com/shift",
+	polyLocationShiftURL: "https://shift.is.autonavi.com/localshift",
 	alternateResourcesURL: [
 		{ url: "https://cn-resources.example/primary" },
 		{ url: "https://cn-resources.example/poi" },
@@ -169,12 +169,26 @@ if (mainlandStandard.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw ne
 if (!xxResult.dataSet.some(item => item.identifier === 101)) throw new Error("mainland dataset definition was not appended to US manifest");
 const mainlandPOI = xxResult.tileSet.find(item => item.style === "VECTOR_POI" && item.baseURL.includes("-cn-ssl"));
 if (!mainlandPOI) throw new Error("mainland POI layer was not injected into international baseline");
-if (mainlandPOI.dataSet !== 101 || mainlandPOI.countryRegionWhitelist?.length !== 0) throw new Error("native mainland POI selector state was not preserved");
+if (mainlandPOI.dataSet !== 101 || mainlandPOI.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error("mainland POI does not share the CN coordinate identity");
 if (mainlandPOI.validVersion?.[0]?.availableTiles?.[0]?.minZ !== 6) throw new Error("native mainland POI zoom coverage was replaced");
 if (mainlandPOI.validVersion[0].availableTiles.some(region => region.minZ === 6 && region.maxX === 63)) throw new Error("mainland POI coverage was left global");
 for (const style of ["VECTOR_STREET_POI", "VECTOR_POI_V2", "VECTOR_POLYGON_SELECTION", "POI_BUSYNESS", "POI_DP_BUSYNESS", "VECTOR_POI_V2_UPDATE"]) {
-	if (!xxResult.tileSet.some(item => item.style === style && item.baseURL.includes("-cn-ssl"))) throw new Error(`mainland POI companion layer is missing: ${style}`);
+	const descriptor = xxResult.tileSet.find(item => item.style === style && item.baseURL.includes("-cn-ssl"));
+	if (!descriptor) throw new Error(`mainland POI companion layer is missing: ${style}`);
+	if (descriptor.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error(`mainland POI companion layer does not share the CN coordinate identity: ${style}`);
 }
+for (const descriptor of xxResult.tileSet.filter(item => item.baseURL.includes("-cn-ssl") && [
+	"VECTOR_STANDARD",
+	"VECTOR_BUILDINGS",
+	"VECTOR_REALISTIC",
+	"VECTOR_VENUES",
+	"VECTOR_LAND_COVER",
+	"VECTOR_STREET_LANDMARKS",
+	"VECTOR_BUILDINGS_V2",
+].includes(item.style))) {
+	if (descriptor.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error(`mainland geometry layer does not share the CN coordinate identity: ${descriptor.style}`);
+}
+if (xxResult.urlInfoSet[0].polyLocationShiftURL !== cnURLInfo.polyLocationShiftURL) throw new Error("AutoNavi mainland location-shift service was not preserved");
 for (const filename of ["POITypeMapping-CN-1.json", "POITypeMapping-CN-2.json", "China.cms-lpr"]) {
 	const resource = xxResult.resource.find(item => item.filename === filename);
 	if (!resource) throw new Error(`mainland POI resource is missing: ${filename}`);
@@ -280,7 +294,7 @@ const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
 	"6.4.0-test.8",
-	"cnpoi3",
+	"cnpoi4",
 	"CountryCode:\"US\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
