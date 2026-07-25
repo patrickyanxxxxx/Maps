@@ -1,7 +1,7 @@
 name: ' iRingo: 🗺️ Maps International-All Test v2'
 description: |-
   Egern 优先测试版本
-  test18-cn-regulatory-international-capabilities：国际主组保留四处看看与 3D，但使用 CN 原生监管坐标解释国内道路、卫星与 POI
+  test19-international-capability-priority：恢复国际监管主组，并让国际卫星、3D 与四处看看选择器优先于大陆回退图层
   国内高德地图、POI、交通、导航与定位修正
   国际卫星、3D、Flyover、完整四处看看服务链、地球与道路能力
   国内标准地图、POI、道路、卫星及定位保持同一 CN 坐标语义；国外卫星、3D 和四处看看使用国际链
@@ -13,7 +13,7 @@ compat_arguments_desc: |
   本测试版本以 Egern 为主要验证客户端。为避免无效参数和旧 BoxJs 配置干扰，国内/国际服务组合采用固定策略，只开放实际会被脚本读取的参数。
 
   GeoManifest.Dynamic.Config.CountryCode: [动态配置] 清单主体
-      ├ CN: 请求仍使用中国服务身份，国际能力主组采用 CN 原生监管坐标（默认，test18）
+      ├ CN: 请求保持中国服务身份，但实际能力主组使用国际监管身份（默认，test19）
       ├ AUTO: 根据设备当前分支选择主体并预热另一份清单
       └ US: 国际主体仅用于回退诊断；可能导致国内坐标/POI 偏移
 
@@ -32,8 +32,8 @@ compat_arguments_desc: |
       ├ UrlInfoSet.LocationShift=AutoNavi: 国内 GCJ-02 坐标修正
       ├ TileSet.Map/POI/Traffic=CN: 国内底图、POI 与交通
       ├ TileSet.Flyover/Munin=XX: 国际原生主组保留 3D、Flyover 与可交互四处看看完整链
-      ├ TileSet.Roads=HYBRID: CN 道路/卫星道路仅限大陆，国际道路及 SPR/Munin 链保持境外能力
-      ├ TileSet.Satellite=HYBRID: 国内 CN 卫星与国际卫星覆盖互斥，跨区时不再锁定国内选择器
+      ├ TileSet.Roads=XX: 道路能力与 SPR/Munin 完全使用国际链，避免 CN 同名选择器抢占四处看看
+      ├ TileSet.Satellite=HYBRID: 国际卫星选择器优先，CN 卫星仅作为大陆范围回退
       ├ Munin URL=XX: 四处看看同时保留国际服务及资源入口
       ├ Config.Announcements.Environment=CN: 使用中国公告环境
       └ Storage=Argument: 模块参数优先，避免旧持久化参数覆盖
@@ -66,22 +66,22 @@ scriptings:
 - http_response:
     name: Maps.InternationalAllV2.defaults.response
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.18-cn-regulatory-international-capabilities
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.19-international-capability-priority
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="HYBRID"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
 - http_request:
     name: Maps.InternationalAllV2.manifest.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.18-cn-regulatory-international-capabilities
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.19-international-capability-priority
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="HYBRID"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: Maps.InternationalAllV2.manifest.response
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.18-cn-regulatory-international-capabilities
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.19-international-capability-priority
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="HYBRID"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
     binary_body: true
 mitm:
