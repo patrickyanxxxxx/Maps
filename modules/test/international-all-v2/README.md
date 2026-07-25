@@ -28,6 +28,7 @@
 - `test.9-cn-regional-hybrid` 根据实机“国外到处看看消失且卫星加载慢”结果，将 CN 2D 卫星描述符的覆盖范围收窄到中国大陆，避免国外先等待 CN 节点超时；清单恢复国际 `VECTOR_SPR_ROADS`，仅当道路瓦片坐标位于大陆时由 `cn-satellite-road.js` 原坐标路由到 CN 服务，国外道路和到处看看保持国际直连。
 - `test.10-international-selector-route` 根据实机“只剩国内卫星、国外卫星加载慢、标准地图国外四处看看消失”结果，撤销同 style 的 CN/国际双卫星描述符。最终清单只保留国际卫星、Sputnik、Flyover、Munin 与完整 SPR/四处看看 selector，并保持国际清单原生顺序；仅当 `style=98` 卫星瓦片坐标位于中国大陆时，由 `satellite-route.js` 保留原 `x/y/z` 路由到 CN `style=7` 服务。这样国外标准地图与卫星地图均直接使用国际能力链，不再等待 CN selector 超时。
 - `test.11-us-capability-cn-regional` 根据实机“国外四处看看仍无入口、国内卫星加载缓慢”结果，将默认主身份切回 US/`PROD`，保持国际清单的 tileSet 顺序、3D tileGroup、Munin/SPR、资源入口和国际能力判断不变。CN 标准地图、POI、交通、2D 卫星及卫星道路只作为大陆区域描述符追加；移除卫星请求改写脚本，避免错误 accessKey 导致 403/重试。导航继续使用上一实机版本已验证的高德组合，避免在没有导航请求日志的情况下改写二进制路线请求。
+- `test.12-separated-native-groups` 根据 test11 实机反馈的“国内卫星漂移、国外无四处看看、国外 3D 质量差”，不再把任何 CN 描述符插入 iOS 27 唯一的国际综合组。国际原生组的标识、引用顺序和 Munin/SPR/Sputnik/Flyover 链保持不变；CN 标准地图、POI、交通和高缩放卫星描述符进入由 CN 原生组克隆的独立大陆组。暂不注入 CN `VECTOR_SPR_ROADS`，避免它再次抢占国际四处看看能力。
 - 测试模块和脚本全部放在本目录，避免覆盖稳定 `modules/assets/`。
 - Egern 只公开脚本真正读取的三个参数，其余服务组合固定，避免旧 BoxJs/持久化配置覆盖测试结果。
 - 所有脚本地址指向远程 `test/international-all-v2` 分支；分支上传前不可直接通过远程链接导入。
@@ -39,8 +40,8 @@
 - `assets/request.bundle.js`：AUTO 清单分支与另一份清单预热。
 - `assets/response.bundle.js`：自适应 CN/国际资源合并和环视隔离。
 - `assets/cn-native-road.js`：保留的上一轮诊断脚本；`test.9-cn-native` 模块不再引用。
-- `assets/satellite-route.js`：保留的 test10 请求改写脚本，仅供版本对比；test11 模块不再引用。
-- `assets/cn-satellite-road.js`：保留的上一轮诊断脚本；test11 模块不再引用，避免请求时授权等待。
+- `assets/satellite-route.js`：保留的 test10 请求改写脚本，仅供版本对比；test11/test12 模块不再引用。
+- `assets/cn-satellite-road.js`：保留的上一轮诊断脚本；test11/test12 模块不再引用，避免请求时授权等待。
 
 ## Egern 默认参数
 
