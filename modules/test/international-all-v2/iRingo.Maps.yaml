@@ -1,21 +1,21 @@
 name: ' iRingo: 🗺️ Maps International-All Test v2'
 description: |-
   Egern 优先测试版本
-  test12-separated-native-groups：国际原生综合能力组保持不变；CN 地图、POI、交通与卫星使用独立大陆组
+  test14-cn-owned-adaptive-group：单一 CN 原生坐标组负责国内标准/卫星地图，US 按原顺序追加国际能力
   国内高德地图、POI、交通、导航与定位修正
   国际卫星、3D、Flyover、完整四处看看服务链、地球与道路能力
-  国内卫星由 CN 原生区域描述符直接签名加载；国外卫星、3D 和四处看看保持国际原生链
+  国内标准地图、POI、道路、卫星及定位保持同一 CN 坐标语义；国外卫星、3D 和四处看看使用国际链
 compat_arguments:
-  GeoManifest.Dynamic.Config.CountryCode: US
+  GeoManifest.Dynamic.Config.CountryCode: CN
   UrlInfoSet.RAP: Apple
   LogLevel: WARN
 compat_arguments_desc: |
   本测试版本以 Egern 为主要验证客户端。为避免无效参数和旧 BoxJs 配置干扰，国内/国际服务组合采用固定策略，只开放实际会被脚本读取的参数。
 
   GeoManifest.Dynamic.Config.CountryCode: [动态配置] 清单主体
-      ├ US: 以国际清单为主体，国际能力组与大陆数据组完全隔离（默认，test12）
+      ├ CN: 以中国原生清单为唯一坐标组，追加国际功能（默认，test14）
       ├ AUTO: 根据设备当前分支选择主体并预热另一份清单
-      └ CN: 中国原生主体，仅用于回退诊断；可能隐藏国际功能入口
+      └ US: 国际主体仅用于回退诊断；可能导致国内坐标/POI 偏移
 
   UrlInfoSet.RAP: [URL信息集] 评分、照片与反馈
       ├ Apple: 使用国际评分、照片和反馈服务（默认）
@@ -31,8 +31,8 @@ compat_arguments_desc: |
       ├ UrlInfoSet.Directions=AutoNavi: 保留上一实机版本已验证的国内外导航组合
       ├ UrlInfoSet.LocationShift=AutoNavi: 国内 GCJ-02 坐标修正
       ├ TileSet.Map/POI/Traffic=CN: 国内底图、POI 与交通
-      ├ TileSet.Flyover/Munin/Roads=XX: 国际原生综合组独占 3D、四处看看与 Apple 道路能力
-      ├ TileSet.Satellite=HYBRID: 大陆使用区域化 CN 原生卫星描述符，全球保留国际卫星/3D 回退
+      ├ TileSet.Flyover/Munin/Roads=XX: US 描述符按原相对顺序追加 3D、四处看看与 Apple 道路能力
+      ├ TileSet.Satellite=HYBRID: CN 原生卫星优先覆盖大陆，US 卫星作为国外回退
       ├ Munin URL=XX: 四处看看同时保留国际服务及资源入口
       ├ Config.Announcements.Environment=CN: 使用中国公告环境
       └ Storage=Argument: 模块参数优先，避免旧持久化参数覆盖
@@ -65,27 +65,35 @@ scriptings:
 - http_response:
     name: Maps.InternationalAllV2.defaults.response
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.12-separated-native-groups
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.14-cn-owned-adaptive-group
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
 - http_request:
     name: Maps.InternationalAllV2.manifest.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.12-separated-native-groups
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.14-cn-owned-adaptive-group
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: Maps.InternationalAllV2.manifest.response
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.12-separated-native-groups
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.14-cn-owned-adaptive-group
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
     binary_body: true
+- http_request:
+    name: Maps.InternationalAllV2.cn-satellite-road
+    match: ^https:\/\/gspe19(?:-kittyhawk|-2-cn|-cn)?-ssl\.ls\.apple\.com\/(?:tile\.vf|tiles)(?:\?|$)
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/cn-satellite-road.js?v=6.4.0-test.14-cn-owned-adaptive-group
 mitm:
   hostnames:
     includes:
     - configuration.ls.apple.com
     - gspe35-ssl.ls.apple.com
     - gspe35-ssl.ls.apple.cn
+    - gspe19-ssl.ls.apple.com
+    - gspe19-kittyhawk-ssl.ls.apple.com
+    - gspe19-cn-ssl.ls.apple.com
+    - gspe19-2-cn-ssl.ls.apple.com
