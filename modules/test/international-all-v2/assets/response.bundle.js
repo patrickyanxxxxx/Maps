@@ -114,12 +114,19 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     // no CN tile, attribution or resource reference is inserted into them.
     const baseMatch = groups.reduce((best, group) => {
       const styles = (group.tileSet || []).map(ref => international.tileSet?.[ref?.tileSetIndex]?.style);
-      const baseScore = styles.filter(style => mainlandRenderingStyles.has(style)).length * 10;
-      const visualPenalty = styles.filter(style => internationalVisualStyles.has(style) || internationalMuninStyles.has(style)).length * 20;
-      const score = baseScore - visualPenalty;
-      return !best || score > best.score ? { group, score } : best;
+      const baseHits = styles.filter(style => mainlandRenderingStyles.has(style)).length;
+      const visualHits = styles.filter(style => internationalVisualStyles.has(style) || internationalMuninStyles.has(style)).length;
+      // Current iOS 27 manifests may expose one combined tileGroup containing
+      // both base-map and 3D capabilities. A visual penalty must not disqualify
+      // that only group, otherwise every appended CN descriptor is orphaned.
+      // On older multi-group manifests, prefer the group with more base-map
+      // selectors; use fewer visual selectors only as a tie-breaker.
+      if (!best || baseHits > best.baseHits || (baseHits === best.baseHits && visualHits < best.visualHits)) {
+        return { group, baseHits, visualHits };
+      }
+      return best;
     }, null);
-    if (!baseMatch || baseMatch.score <= 0) return groups;
+    if (!baseMatch || baseMatch.baseHits <= 0) return groups;
     const baseGroup = baseMatch.group;
 
     const tileRefs = Array.isArray(baseGroup.tileSet) ? baseGroup.tileSet : [];
@@ -400,8 +407,9 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     if (!/dispatcher\.is\.autonavi\.com/i.test(endpoint(cnURLInfo.dispatcherURL))) throw new Error("China Dispatcher is missing");
     if (!/direction2\.is\.autonavi\.com/i.test(endpoint(cnURLInfo.directionsURL))) throw new Error("China Directions is missing");
     if (!/\.is\.autonavi\.com/i.test(endpoint(cnURLInfo.backgroundRevGeoURL))) throw new Error("China reverse geocoder is missing");
-    if (!/gsp(?:e)?76-ssl\.ls\.apple\.com/i.test(endpoint(cnURLInfo.muninBaseURL))) throw new Error("International Munin service URL is missing from China baseline");
-    if (!/gsp(?:e)?76-ssl\.ls\.apple\.com/i.test(endpoint(result.tileSet.find(tile => tile?.style === "MUNIN_METADATA")?.baseURL))) throw new Error("International Munin metadata is missing from China baseline");
+    if (endpoint(cnURLInfo.muninBaseURL) !== endpoint(internationalURLInfo.muninBaseURL)) throw new Error("International Munin service URL is missing from China baseline");
+    const internationalMuninEndpoints = new Set((international.tileSet || []).filter(tile => tile?.style === "MUNIN_METADATA").map(tile => endpoint(tile?.baseURL)));
+    if (!result.tileSet.some(tile => tile?.style === "MUNIN_METADATA" && internationalMuninEndpoints.has(endpoint(tile?.baseURL)))) throw new Error("International Munin metadata is missing from China baseline");
     if (!result.tileSet.some(tile => tile?.style === "SPUTNIK_METADATA")) throw new Error("International 3D satellite metadata is missing from China baseline");
     for (const style of mainlandDrivingStyles) {
       if (!result.tileSet.some(tile => tile?.style === style && isMainlandEndpoint(tile?.baseURL))) throw new Error("China driving layer is missing: " + style);
@@ -513,7 +521,10 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     if (!/dispatcher\.is\.autonavi\.com/i.test(endpoint(urlInfo.dispatcherURL))) throw new Error("China Dispatcher is missing from US baseline");
     if (!/direction2\.is\.autonavi\.com/i.test(endpoint(urlInfo.directionsURL))) throw new Error("China Directions is missing from US baseline");
     if (!/\.is\.autonavi\.com/i.test(endpoint(urlInfo.backgroundRevGeoURL))) throw new Error("China reverse geocoder is missing from US baseline");
-    if (!/gsp(?:e)?76-ssl\.ls\.apple\.com/i.test(endpoint(urlInfo.muninBaseURL))) throw new Error("International Munin URL was replaced in US baseline");
+    // Apple can rotate the international Munin hostname between OS builds.
+    // Verify that the original international value survived instead of tying
+    // the manifest to the historical gsp76/gspe76 host.
+    if (endpoint(urlInfo.muninBaseURL) !== endpoint(international.urlInfoSet?.[0]?.muninBaseURL)) throw new Error("International Munin URL was replaced in US baseline");
     const leaked = result.tileSet.find(tile => internationalCriticalStyles.has(tile?.style) && isMainlandEndpoint(tile?.baseURL));
     if (leaked) throw new Error("Mainland critical selector leaked into international baseline: " + leaked.style);
     console.log("[iRingo Maps International-All Test v2 test.8] native US 3D indices/groups preserved; appended " + chinaTiles.length + " mainland rendering layers");

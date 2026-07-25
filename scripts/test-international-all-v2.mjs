@@ -34,7 +34,7 @@ const xxURLInfo = {
 	dispatcherURL: "https://gsp-ssl.ls.apple.com/dispatcher",
 	directionsURL: "https://gsp-ssl.ls.apple.com/directions",
 	backgroundRevGeoURL: "https://gsp-ssl.ls.apple.com/reverse",
-	muninBaseURL: "https://gsp76-ssl.ls.apple.com/munin",
+	muninBaseURL: "https://gspe81-ssl.ls.apple.com/munin",
 	alternateResourcesURL: [{ url: "https://gsp-ssl.ls.apple.com/resources" }],
 	problemSubmissionURL: "https://gsp-ssl.ls.apple.com/problem",
 };
@@ -137,7 +137,7 @@ const settings = { UrlInfoSet: { RAP: "Apple" } };
 const cnResult = adaptiveFix(cn, { CN: cn, XX: xx }, settings, "CN");
 if (!cnResult.urlInfoSet[0].dispatcherURL.includes("autonavi")) throw new Error("CN dispatcher was not preserved");
 if (!cnResult.urlInfoSet[0].directionsURL.includes("autonavi")) throw new Error("CN directions were not preserved");
-if (!cnResult.urlInfoSet[0].muninBaseURL.includes("gsp76-ssl")) throw new Error("international Munin service URL was not restored");
+if (cnResult.urlInfoSet[0].muninBaseURL !== xxURLInfo.muninBaseURL) throw new Error("international Munin service URL was not restored");
 if (!cnResult.urlInfoSet[0].alternateResourcesURL.some(item => item.url.includes("gsp-ssl"))) throw new Error("international alternate resources URL was not restored");
 if (!cnResult.tileSet.some(item => item.style === "MUNIN_METADATA" && item.baseURL.includes("gsp76-ssl"))) throw new Error("international Munin was not restored");
 for (const style of ["VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA"]) {
@@ -157,7 +157,7 @@ const xxResult = adaptiveFix(xx, { CN: cn, XX: xx }, settings, "US");
 if (!xxResult.urlInfoSet[0].dispatcherURL.includes("autonavi")) throw new Error("mainland dispatcher was not injected into US baseline");
 if (!xxResult.urlInfoSet[0].directionsURL.includes("autonavi")) throw new Error("mainland directions were not injected into US baseline");
 if (!xxResult.urlInfoSet[0].addressCorrectionInitURL.includes("autonavi")) throw new Error("mainland address-correction service was not injected into US baseline");
-if (!xxResult.urlInfoSet[0].muninBaseURL.includes("gsp76-ssl")) throw new Error("international Munin was not preserved in US baseline");
+if (xxResult.urlInfoSet[0].muninBaseURL !== xxURLInfo.muninBaseURL) throw new Error("international Munin was not preserved in US baseline");
 if (!xxResult.tileSet.some(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland rendering layer was not injected into international baseline");
 const mainlandStandard = xxResult.tileSet.find(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"));
 if (mainlandStandard.dataSet !== 101) throw new Error("mainland standard-map dataset identity was removed and may cause coordinate displacement");
@@ -191,6 +191,28 @@ if (JSON.stringify(native3DRefs) !== JSON.stringify([19, 20, 21, 22])) throw new
 if (xxResult.tileGroup[0].tileSet.length !== 4 || xxResult.tileGroup[0].attributionIndex.length !== 2 || xxResult.tileGroup[0].resourceIndex.length !== 1) throw new Error("native US 3D group was polluted by mainland references");
 if (!xxResult.tileGroup[1].tileSet.some(ref => ref.tileSetIndex >= xx.tileSet.length)) throw new Error("mainland layers were not appended to the native 2D group");
 if (xxResult.tileGroup[1].tileSet[0].tileSetIndex < xx.tileSet.length) throw new Error("mainland standard-map selectors do not precede the Apple 2D fallback");
+
+// Current iOS 27 manifests can use one combined group for base-map and 3D
+// capabilities. Mainland descriptors must still be referenced by that group;
+// the historical visual penalty used to leave all appended CN layers orphaned.
+const singleGroupXX = structuredClone(xx);
+singleGroupXX.tileGroup = [{
+	identifier: 24,
+	qualityMarker: "US-native-combined",
+	tileSet: xx.tileSet.map((item, tileSetIndex) => ({ tileSetIndex, identifier: item.validVersion?.[0]?.identifier })),
+	attributionIndex: [0, 1],
+	resourceIndex: [0],
+}];
+const singleGroupResult = adaptiveFix(singleGroupXX, { CN: cn, XX: singleGroupXX }, settings, "US");
+const combinedRefs = singleGroupResult.tileGroup[0].tileSet;
+if (!combinedRefs.some(ref => ref.tileSetIndex >= singleGroupXX.tileSet.length)) throw new Error("single combined iOS 27 group left mainland descriptors orphaned");
+const firstCombinedTile = singleGroupResult.tileSet[combinedRefs[0].tileSetIndex];
+if (!firstCombinedTile.baseURL.includes("-cn-ssl")) throw new Error("mainland descriptors do not precede international fallback in the combined group");
+for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_POI_V2", "VECTOR_POI_V2_UPDATE"]) {
+	if (!combinedRefs.some(ref => singleGroupResult.tileSet[ref.tileSetIndex]?.style === style && singleGroupResult.tileSet[ref.tileSetIndex]?.baseURL.includes("-cn-ssl"))) {
+		throw new Error(`combined iOS 27 group is missing mainland selector: ${style}`);
+	}
+}
 if (!responseText.includes("u.tileGroup=Array.from(u.tileGroup??[])")) throw new Error("legacy tile-group rebuilder was not bypassed");
 if (responseText.includes("u=iRingoSurgeAdaptiveHybridFix(u,s,o,t),u.tileGroup=tt.tileGroups")) throw new Error("legacy tile-group rebuilder is still active after test8 fix");
 
