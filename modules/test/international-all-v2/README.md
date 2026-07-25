@@ -24,6 +24,7 @@
 - `test.8-cnstandard3` 在不改动 POI、卫星、导航和国际 3D 清单逻辑的前提下，为 Egern 增加实际瓦片请求路由：大陆标准底图和道路强制使用同一套 CN 原生瓦片坐标系，解决 POI 正确但道路仍使用国际 WGS-84 瓦片造成的视觉偏移。
 - `test.9-cn-native` 根据实机 DEBUG 日志调整主体：日志确认旧版实际返回 `CountryCode=US`、`releaseInfo=PROD (24.20)`，且没有请求路由命中记录。因此本版改由 CN 原生清单和 `PROD-CN` 身份负责国内道路、POI、交通、导航及定位坐标解释；US 仅追加国际卫星、3D、Flyover、Munin/SPR、全球覆盖与道路能力，不再改写国内标准底图请求坐标。
 - `test.9-cn-satellite-native` 根据实机“标准地图正确、卫星定位偏移”结果，恢复 CN 清单原生 2D 卫星描述符作为大陆第一选择，并追加 US 卫星作为国外回退；国际 3D/Flyover 仍完全采用 US 描述符。模块不再引用 `satellite-route.js`，避免把 US `style 98` 的瓦片坐标直接改投 CN `style 7`。
+- `test.9-cn-satellite-roads-native` 根据实机“卫星底图与定位正确、道路偏移”结果，继续保留 CN 原生 `VECTOR_SPR_ROADS` 作为大陆卫星道路覆盖层，同时追加 US 同名描述符供国外卫星地图及四处看看使用；不改变标准地图、POI、定位和国际 3D 逻辑。
 - 测试模块和四个脚本全部放在本目录，避免覆盖稳定 `modules/assets/`。
 - Egern 只公开脚本真正读取的三个参数，其余服务组合固定，避免旧 BoxJs/持久化配置覆盖测试结果。
 - 所有脚本地址指向远程 `test/international-all-v2` 分支；分支上传前不可直接通过远程链接导入。
