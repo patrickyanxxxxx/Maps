@@ -720,7 +720,7 @@ export default class GEOResourceManifest {
 			.map((attribution, index) => {
 				switch (attribution.name) {
 					case "‎":
-						attribution.name = ` iRingo: 📍 Adaptive Hybrid\n${new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC")}`;
+						attribution.name = ` iRingo: 📍 Adaptive Hybrid v6.4.1\n${new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC")}`;
 						delete attribution.plainTextURLSHA256Checksum;
 						break;
 					case "AutoNavi":
