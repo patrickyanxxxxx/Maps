@@ -4,6 +4,7 @@ description: |-
   国内高德地图、POI、交通、导航与定位修正
   国际卫星、3D、Flyover、完整四处看看服务链、地球与道路能力
   国内卫星沿用实机请求坐标，避免脚本二次换算造成漂移
+  国际卫星与 3D 主瓦片直连，减少代理链路中断造成的高层级纹理长期模糊
 compat_arguments:
   GeoManifest.Dynamic.Config.CountryCode: AUTO
   UrlInfoSet.RAP: Apple
@@ -40,6 +41,9 @@ homepage: https://github.com/patrickyanxxxxx/Maps
 icon: https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
 rules:
 - domain:
+    match: gspe11-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
     match: gspe11-2-cn-ssl.ls.apple.com
     policy: DIRECT
 - domain:
@@ -64,20 +68,20 @@ scriptings:
 - http_response:
     name: Maps.InternationalAllV2.defaults.response
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.5
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.6
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
 - http_request:
     name: Maps.InternationalAllV2.manifest.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.5
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.6
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: Maps.InternationalAllV2.manifest.response
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.5
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.6
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
@@ -85,7 +89,7 @@ scriptings:
 - http_request:
     name: Maps.InternationalAllV2.satellite.route
     match: ^https:\/\/gspe11-ssl\.ls\.apple\.com\/tile(?:\?|$)
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/satellite-route.js?v=6.4.0-test.5
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/satellite-route.js?v=6.4.0-test.6
 mitm:
   hostnames:
     includes:
