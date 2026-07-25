@@ -178,7 +178,8 @@ if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && item.baseU
 const nativeCNStandard = cnResult.tileSet.find(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"));
 if (!nativeCNStandard) throw new Error("regional CN standard map was not injected");
 const sourceCNStandard = cn.tileSet.find(item => item.style === "VECTOR_STANDARD");
-if (nativeCNStandard.dataSet !== sourceCNStandard.dataSet || JSON.stringify(nativeCNStandard.countryRegionWhitelist || []) !== JSON.stringify(sourceCNStandard.countryRegionWhitelist || [])) throw new Error("native CN standard coordinate/provider metadata was mutated");
+if (nativeCNStandard.dataSet !== sourceCNStandard.dataSet) throw new Error("native CN standard dataset identity was mutated");
+if (nativeCNStandard.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error("mainland standard roads do not share the working CN POI coordinate identity");
 if (!nativeCNStandard.validVersion?.every(version => version.availableTiles?.every(region => region.minX >= 180 && region.maxX <= 223))) throw new Error("native CN standard descriptor was not mainland-limited");
 for (const style of ["VECTOR_ROADS", "VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTION"]) {
 	if (cnResult.tileSet.some(item => item.style === style && item.baseURL.includes("-cn-ssl"))) throw new Error(`CN road capability competes with the international graph: ${style}`);
@@ -208,8 +209,7 @@ if (xxResult.urlInfoSet[0].muninBaseURL !== xxURLInfo.muninBaseURL) throw new Er
 if (!xxResult.tileSet.some(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland rendering layer was not injected into international baseline");
 const mainlandStandard = xxResult.tileSet.find(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"));
 if (mainlandStandard.dataSet !== 101) throw new Error("mainland standard-map dataset identity was removed and may cause coordinate displacement");
-if (JSON.stringify(mainlandStandard.countryRegionWhitelist || []) !== JSON.stringify(cn.tileSet[0].countryRegionWhitelist || [])) throw new Error("mainland standard-map provider metadata changed and may double-shift roads");
-if (mainlandStandard.countryRegionWhitelist?.some(region => region.countryCode === "CN")) throw new Error("mainland standard-map was force-labelled CN and may shift roads twice");
+if (mainlandStandard.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error("mainland standard-map roads do not share the CN POI coordinate identity");
 if (!xxResult.dataSet.some(item => item.identifier === 101)) throw new Error("mainland dataset definition was not appended to US manifest");
 const mainlandPOI = xxResult.tileSet.find(item => item.style === "VECTOR_POI" && item.baseURL.includes("-cn-ssl"));
 if (!mainlandPOI) throw new Error("mainland POI layer was not injected into international baseline");
@@ -401,7 +401,7 @@ if (outside.action !== "passthrough") throw new Error("foreign road request was 
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.16-international-primary-cn-regional",
+	"6.4.0-test.17-disjoint-satellite-cn-coordinate",
 	"CountryCode:\"CN\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
@@ -436,7 +436,7 @@ for (const marker of [
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("test16-international-primary-cn-regional")) throw new Error("Egern module does not expose the test16 cache identity");
+if (!egernText.includes("test17-disjoint-satellite-cn-coordinate")) throw new Error("Egern module does not expose the test17 cache identity");
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
 if (egernText.includes("assets/satellite-route.js")) throw new Error("Egern still uses the retired satellite imagery rewrite");
 if (egernText.includes("assets/cn-satellite-road.js")) throw new Error("Egern still performs the retired test14 satellite-road rewrite");

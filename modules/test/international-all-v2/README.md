@@ -32,6 +32,7 @@
 - `test.14-cn-owned-adaptive-group` 根据 test12 长时间运行后出现的“国际资源生效后国内标准地图与卫星同时偏移、POI 消失”，取消会延迟切换的 US/CN 双组结构。清单只保留一个由 CN 原生组克隆的坐标组，`PROD-CN`、`regulatoryRegionId=2`、国内标准地图、POI、交通和卫星优先；完整 US tileSet 按原顺序追加，提供国外标准地图、POI、卫星、Munin/SPR、Flyover 与 3D。国内卫星道路只按大陆坐标路由到 CN，国外请求保持国际链。国际 3D 以正常显示为当前目标，暂不继续增强清晰度。
 - `test.15-cn-first-native-groups` 根据 test14 实机“只显示国内卫星，且国内标准/卫星道路偏移，但国外四处看看正常”的结果，停止在一个组内混合 CN/US 同名 selector，也移除 `cn-satellite-road.js` 二次请求改写。完整 CN 原生组保持首位并独占国内标准、POI、道路、卫星及坐标解释；完整 US 原生组按原索引追加，负责国外标准、卫星、3D、Munin/SPR 与四处看看。清单身份继续保持 `PROD-CN` 和 `regulatoryRegionId=2`。
 - `test.16-international-primary-cn-regional` 根据 test15 实机“国外显示全局高德、无国际卫星；四处看看放大后仅出现图标但点击无图像”的结果，确认 iOS 27 实际只采用首个/主服务组。改为保留国际原生组、索引和资源引用作为唯一能力主体，将国内标准图、POI、交通和卫星严格区域化后插入国际基础组；不再建立 CN 首组，也不改写国际 Munin/SPR 请求。目标是让国外标准图、卫星、3D 与四处看看图像资源真正生效，同时防止 CN 描述符覆盖全球。
+- `test.17-disjoint-satellite-cn-coordinate` 根据 test16 实机“国内 POI 正常但标准道路与卫星影像偏移；从国内卫星直接移动到国外不加载，必须先切回标准地图”的结果，将国内标准道路和卫星描述符显式设为与已对齐 POI 相同的 CN 坐标归属。国际卫星描述符从 z8 以上的中国大陆范围精确扣除，CN 卫星仅覆盖大陆，使两套同 style 卫星选择器不存在覆盖重叠，避免 iOS 27 在卫星模式中持续锁定国内源。国际主组、国外 3D 和已正常的四处看看链保持不变，且不增加任何瓦片请求改写。
 - 测试模块和脚本全部放在本目录，避免覆盖稳定 `modules/assets/`。
 - Egern 只公开脚本真正读取的三个参数，其余服务组合固定，避免旧 BoxJs/持久化配置覆盖测试结果。
 - 所有脚本地址指向远程 `test/international-all-v2` 分支；分支上传前不可直接通过远程链接导入。
@@ -44,7 +45,7 @@
 - `assets/response.bundle.js`：自适应 CN/国际资源合并和环视隔离。
 - `assets/cn-native-road.js`：保留的上一轮诊断脚本；`test.9-cn-native` 模块不再引用。
 - `assets/satellite-route.js`：保留的 test10 请求改写脚本，仅供版本对比；test11/test12 模块不再引用。
-- `assets/cn-satellite-road.js`：保留的 test14 诊断脚本；test16 模块不再引用，避免道路请求被二次改写。
+- `assets/cn-satellite-road.js`：保留的 test14 诊断脚本；test17 模块不再引用，避免道路请求被二次改写。
 
 ## Egern 默认参数
 
@@ -54,7 +55,7 @@
 | `UrlInfoSet.RAP` | `Apple` | 使用国际评分、照片与反馈服务 |
 | `LogLevel` | `WARN` | 仅记录警告和错误 |
 
-Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`，`Map/POI/Traffic=CN`，`Flyover/Munin=XX`，`Satellite=HYBRID`，`Storage=Argument`。国际原生主组负责国外标准地图、POI、卫星、3D、Flyover 与可交互四处看看；国内标准图、POI、交通和 2D 卫星仅以中国区域描述符加入该主组。导航沿用上一实机版本已确认“国内外均可导航”的服务组合。
+Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`，`Map/POI/Traffic=CN`，`Flyover/Munin=XX`，`Satellite=HYBRID`，`Storage=Argument`。国际原生主组负责国外标准地图、POI、卫星、3D、Flyover 与可交互四处看看；国内标准道路、POI、交通和 2D 卫星以统一 CN 坐标归属加入主组。CN 与国际卫星的 z8+ 覆盖互斥，避免跨区时锁定错误数据源。导航沿用上一实机版本已确认“国内外均可导航”的服务组合。
 
 ## 建议测试方式
 
