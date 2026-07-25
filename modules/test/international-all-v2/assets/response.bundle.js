@@ -50,6 +50,20 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     return result;
   };
 
+  const dataSetKey = item => String(item?.identifier ?? JSON.stringify(item));
+  const mergeDataSets = (primary = [], secondary = []) => {
+    const result = clone(primary || []);
+    const seen = new Set(result.map(dataSetKey));
+    for (const item of secondary || []) {
+      const key = dataSetKey(item);
+      if (!seen.has(key)) {
+        result.push(clone(item));
+        seen.add(key);
+      }
+    }
+    return result;
+  };
+
   // test.8 keeps the US manifest's original indices authoritative. Apple 3D
   // groups link mesh, DSM, metadata and texture descriptors by tile-set index;
   // rebuilding every group with every descriptor can make Maps select a
@@ -75,14 +89,18 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
 
     const tileRefs = Array.isArray(baseGroup.tileSet) ? baseGroup.tileSet : [];
     const seenTiles = new Set(tileRefs.map(ref => ref?.tileSetIndex));
+    const mainlandRefs = [];
     for (let index = nativeTileCount; index < result.tileSet.length; index++) {
       if (seenTiles.has(index)) continue;
       const identifier = result.tileSet[index]?.validVersion?.[0]?.identifier;
       const ref = { tileSetIndex: index };
       if (typeof identifier !== "undefined") ref.identifier = identifier;
-      tileRefs.push(ref);
+      mainlandRefs.push(ref);
     }
-    baseGroup.tileSet = tileRefs;
+    // Only inside the 2D base-map group, let the regional CN descriptors win
+    // before the global Apple fallback. Native tile-set indices remain stable,
+    // and all international 3D groups are left untouched.
+    baseGroup.tileSet = [...mainlandRefs, ...tileRefs];
 
     const attributionRefs = Array.isArray(baseGroup.attributionIndex) ? baseGroup.attributionIndex : [];
     const seenAttributions = new Set(attributionRefs);
@@ -364,8 +382,11 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     for (const sourceTile of cn.tileSet || []) {
       if (!mainlandRenderingStyles.has(sourceTile?.style)) continue;
       const tile = clone(sourceTile);
-      delete tile.dataSet;
-      tile.countryRegionWhitelist = [];
+      // Keep the CN dataset identity and explicit provider region. Removing
+      // either makes iOS 27 treat AutoNavi standard-map geometry as a global
+      // Apple layer, which produces the familiar GCJ-02/WGS-84 road and POI
+      // displacement. Coverage remains mainland-only below.
+      tile.countryRegionWhitelist = [{ countryCode: "CN", region: "" }];
       tile.validVersion = (tile.validVersion || []).map(version => {
         const sourceRegions = version.availableTiles || [];
         const sourceMinZ = Math.min(...sourceRegions.map(region => region.minZ));
@@ -417,7 +438,7 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
       "locationShiftVersion"
     ]);
     result.urlInfoSet = [internationalURLInfo];
-    result.dataSet = clone(international.dataSet || []);
+    result.dataSet = mergeDataSets(international.dataSet, cn.dataSet);
     result.displayString = clone(international.displayString || []);
     result.muninBucket = clone(international.muninBucket || []);
     result.tileGroup = preserveInternationalTileGroups(result);

@@ -35,7 +35,7 @@ const xxURLInfo = {
 
 const cn = {
 	tileSet: [
-		tile("VECTOR_STANDARD", "https://gspe12-cn-ssl.ls.apple.com/tiles"),
+		tile("VECTOR_STANDARD", "https://gspe12-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
 		tile("VECTOR_TRAFFIC", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("VECTOR_TRAFFIC_SKELETON", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("VECTOR_ROADS", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
@@ -48,7 +48,7 @@ const cn = {
 	resource: [{ resourceType: 1, filename: "cn.dat" }],
 	attribution: [{ name: "AutoNavi", resource: [] }],
 	urlInfoSet: [cnURLInfo],
-	dataSet: [{ identifier: 1 }],
+	dataSet: [{ identifier: 1 }, { identifier: 101 }],
 	displayString: [{ key: "cn" }],
 	muninBucket: [{ identifier: 1 }],
 	tileGroup: [{ identifier: 11, tileSet: [{ tileSetIndex: 0, identifier: 1 }], attributionIndex: [0], resourceIndex: [0] }],
@@ -135,6 +135,10 @@ if (!xxResult.urlInfoSet[0].dispatcherURL.includes("autonavi")) throw new Error(
 if (!xxResult.urlInfoSet[0].directionsURL.includes("autonavi")) throw new Error("mainland directions were not injected into US baseline");
 if (!xxResult.urlInfoSet[0].muninBaseURL.includes("gsp76-ssl")) throw new Error("international Munin was not preserved in US baseline");
 if (!xxResult.tileSet.some(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland rendering layer was not injected into international baseline");
+const mainlandStandard = xxResult.tileSet.find(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"));
+if (mainlandStandard.dataSet !== 101) throw new Error("mainland standard-map dataset identity was removed and may cause coordinate displacement");
+if (mainlandStandard.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error("mainland standard-map CN provider whitelist is missing");
+if (!xxResult.dataSet.some(item => item.identifier === 101)) throw new Error("mainland dataset definition was not appended to US manifest");
 for (let index = 0; index < xx.tileSet.length; index++) {
 	if (xxResult.tileSet[index].style !== xx.tileSet[index].style || xxResult.tileSet[index].baseURL !== xx.tileSet[index].baseURL) {
 		throw new Error(`native US tile index changed at ${index}`);
@@ -148,6 +152,7 @@ const native3DRefs = xxResult.tileGroup[0].tileSet.slice(0, 4).map(ref => ref.ti
 if (JSON.stringify(native3DRefs) !== JSON.stringify([18, 19, 20, 21])) throw new Error("native US 3D tile-group indices were changed");
 if (xxResult.tileGroup[0].tileSet.length !== 4 || xxResult.tileGroup[0].attributionIndex.length !== 2 || xxResult.tileGroup[0].resourceIndex.length !== 1) throw new Error("native US 3D group was polluted by mainland references");
 if (!xxResult.tileGroup[1].tileSet.some(ref => ref.tileSetIndex >= xx.tileSet.length)) throw new Error("mainland layers were not appended to the native 2D group");
+if (xxResult.tileGroup[1].tileSet[0].tileSetIndex < xx.tileSet.length) throw new Error("mainland standard-map selectors do not precede the Apple 2D fallback");
 if (!responseText.includes("u.tileGroup=Array.from(u.tileGroup??[])")) throw new Error("legacy tile-group rebuilder was not bypassed");
 if (responseText.includes("u=iRingoSurgeAdaptiveHybridFix(u,s,o,t),u.tileGroup=tt.tileGroups")) throw new Error("legacy tile-group rebuilder is still active after test8 fix");
 
