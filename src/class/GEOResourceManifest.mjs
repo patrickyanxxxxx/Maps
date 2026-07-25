@@ -762,7 +762,7 @@ export default class GEOResourceManifest {
 							{ minX: 189, minY: 107, maxX: 193, maxY: 107, minZ: 8, maxZ: 21 },
 							{ minX: 197, minY: 107, maxX: 214, maxY: 107, minZ: 8, maxZ: 21 },
 							{ minX: 198, minY: 108, maxX: 214, maxY: 108, minZ: 8, maxZ: 21 },
-							{ minX: 110, minY: 109, maxX: 214, maxY: 109, minZ: 8, maxZ: 21 },
+							{ minX: 199, minY: 109, maxX: 214, maxY: 109, minZ: 8, maxZ: 21 },
 							{ minX: 197, minY: 110, maxX: 214, maxY: 110, minZ: 8, maxZ: 21 },
 							{ minX: 198, minY: 111, maxX: 214, maxY: 111, minZ: 8, maxZ: 21 },
 							{ minX: 204, minY: 112, maxX: 209, maxY: 112, minZ: 8, maxZ: 21 },
