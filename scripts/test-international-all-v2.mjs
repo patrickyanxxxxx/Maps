@@ -149,15 +149,21 @@ for (const style of ["VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MAT
 	if (!cnResult.tileSet.some(item => item.style === style && item.baseURL.includes("gsp76-ssl"))) throw new Error(`international Look Around selector was not restored: ${style}`);
 }
 const cnSatelliteRoads = cnResult.tileSet.filter(item => item.style === "VECTOR_SPR_ROADS");
-if (!cnSatelliteRoads.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error("native CN satellite road overlay was not preserved");
-if (!cnSatelliteRoads[0].baseURL.includes("-cn-ssl")) throw new Error("native CN satellite road overlay is not mainland-first");
+if (cnSatelliteRoads.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error("CN satellite road descriptor still shadows international Look Around");
+if (!cnSatelliteRoads.some(item => item.baseURL.includes("gsp76-ssl"))) throw new Error("international satellite/Look Around road descriptor was not preserved");
 for (const style of ["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
 	const descriptors = cnResult.tileSet.filter(item => item.style === style);
 	if (!descriptors.some(item => item.baseURL.includes("gspe11-ssl"))) throw new Error(`international visual descriptor was not restored: ${style}`);
 	if (style.startsWith("RASTER_SATELLITE")) {
-		if (!descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`native CN satellite descriptor was not preserved: ${style}`);
-		if (!descriptors[0].baseURL.includes("-cn-ssl")) throw new Error(`native CN satellite is not the mainland-first selector: ${style}`);
-	} else if (descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`CN 3D visual descriptor still shadows international imagery: ${style}`);
+		const cnDescriptors = descriptors.filter(item => item.baseURL.includes("-cn-ssl"));
+		if (style === "RASTER_SATELLITE" && !cnDescriptors.length) throw new Error(`native CN satellite descriptor was not preserved: ${style}`);
+		if (cnDescriptors.length && !descriptors[0].baseURL.includes("-cn-ssl")) throw new Error(`regional CN satellite is not mainland-first: ${style}`);
+		for (const descriptor of cnDescriptors) {
+			const regions = descriptor.validVersion.flatMap(version => version.availableTiles || []);
+			if (!regions.length || regions.some(region => region.minZ < 8)) throw new Error(`CN satellite descriptor was not restricted to mainland detail zooms: ${style}`);
+			if (regions.some(region => region.minX === 0 && region.minY === 0)) throw new Error(`CN satellite descriptor still advertises global coverage: ${style}`);
+		}
+	} else if (descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`CN non-mainland visual descriptor still shadows international imagery: ${style}`);
 }
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_ROADS" && item.baseURL.includes("-cn-ssl"))) throw new Error("native mainland road selector was lost");
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland traffic was not preserved");
@@ -359,15 +365,44 @@ if (mainlandSatellite.searchParams.get("x") !== "12927" || mainlandSatellite.sea
 const tokyoSatelliteInput = "https://gspe11-ssl.ls.apple.com/tile?style=98&v=226&region=0&z=17&x=116423&y=51615&h=0&preflight=2";
 if (runSatellite(tokyoSatelliteInput) !== tokyoSatelliteInput) throw new Error("foreign satellite request was modified");
 
+const satelliteRoadText = await readFile(`${root}/assets/cn-satellite-road.js`, "utf8");
+const satelliteRoadModule = { exports: {} };
+vm.runInNewContext(satelliteRoadText, { module: satelliteRoadModule, console, URL, Number, Date, JSON, Object, String, RegExp, encodeURIComponent, decodeURIComponent });
+const satelliteRoad = satelliteRoadModule.exports;
+const satelliteRoadRecords = new Map();
+const satelliteRoadStorage = {
+	read: () => satelliteRoadRecords.get("auth"),
+	write: record => satelliteRoadRecords.set("auth", JSON.stringify(record)),
+};
+const satelliteRoadAccessKey = "1784590536_" + "C".repeat(48);
+if (satelliteRoad.handle({
+	url: `https://gspe19-cn-ssl.ls.apple.com/tiles?flags=32&style=66&v=2912&z=14&x=12928&y=6730&accessKey=${satelliteRoadAccessKey}`,
+	headers: {},
+}, satelliteRoadStorage, 1000).action !== "observe") throw new Error("CN satellite-road credential was not observed");
+const mainlandSatelliteRoad = satelliteRoad.handle({
+	url: "https://gspe19-ssl.ls.apple.com/tile.vf?flags=32&style=66&v=19783974&z=14&x=12928&y=6730&size=2&scale=0&preflight=2",
+	headers: {},
+}, satelliteRoadStorage, 1100);
+if (mainlandSatelliteRoad.action !== "rewrite") throw new Error("mainland satellite road overlay was not routed to CN");
+const mainlandSatelliteRoadURL = new URL(mainlandSatelliteRoad.request.url);
+if (mainlandSatelliteRoadURL.hostname !== "gspe19-cn-ssl.ls.apple.com" || mainlandSatelliteRoadURL.searchParams.get("style") !== "66") throw new Error("mainland satellite road descriptor mismatch");
+if (mainlandSatelliteRoadURL.searchParams.get("x") !== "12928" || mainlandSatelliteRoadURL.searchParams.get("y") !== "6730") throw new Error("mainland satellite road coordinates were changed");
+const tokyoSatelliteRoad = satelliteRoad.handle({
+	url: "https://gspe19-ssl.ls.apple.com/tile.vf?flags=32&style=66&v=19783974&z=17&x=116423&y=51615",
+	headers: {},
+}, satelliteRoadStorage, 1200);
+if (tokyoSatelliteRoad.action !== "passthrough") throw new Error("foreign Look Around road request was modified");
+
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.9-cn-satellite-roads-native",
+	"6.4.0-test.9-cn-regional-hybrid",
 	"CountryCode:\"CN\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
+	"assets/cn-satellite-road.js",
 ]) {
 	if (!moduleText.includes(marker)) throw new Error(`Surge module is missing ${marker}`);
 }
@@ -391,11 +426,12 @@ for (const marker of [
 	"modules/test/international-all-v2/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
+	"assets/cn-satellite-road.js",
 	"binary_body: true",
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("test.9-cn-satellite-roads-native")) throw new Error("Egern module does not expose the native satellite-road test9 cache identity");
+if (!egernText.includes("test.9-cn-regional-hybrid")) throw new Error("Egern module does not expose the regional-hybrid test9 cache identity");
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
 if (egernText.includes("assets/satellite-route.js")) throw new Error("Egern still rewrites native CN satellite requests");
 if (egernText.includes("surge-adaptive-v1.4.0")) throw new Error("Egern module references the retired directory");
