@@ -1,4 +1,4 @@
-console.log("[iRingo Maps International-All Test v2 test15-cn-first-native-groups] response script loaded");
+console.log("[iRingo Maps International-All Test v2 test16-international-primary-cn-regional] response script loaded");
 console.log(" iRingo: \uD83D\uDDFA️ Maps"),console.log("response.bundle.js"),console.log("Version: 4.6.1"),console.log("Date: 2026/4/5 04:55:23"),(()=>{"use strict";var e,t,i,a,n,r,s,o,l,c,u,d,g,h,m,f,p,R,b,y,T,L,S,k,U,E,w,N,I,A,C,D,O,v,_,B;let x,V,P,X=(()=>{switch(!0){case"$task"in globalThis:return"Quantumult X";case"$loon"in globalThis:return"Loon";case"$rocket"in globalThis:return"Shadowrocket";case"Egern"in globalThis:return"Egern";case!!globalThis.$environment?.["surge-version"]:return"Surge";case!!globalThis.$environment?.["stash-version"]:return"Stash";case"Cloudflare"in globalThis:return"Worker";case!!globalThis.process?.versions?.node:return"Node.js";default:return}})();class M{static #e=new Map([]);static #t=[];static #i=new Map([]);static clear=()=>{};static count=(e="default")=>{switch(M.#e.has(e)){case!0:M.#e.set(e,M.#e.get(e)+1);break;case!1:M.#e.set(e,0)}M.log(`${e}: ${M.#e.get(e)}`)};static countReset=(e="default")=>{switch(M.#e.has(e)){case!0:M.#e.set(e,0),M.log(`${e}: ${M.#e.get(e)}`);break;case!1:M.warn(`Counter "${e}" doesn’t exist`)}};static debug=(...e)=>{M.#a<4||(e=e.map(e=>`🅱️ ${e}`),M.log(...e))};static error(...e){if(!(M.#a<1)){switch(X){case"Surge":case"Loon":case"Stash":case"Egern":case"Shadowrocket":case"Quantumult X":default:e=e.map(e=>`❌ ${e}`);break;case"Worker":case"Node.js":e=e.map(e=>`❌ ${e?.stack??e}`)}M.log(...e)}}static exception=(...e)=>M.error(...e);static group=e=>M.#t.unshift(e);static groupEnd=()=>M.#t.shift();static info(...e){M.#a<3||(e=e.map(e=>`ℹ️ ${e}`),M.log(...e))}static #a=3;static get logLevel(){switch(M.#a){case 0:return"OFF";case 1:return"ERROR";case 2:return"WARN";case 3:default:return"INFO";case 4:return"DEBUG";case 5:return"ALL"}}static set logLevel(e){switch(typeof e){case"string":e=e.toLowerCase();break;case"number":break;default:e="warn"}switch(e){case 0:case"off":M.#a=0;break;case 1:case"error":M.#a=1;break;case 2:case"warn":case"warning":default:M.#a=2;break;case 3:case"info":M.#a=3;break;case 4:case"debug":M.#a=4;break;case 5:case"all":M.#a=5}}static log=(...e)=>{0!==M.#a&&(e=e.map(e=>{switch(typeof e){case"object":e=JSON.stringify(e);break;case"bigint":case"number":case"boolean":case"string":e=e.toString()}return e}),M.#t.forEach(t=>{(e=e.map(e=>`  ${e}`)).unshift(`▼ ${t}:`)}),console.log((e=["",...e]).join("\n")))};static time=(e="default")=>M.#i.set(e,Date.now());static timeEnd=(e="default")=>M.#i.delete(e);static timeLog=(e="default")=>{let t=M.#i.get(e);t?M.log(`${e}: ${Date.now()-t}ms`):M.warn(`Timer "${e}" doesn’t exist`)};static warn(...e){M.#a<2||(e=e.map(e=>`⚠️ ${e}`),M.log(...e))}}class ${static escape(e){let t={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};return e.replace(/[&<>"']/g,e=>t[e])}static get(e={},t="",i){Array.isArray(t)||(t=$.toPath(t));let a=t.reduce((e,t)=>Object(e)[t],e);return void 0===a?i:a}static merge(e,...t){if(null==e)return e;for(let i of t)if(null!=i)for(let t of Object.keys(i)){let a=i[t],n=e[t];switch(!0){case $.#n(a)&&$.#n(n):e[t]=$.merge(n,a);break;case a instanceof Map&&n instanceof Map:if(a.size>0)for(let[e,t]of a)n.set(e,t);break;case a instanceof Set&&n instanceof Set:if(a.size>0)for(let e of a)n.add(e);break;case Array.isArray(a)&&0===a.length&&void 0!==n:case a instanceof Map&&0===a.size&&void 0!==n:case a instanceof Set&&0===a.size&&void 0!==n:break;case void 0!==a:e[t]=a}}return e}static #n(e){if(null===e||"object"!=typeof e)return!1;let t=Object.getPrototypeOf(e);return null===t||t===Object.prototype}static omit(e={},t=[]){return Array.isArray(t)||(t=[t.toString()]),t.forEach(t=>$.unset(e,t)),e}static pick(e={},t=[]){return Array.isArray(t)||(t=[t.toString()]),Object.fromEntries(Object.entries(e).filter(([e,i])=>t.includes(e)))}static set(e,t,i){return Array.isArray(t)||(t=$.toPath(t)),t.slice(0,-1).reduce((e,i,a)=>Object(e[i])===e[i]?e[i]:e[i]=/^\d+$/.test(t[a+1])?[]:{},e)[t[t.length-1]]=i,e}static toPath(e){return e.replace(/\[(\d+)\]/g,".$1").split(".").filter(Boolean)}static unescape(e){let t={"&amp;":"&","&lt;":"<","&gt;":">","&quot;":'"',"&#39;":"'"};return e.replace(/&amp;|&lt;|&gt;|&quot;|&#39;/g,e=>t[e])}static unset(e={},t=""){return Array.isArray(t)||(t=$.toPath(t)),t.reduce((e,i,a)=>a===t.length-1?(delete e[i],!0):Object(e)[i],e)}}class F{static parse(e){let t={};switch(typeof e){case"string":{let i=Object.fromEntries(e.split("&").map(e=>e.split("=",2).map(e=>e.replace(/\"/g,""))));Object.keys(i).forEach(e=>$.set(t,e,i[e]));break}case"object":if(null===e);else{let i={};Object.keys(e).forEach(t=>$.set(i,t,e[t])),t=i}break;case"undefined":t={}}return t}static stringify(e={}){if(!e||"object"!=typeof e)return"";let t=[];return(Object.keys(e).forEach(i=>F.#r(e,i,t)),0===t.length)?"":t.map(([e,t])=>`${F.#s(F.#o(e))}=${F.#s(t)}`).join("&")}static #r(e,t,i){let a=$.get(e,t);if(void 0!==a){if(null===a)return void i.push([t,""]);if(Array.isArray(a))return void a.forEach((a,n)=>{void 0!==a&&F.#r(e,`${t}[${n}]`,i)});if(F.#n(a))return void Object.keys(a).forEach(a=>F.#r(e,`${t}.${a}`,i));i.push([t,String(a)])}}static #o(e){let[t,...i]=$.toPath(e);return i.reduce((e,t)=>/^\d+$/.test(t)?`${e}[${t}]`:`${e}.${t}`,t)}static #n(e){if(null===e||"object"!=typeof e||Array.isArray(e))return!1;let t=Object.getPrototypeOf(e);return null===t||t===Object.prototype}static #s(e){return encodeURIComponent(e)}}M.debug("☑️ $argument"),globalThis.$argument=F.parse(globalThis.$argument),globalThis.$argument.LogLevel&&(M.logLevel=globalThis.$argument.LogLevel),M.debug("✅ $argument",`$argument: ${JSON.stringify(globalThis.$argument)}`);let j={100:"Continue",101:"Switching Protocols",102:"Processing",103:"Early Hints",200:"OK",201:"Created",202:"Accepted",203:"Non-Authoritative Information",204:"No Content",205:"Reset Content",206:"Partial Content",207:"Multi-Status",208:"Already Reported",226:"IM Used",300:"Multiple Choices",301:"Moved Permanently",302:"Found",304:"Not Modified",307:"Temporary Redirect",308:"Permanent Redirect",400:"Bad Request",401:"Unauthorized",402:"Payment Required",403:"Forbidden",404:"Not Found",405:"Method Not Allowed",406:"Not Acceptable",407:"Proxy Authentication Required",408:"Request Timeout",409:"Conflict",410:"Gone",411:"Length Required",412:"Precondition Failed",413:"Content Too Large",414:"URI Too Long",415:"Unsupported Media Type",416:"Range Not Satisfiable",417:"Expectation Failed",418:"I'm a teapot",421:"Misdirected Request",422:"Unprocessable Entity",423:"Locked",424:"Failed Dependency",425:"Too Early",426:"Upgrade Required",428:"Precondition Required",429:"Too Many Requests",431:"Request Header Fields Too Large",451:"Unavailable For Legal Reasons",500:"Internal Server Error",501:"Not Implemented",502:"Bad Gateway",503:"Service Unavailable",504:"Gateway Timeout",505:"HTTP Version Not Supported",506:"Variant Also Negotiates",507:"Insufficient Storage",508:"Loop Detected",510:"Not Extended",511:"Network Authentication Required"};async function W(e,t={}){switch(typeof e){case"object":e={...t,...e};break;case"string":e={...t,url:e};break;default:throw TypeError(`${Function.name}: 参数类型错误, resource 必须为对象或字符串`)}!e.method&&(e.method="GET",(e.body??e.bodyBytes)&&(e.method="POST")),delete e.headers?.Host,delete e.headers?.[":authority"],delete e.headers?.["Content-Length"],delete e.headers?.["content-length"];let i=e.method.toLocaleLowerCase();if(e.timeout||(e.timeout=5),e.timeout&&(e.timeout=Number.parseInt(e.timeout,10),e.timeout>500&&(e.timeout=Math.round(e.timeout/1e3))),e.timeout)switch(X){case"Loon":case"Quantumult X":case"Worker":case"Node.js":e.timeout=1e3*e.timeout}switch(X){case"Loon":case"Surge":case"Stash":case"Egern":case"Shadowrocket":default:if(e.policy)switch(X){case"Loon":e.node=e.policy;break;case"Stash":$.set(e,"headers.X-Stash-Selected-Proxy",encodeURI(e.policy));break;case"Shadowrocket":$.set(e,"headers.X-Surge-Proxy",e.policy)}switch("boolean"==typeof e.redirection&&(e["auto-redirect"]=e.redirection),e.bodyBytes&&!e.body&&(e.body=e.bodyBytes,e.bodyBytes=void 0),(e.headers?.Accept||e.headers?.accept)?.split(";")?.[0]){case"application/protobuf":case"application/x-protobuf":case"application/vnd.google.protobuf":case"application/vnd.apple.flatbuffer":case"application/grpc":case"application/grpc+proto":case"application/octet-stream":e["binary-mode"]=!0}return new Promise((t,a)=>{globalThis.$httpClient[i](e,(i,n,r)=>{i?a(i):(n.ok=/^2\d\d$/.test(n.status),n.statusCode=n.status,n.statusText=j[n.status],r&&(n.body=r,!0==e["binary-mode"]&&(n.bodyBytes=r)),t(n))})});case"Quantumult X":return e.policy&&$.set(e,"opts.policy",e.policy),"boolean"==typeof e["auto-redirect"]&&$.set(e,"opts.redirection",e["auto-redirect"]),e.body instanceof ArrayBuffer?(e.bodyBytes=e.body,e.body=void 0):ArrayBuffer.isView(e.body)?(e.bodyBytes=e.body.buffer.slice(e.body.byteOffset,e.body.byteLength+e.body.byteOffset),e.body=void 0):e.body&&(e.bodyBytes=void 0),Promise.race([globalThis.$task.fetch(e).then(e=>{switch(e.ok=/^2\d\d$/.test(e.statusCode),e.status=e.statusCode,e.statusText=j[e.status],(e.headers?.["Content-Type"]??e.headers?.["content-type"])?.split(";")?.[0]){case"application/protobuf":case"application/x-protobuf":case"application/vnd.google.protobuf":case"application/vnd.apple.flatbuffer":case"application/grpc":case"application/grpc+proto":case"application/octet-stream":e.body=e.bodyBytes}return e.bodyBytes=void 0,e},e=>Promise.reject(e.error)),new Promise((t,i)=>{setTimeout(()=>{i(Error(`${Function.name}: 请求超时, 请检查网络后重试`))},e.timeout)})]);case"Worker":case"Node.js":{switch(!globalThis.fetch&&(globalThis.fetch=require("node-fetch")),e["auto-cookie"]){case void 0:case"true":case!0:case"1":case 1:default:globalThis.fetch?.cookieJar||(globalThis.fetch=require("fetch-cookie").default(globalThis.fetch));case"false":case!1:case"0":case 0:case"-1":case -1:}e.redirect=e.redirection?"follow":"manual";let{url:t,...i}=e;return Promise.race([globalThis.fetch(t,i).then(async e=>{let t,i=await e.arrayBuffer();try{t=e.headers.raw()}catch{t=Array.from(e.headers.entries()).reduce((e,[t,i])=>(e[t]=e[t]?[...e[t],i]:[i],e),{})}return{ok:e.ok??/^2\d\d$/.test(e.status),status:e.status,statusCode:e.status,statusText:e.statusText,body:new TextDecoder("utf-8").decode(i),bodyBytes:i,headers:Object.fromEntries(Object.entries(t).map(([e,t])=>[e,"set-cookie"!==e.toLowerCase()?t.toString():t]))}}).catch(e=>Promise.reject(e.message)),new Promise((t,i)=>{setTimeout(()=>{i(Error(`${Function.name}: 请求超时, 请检查网络后重试`))},e.timeout)})])}}}class G{static data=null;static dataFile="box.dat";static #l=/^@(?<key>[^.]+)(?:\.(?<path>.*))?$/;static getItem(e,t=null){let i=t;if(!0===e.startsWith("@")){let{key:t,path:a}=e.match(G.#l)?.groups;e=t;let n=G.getItem(e,{});"object"!=typeof n&&(n={}),i=$.get(n,a);try{i=JSON.parse(i)}catch(e){}}else{switch(X){case"Surge":case"Loon":case"Stash":case"Egern":case"Shadowrocket":i=$persistentStore.read(e);break;case"Quantumult X":i=$prefs.valueForKey(e);break;case"Worker":G.data=G.data??{},i=G.data[e];break;case"Node.js":G.data=G.#c(G.dataFile),i=G.data?.[e];break;default:i=G.data?.[e]||null}try{i=JSON.parse(i)}catch(e){}}return i??t}static setItem(e=new String,t=new String){let i=!1;if(t="object"==typeof t?JSON.stringify(t):String(t),!0===e.startsWith("@")){let{key:a,path:n}=e.match(G.#l)?.groups;e=a;let r=G.getItem(e,{});"object"!=typeof r&&(r={}),$.set(r,n,t),i=G.setItem(e,r)}else switch(X){case"Surge":case"Loon":case"Stash":case"Egern":case"Shadowrocket":i=$persistentStore.write(t,e);break;case"Quantumult X":i=$prefs.setValueForKey(t,e);break;case"Worker":G.data=G.data??{},G.data[e]=t,i=!0;break;case"Node.js":G.data=G.#c(G.dataFile),G.data[e]=t,G.#u(G.dataFile),i=!0;break;default:i=G.data?.[e]||null}return i}static removeItem(e){let t=!1;if(!0===e.startsWith("@")){let{key:i,path:a}=e.match(G.#l)?.groups;e=i;let n=G.getItem(e);"object"!=typeof n&&(n={}),keyValue=$.unset(n,a),t=G.setItem(e,n)}else switch(X){case"Surge":t=$persistentStore.write(null,e);break;case"Loon":case"Stash":case"Egern":case"Shadowrocket":default:t=!1;break;case"Quantumult X":t=$prefs.removeValueForKey(e);break;case"Worker":G.data=G.data??{},delete G.data[e],t=!0;break;case"Node.js":G.data=G.#c(G.dataFile),delete G.data[e],G.#u(G.dataFile),t=!0}return t}static clear(){let e=!1;switch(X){case"Surge":case"Loon":case"Stash":case"Egern":case"Shadowrocket":default:e=!1;break;case"Quantumult X":e=$prefs.removeAllValues();break;case"Worker":G.data={},e=!0;break;case"Node.js":G.data=G.#c(G.dataFile),G.data={},G.#u(G.dataFile),e=!0}return e}static #c=e=>{if("Node.js"!==X)return{};{this.fs=this.fs?this.fs:require("node:fs"),this.path=this.path?this.path:require("node:path");let t=this.path.resolve(e),i=this.path.resolve(process.cwd(),e),a=this.fs.existsSync(t),n=!a&&this.fs.existsSync(i);if(!a&&!n)return{};try{return JSON.parse(this.fs.readFileSync(a?t:i))}catch(e){return{}}}};static #u=(e=this.dataFile)=>{if("Node.js"===X){this.fs=this.fs?this.fs:require("node:fs"),this.path=this.path?this.path:require("node:path");let t=this.path.resolve(e),i=this.path.resolve(process.cwd(),e),a=this.fs.existsSync(t),n=!a&&this.fs.existsSync(i),r=JSON.stringify(this.data);a?this.fs.writeFileSync(t,r):n?this.fs.writeFileSync(i,r):this.fs.writeFileSync(t,r)}}}class Y{static name="XML";static version="0.4.2";static about=()=>console.log(`
 🟧 ${this.name} v${this.version}
 `);static #d="@";static #g="#";static #h={"&amp;":"&","&lt;":"<","&gt;":">","&apos;":"'","&quot;":'"'};static #m={"&":"&amp;","<":"&lt;",">":"&gt;","'":"&apos;",'"':"&quot;"};static parse(e=new String,t=""){let i=this.#h,a=this.#d,n=this.#g;return function e(t,i){let s;switch(typeof t){case"string":case"undefined":s=t;break;case"object":let o=t.raw,l=t.name,c=t.tag,u=t.children;s=o||(c?function(e,t){let i,n;if(!e)return;let s=e.split(/([^\s='"]+(?:\s*=\s*(?:'[\S\s]*?'|"[\S\s]*?"|[^\s'"]*))?)/),o=s.length;for(let e=0;e<o;e++){var l;let o=(l=s[e],l?.trim?.());if(!o)continue;i||(i={});let c=o.indexOf("=");if(c<0)o=a+o,n=null;else{n=o.substr(c+1).replace(/^\s+/,""),o=a+o.substr(0,c).replace(/\s+$/,"");let e=n[0];e===n[n.length-1]&&("'"===e||'"'===e)&&(n=n.substr(1,n.length-2)),n=r(n)}t&&(n=t(o,n)),d(i,o,n)}return i}(c,i):u?{}:{[l]:void 0}),"plist"===l?s=Object.assign(s,function e(t,i){let a;switch(typeof t){case"string":case"undefined":a=t;break;case"object":let n=t.name,r=t.children;switch(a={},n){case"plist":a=Object.assign(a,e(r[0],i));break;case"dict":let s=r.map(t=>e(t,i));a=Object.fromEntries(s=function(e){for(var t=0,i=[];t<e.length;)i.push(e.slice(t,t+=2));return i}(s));break;case"array":Array.isArray(a)||(a=[]),a=r.map(t=>e(t,i));break;case"key":case"string":a=r[0];break;case"true":case"false":a=JSON.parse(n);break;case"integer":a=BigInt(r[0]);break;case"real":a=parseFloat(r[0])}i&&(a=i(n||"",a))}return a}(u[0],i)):u?.forEach?.((t,a)=>{"string"==typeof t?d(s,n,e(t,i),void 0):t.tag||t.children||t.raw?d(s,t.name,e(t,i),void 0):d(s,t.name,e(t,i),u?.[a-1]?.name)}),u&&0===u.length&&d(s,n,null,void 0),i&&(s=i(l||"",s))}return s;function d(e,t,i,a=t){if(void 0!==i){let n=e[a];Array.isArray(n)?n.push(i):n?e[a]=[n,i]:e[t]=i}}}(function(e){let t=e.replace(/^[ \t]+/gm,"").split(/<([^!<>?](?:'[\S\s]*?'|"[\S\s]*?"|[^'"<>])*|!(?:--[\S\s]*?--|\[[^\[\]'"<>]+\[[\S\s]*?]]|DOCTYPE[^\[<>]*?\[[\S\s]*?]|(?:ENTITY[^"<>]*?"[\S\s]*?")?[\S\s]*?)|\?[\S\s]*?\?)>/),i=t.length,a={children:[]},n=a,s=[];for(let e=0;e<i;){let i=t[e++];i&&function(e){var t;t=e,(e=t?.replace?.(/^(\r\n|\r|\n|\t)+|(\r\n|\r|\n|\t)+$/g,""))&&o(r(e))}(i);let a=t[e++];a&&function(e){let t=e.split(" "),i=t.shift(),a=t.length,r={};switch(i[0]){case"/":let l=e.replace(/^\/|[\s\/].*$/g,"").toLowerCase();for(;s.length;){let e=n?.name?.toLowerCase?.();if(n=s.pop(),e===l)break}break;case"?":r.name=i,r.raw=t.join(" "),o(r);break;case"!":/!\[CDATA\[(.+)\]\]/.test(e)?(r.name="!CDATA",r.raw=e.match(/!\[CDATA\[(?<raw>.+)\]\]/)?.groups?.raw):/!--(.+)--/.test(e)?(r.name="!--",r.raw=e.match(/!--(?<raw>.+)--/)?.groups?.raw):(r.name=i,r.raw=t.join(" ")),o(r);break;default:o(r=function(e){let t={children:[]},i=(e=e.replace(/\s*\/?$/,"")).search(/[\s='"\/]/);return i<0?t.name=e:(t.name=e.substr(0,i),t.tag=e.substr(i)),t}(e)),"/"===(t?.[a-1]??i).slice(-1)||"link"===i?delete r.children:(s.push(n),n=r)}}(a)}return a;function o(e){n.children.push(e)}}(e),t);function r(e){return e.replace(/(&(?:lt|gt|amp|apos|quot|#(?:\d{1,6}|x[0-9a-fA-F]{1,5}));)/g,function(e){if("#"===e[1]){let t="x"===e[2]?parseInt(e.substr(3),16):parseInt(e.substr(2),10);if(t>-1)return String.fromCharCode(t)}return i[e]||e})}}static stringify(e={},t=""){this.#m;let i=this.#d,a=this.#g,n="";for(let t in e)n+=function e(t,n,r){let s="";switch(typeof t){case"object":if(Array.isArray(t))s=t.reduce((t,i)=>t+=`${r}${e(i,n,`${r}	`)}
@@ -159,6 +159,87 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
       delete group.offlineMetadataIndex;
     }
     return [group];
+  };
+
+  // test16 keeps Apple's international groups and indices authoritative. Add
+  // the regional CN descriptors only to the native base/combined group; never
+  // create a CN-first provider group. On iOS 27 the manifest normally has one
+  // combined group, so this makes the same active graph contain international
+  // satellite, Sputnik/Flyover and the complete Munin/SPR resources while the
+  // mainland descriptors win only inside their advertised China tile ranges.
+  const preserveInternationalTileGroups = result => {
+    const nativeTileCount = international.tileSet?.length ?? 0;
+    const nativeAttributionCount = international.attribution?.length ?? 0;
+    const nativeResourceCount = international.resource?.length ?? 0;
+    const groups = clone(international.tileGroup || []);
+    const baseStyles = new Set([
+      "VECTOR_STANDARD",
+      "VECTOR_POI",
+      "VECTOR_POI_V2",
+      "VECTOR_POI_V2_UPDATE",
+      "VECTOR_TRAFFIC",
+      "VECTOR_TRAFFIC_SKELETON",
+      "VECTOR_BUILDINGS",
+      "VECTOR_BUILDINGS_V2"
+    ]);
+    const baseMatch = groups.reduce((best, group) => {
+      const styles = (group.tileSet || []).map(ref => international.tileSet?.[ref?.tileSetIndex]?.style);
+      const baseHits = styles.filter(style => baseStyles.has(style)).length;
+      const capabilityHits = styles.filter(style => internationalVisualStyles.has(style) || internationalMuninStyles.has(style)).length;
+      if (!best || baseHits > best.baseHits || (baseHits === best.baseHits && capabilityHits > best.capabilityHits)) {
+        return { group, baseHits, capabilityHits };
+      }
+      return best;
+    }, null);
+    if (!baseMatch) return groups;
+
+    const baseGroup = baseMatch.group;
+    baseGroup.identifier = manifestRefreshIdentifier;
+    const nativeRefs = Array.isArray(baseGroup.tileSet) ? baseGroup.tileSet : [];
+    const seenTiles = new Set(nativeRefs.map(ref => ref?.tileSetIndex));
+    const mainlandRefs = [];
+    for (let index = nativeTileCount; index < result.tileSet.length; index++) {
+      if (seenTiles.has(index)) continue;
+      const tile = result.tileSet[index];
+      // Never inject a second Munin/SPR/Flyover graph. These must stay byte-for-
+      // byte native to make Look Around open imagery instead of only showing
+      // its coverage icon.
+      if (internationalMuninStyles.has(tile?.style) || international3DStyles.has(tile?.style)) continue;
+      const ref = { tileSetIndex: index };
+      const identifier = tile?.validVersion?.[0]?.identifier;
+      if (typeof identifier !== "undefined") ref.identifier = identifier;
+      mainlandRefs.push(ref);
+    }
+    const activeRefs = [...nativeRefs];
+    // Some manifests split satellite/3D/Munin entries into secondary groups,
+    // but iOS 27 may only activate the primary group. Reference every native
+    // international descriptor from the primary group as a fallback while
+    // retaining the source indices and the original primary ordering. This is
+    // what turns a visible Look Around coverage icon into usable imagery.
+    for (let index = 0; index < nativeTileCount; index++) {
+      if (seenTiles.has(index)) continue;
+      const ref = { tileSetIndex: index };
+      const identifier = result.tileSet[index]?.validVersion?.[0]?.identifier;
+      if (typeof identifier !== "undefined") ref.identifier = identifier;
+      activeRefs.push(ref);
+      seenTiles.add(index);
+    }
+    baseGroup.tileSet = [...mainlandRefs, ...activeRefs];
+
+    const attributionRefs = Array.isArray(baseGroup.attributionIndex) ? baseGroup.attributionIndex : [];
+    const seenAttributions = new Set(attributionRefs);
+    for (let index = nativeAttributionCount; index < result.attribution.length; index++) {
+      if (!seenAttributions.has(index)) attributionRefs.push(index);
+    }
+    baseGroup.attributionIndex = attributionRefs;
+
+    const resourceRefs = Array.isArray(baseGroup.resourceIndex) ? baseGroup.resourceIndex : [];
+    const seenResources = new Set(resourceRefs);
+    for (let index = nativeResourceCount; index < result.resource.length; index++) {
+      if (!seenResources.has(index)) resourceRefs.push(index);
+    }
+    baseGroup.resourceIndex = resourceRefs;
+    return groups;
   };
 
   // test.15 keeps both provider graphs native, but makes the complete CN graph
@@ -438,7 +519,17 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
   ]);
   for (const style of mainlandPOIStyles) mainlandRenderingStyles.add(style);
 
-  const useChinaBaseline = String(countryCode).toUpperCase() === "CN";
+  const requestedChinaBaseline = String(countryCode).toUpperCase() === "CN";
+  // iOS 27 only activates the first/primary provider group. test15 kept the
+  // complete CN group first, which made its nominally native descriptors act
+  // globally: foreign standard maps became AutoNavi, the international
+  // satellite group was ignored, and Look Around exposed a coverage icon
+  // without an active Munin/SPR image graph. Keep the native international
+  // capability graph authoritative and inject CN descriptors only as
+  // mainland-limited entries into its real base group. CountryCode remains CN
+  // at the request/service layer, so Dispatcher, POI, navigation, reverse
+  // geocoding and location shifting continue to use the mainland services.
+  const useChinaBaseline = false;
   // Fixed direct mode: no A/B switch and no persisted BoxJs value can put the
   // conflicting mainland road capability descriptors back into the manifest.
   const sharedMode = "ForeignPriority";
@@ -554,7 +645,7 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     if (foreignRegionCapability === "CN" && !isMainlandEndpoint(foreignRegionTile?.baseURL)) throw new Error("v1.3.1 China capability polygon fallback is missing");
     if (result.releaseInfo !== cn.releaseInfo) throw new Error("Native CN manifest identity is missing");
     if (result.tileGroup.length < 2) throw new Error("China and international native groups were not separated");
-    console.log("[iRingo Maps International-All Test v2 test.15 CN] native CN group first; native US groups appended for foreign capabilities");
+    console.log("[iRingo Maps International-All Test v2 test.16 legacy CN branch] international-primary mode should bypass this branch");
   } else {
     const chinaTiles = [];
     for (const sourceTile of cn.tileSet || []) {
@@ -659,13 +750,14 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     result.dataSet = mergeDataSets(international.dataSet, cn.dataSet);
     result.displayString = clone(international.displayString || []);
     result.muninBucket = clone(international.muninBucket || []);
-    // Keep the US regulatory metadata at its original indices, then append the
-    // complete CN records for the isolated mainland group.
+    // Keep international regulatory/group identity authoritative. CN provider
+    // ownership is carried by the regional descriptors, dataset and service
+    // URLs instead of a second group that iOS 27 may select globally.
     result.offlineMetadata = [
       ...clone(international.offlineMetadata || []),
       ...clone(cn.offlineMetadata || [])
     ];
-    result.tileGroup = buildChinaOwnedAdaptiveTileGroup(result);
+    result.tileGroup = preserveInternationalTileGroups(result);
 
     const urlInfo = result.urlInfoSet?.[0] || {};
     if (!/dispatcher\.is\.autonavi\.com/i.test(endpoint(urlInfo.dispatcherURL))) throw new Error("China Dispatcher is missing from US baseline");
@@ -702,7 +794,7 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     }
     const leaked = result.tileSet.find(tile => internationalCriticalStyles.has(tile?.style) && tile?.style !== "VECTOR_SPR_ROADS" && isMainlandEndpoint(tile?.baseURL));
     if (leaked) throw new Error("Mainland critical selector leaked into international baseline: " + leaked.style);
-    console.log("[iRingo Maps International-All Test v2 test.15 US diagnostic] CN-first native groups apply only when CountryCode=CN");
+    console.log("[iRingo Maps International-All Test v2 test.16] international native group active; mainland descriptors regionalized; requested CN=" + requestedChinaBaseline);
   }
 
   return result;
