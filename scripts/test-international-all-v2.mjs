@@ -58,7 +58,7 @@ const cn = {
 		tile("VECTOR_POI_V2_UPDATE", "https://gspe19-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
 		tile("VECTOR_TRAFFIC", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("VECTOR_TRAFFIC_SKELETON", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
-		tile("VECTOR_ROADS", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
+		tile("VECTOR_ROADS", "https://gspe19-cn-ssl.ls.apple.com/tiles", { countryRegionWhitelist: [{ region: "US" }] }),
 		tile("VECTOR_ROAD_NETWORK", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("VECTOR_ROAD_SELECTION", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("MUNIN_METADATA", "https://gsp76-cn-ssl.ls.apple.com/munin"),
@@ -193,8 +193,10 @@ for (const descriptor of xxResult.tileSet.filter(item => item.baseURL.includes("
 if (xxResult.urlInfoSet[0].polyLocationShiftURL !== cnURLInfo.polyLocationShiftURL) throw new Error("AutoNavi mainland location-shift service was not preserved");
 for (const style of ["VECTOR_ROADS", "VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTION"]) {
 	const mainlandRoad = xxResult.tileSet.find(item => item.style === style && item.baseURL.includes("-cn-ssl"));
+	const sourceRoad = cn.tileSet.find(item => item.style === style && item.baseURL.includes("-cn-ssl"));
 	if (!mainlandRoad) throw new Error(`mainland coordinate road layer is missing: ${style}`);
-	if (mainlandRoad.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error(`mainland coordinate road layer does not use CN identity: ${style}`);
+	if (JSON.stringify(mainlandRoad.countryRegionWhitelist || []) !== JSON.stringify(sourceRoad?.countryRegionWhitelist || [])) throw new Error(`mainland road selector metadata changed and may double-shift geometry: ${style}`);
+	if (mainlandRoad.countryRegionWhitelist?.some(region => region.countryCode === "CN")) throw new Error(`mainland road was force-labelled CN and may be shifted twice: ${style}`);
 	if (!mainlandRoad.validVersion?.every(version => version.availableTiles?.length && !version.availableTiles.some(region => region.minZ === 8 && region.maxX === 255))) throw new Error(`mainland coordinate road coverage is not regionalized: ${style}`);
 	if (!xxResult.tileSet.some(item => item.style === style && !item.baseURL.includes("-cn-ssl"))) throw new Error(`international road fallback is missing: ${style}`);
 }
@@ -310,7 +312,7 @@ const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
 	"6.4.0-test.8",
-	"cnroad1",
+	"cnroad2",
 	"CountryCode:\"US\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
