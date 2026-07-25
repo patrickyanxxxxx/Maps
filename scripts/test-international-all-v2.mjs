@@ -269,13 +269,57 @@ const observed = road.handle({
 	},
 }, storage, 1000);
 if (observed.action !== "observe") throw new Error(`CN road auth was not observed: ${observed.action}`);
+const observedPOI = road.handle({
+	url: "https://gspe19-cn-ssl.ls.apple.com/tiles",
+	headers: {
+		"maps-auth-token": token,
+		"maps-tile-style": "style=68&v=2912&size=2&scale=0&vertical_datum=wgs84&preflight=2",
+	},
+}, storage, 1050);
+if (observedPOI.action !== "observe") throw new Error("CN POI request could not seed native map authorization");
 const rewritten = road.handle({
 	url: "https://gspe19-ssl.ls.apple.com/tile.vf?style=20&z=14&x=12928&y=6730&size=2&scale=0&preflight=2",
 	headers: {},
 }, storage, 1100);
 if (rewritten.action !== "rewrite") throw new Error(`mainland road was not rewritten: ${rewritten.action}`);
-if (rewritten.request.url !== "https://gspe19-cn-ssl.ls.apple.com/tiles") throw new Error("mainland road endpoint mismatch");
+if (new URL(rewritten.request.url).origin + new URL(rewritten.request.url).pathname !== "https://gspe19-cn-ssl.ls.apple.com/tiles") throw new Error("mainland road endpoint mismatch");
 if (rewritten.request.headers["maps-auth-token"] !== token) throw new Error("observed road token was not reused");
+const standard = road.handle({
+	url: "https://gspe19-ssl.ls.apple.com/tile.vf?flags=40&style=1&z=14&x=12928&y=6730&size=2&scale=0&preflight=2",
+	headers: {},
+}, storage, 1100);
+if (standard.action !== "rewrite") throw new Error(`mainland standard map was not rewritten: ${standard.action}`);
+const standardURL = new URL(standard.request.url);
+if (standardURL.hostname !== "gspe19-cn-ssl.ls.apple.com" || standardURL.pathname !== "/tiles") throw new Error("mainland standard endpoint mismatch");
+if (standardURL.searchParams.get("style") !== "1" || standardURL.searchParams.get("flags") !== "40") throw new Error("mainland standard descriptor mismatch");
+if (standardURL.searchParams.get("x") !== "12928" || standardURL.searchParams.get("y") !== "6730") throw new Error("mainland standard coordinates were changed");
+const standardAccessKey = road.handle({
+	url: "https://gspe19-kittyhawk-ssl.ls.apple.com/tile.vf?flags=40&style=1&z=16&x=51712&y=26920",
+	headers: {},
+}, storage, 1200);
+if (standardAccessKey.action !== "rewrite") throw new Error("z16 mainland standard map was not rewritten");
+const accessOnlyRecords = new Map();
+const accessOnlyStorage = {
+	read: () => accessOnlyRecords.get("auth"),
+	write: record => accessOnlyRecords.set("auth", JSON.stringify(record)),
+};
+const cnAccessKey = "1784590536_" + "B".repeat(48);
+const observedAccessKey = road.handle({
+	url: `https://gspe19-cn-ssl.ls.apple.com/tiles?style=68&v=2912&z=14&x=12928&y=6730&accessKey=${cnAccessKey}`,
+	headers: {},
+}, accessOnlyStorage, 1200);
+if (observedAccessKey.action !== "observe") throw new Error("CN URL accessKey was not observed");
+const accessKeyRewrite = road.handle({
+	url: "https://gspe19-ssl.ls.apple.com/tile.vf?flags=40&style=1&z=14&x=12928&y=6730",
+	headers: {},
+}, accessOnlyStorage, 1300);
+if (accessKeyRewrite.action !== "rewrite") throw new Error("accessKey-only Egern request could not be rewritten");
+if (new URL(accessKeyRewrite.request.url).searchParams.get("accessKey") !== cnAccessKey) throw new Error("observed CN URL accessKey was not reused");
+const standardOutside = road.handle({
+	url: "https://gspe19-ssl.ls.apple.com/tile.vf?flags=40&style=1&z=14&x=14539&y=6451",
+	headers: {},
+}, storage, 1200);
+if (standardOutside.action !== "passthrough") throw new Error("foreign standard map request was modified");
 const outside = road.handle({
 	url: "https://gspe19-ssl.ls.apple.com/tile.vf?style=20&z=14&x=14539&y=6451",
 	headers: {},
@@ -304,7 +348,7 @@ const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
 	"6.4.0-test.8",
-	"cnstandard2",
+	"cnstandard3",
 	"CountryCode:\"US\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
@@ -340,7 +384,9 @@ for (const marker of [
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern module unexpectedly enables the Surge road authorization helper");
+if (!egernText.includes("cnstandard3")) throw new Error("Egern module does not expose the cnstandard3 cache identity");
+if (!egernText.includes("assets/cn-native-road.js")) throw new Error("Egern module is missing the mainland native standard-map route");
+if (!egernText.includes("gspe19(?:-kittyhawk)?-ssl")) throw new Error("Egern module is missing the international standard-map request matcher");
 if (egernText.includes("surge-adaptive-v1.4.0")) throw new Error("Egern module references the retired directory");
 if (egernText.includes("match: gspe11-ssl.ls.apple.com")) throw new Error("Egern module direct-routes international 3D tiles and may make them unreachable");
 

@@ -7,7 +7,7 @@
 - `CountryCode=AUTO`：保留设备当前 CN/国际清单分支，同时预热另一份清单。
 - CN 清单分支保留高德底图、POI、实时交通、导航、反向地理编码与 GCJ-02 修正。
 - 国际 Munin、SPR、3D 卫星、Flyover、道路及区域能力选择器与大陆高德服务隔离。
-- Surge 兼容模块可观察 Apple 地图已取得的高德道路授权，仅在中国大陆坐标、`z12-z15` 范围内将国际 `VECTOR_ROADS/style 20` 请求转换为 CN 原生道路请求；此增强不在 Egern 中启用。
+- Egern 与 Surge 模块均可观察 Apple 地图已取得的高德瓦片授权，在中国大陆坐标、`z12-z18` 范围内将国际 `VECTOR_STANDARD/style 1` 与 `VECTOR_ROADS/style 20` 转为 CN 原生请求；国外瓦片保持原样。
 
 ## 本项目额外保留
 
@@ -21,17 +21,18 @@
 - `test.7` 根据实机结果撤销 `test.6` 的国际瓦片直连：部分中国网络无法直连 Apple 国际 3D 服务，会导致国际 3D 完全消失。恢复 `test.5` 已确认可显示的网络路由，国际瓦片继续遵循用户现有代理规则。
 - `test.8` 改用 US 原生清单作为默认主体，不再重排国际 `tileSet`、3D `tileGroup`、资源及署名索引；国内高德二维图层追加在国际描述符之后，并只补充国内 POI、导航、反向地理编码和坐标修正服务。目标是避免 Apple 高精度网格/DSM/JPEG/ASTC 纹理链因索引重建而退化为低细节显示。
 - `test.8` 国内标准地图修正：保留高德二维瓦片原始 `dataSet` 标识及 `CN` 服务区域白名单，避免系统把 GCJ-02 图层当作全球 Apple 图层而产生道路、POI 与底图偏移；国际 3D 分组不变。
+- `test.8-cnstandard3` 在不改动 POI、卫星、导航和国际 3D 清单逻辑的前提下，为 Egern 增加实际瓦片请求路由：大陆标准底图和道路强制使用同一套 CN 原生瓦片坐标系，解决 POI 正确但道路仍使用国际 WGS-84 瓦片造成的视觉偏移。
 - 测试模块和四个脚本全部放在本目录，避免覆盖稳定 `modules/assets/`。
 - Egern 只公开脚本真正读取的三个参数，其余服务组合固定，避免旧 BoxJs/持久化配置覆盖测试结果。
 - 所有脚本地址指向远程 `test/international-all-v2` 分支；分支上传前不可直接通过远程链接导入。
 
 ## 文件
 
-- `iRingo.Maps.yaml`：Egern 主测试模块，不包含 Surge 专用道路授权脚本。
+- `iRingo.Maps.yaml`：Egern 主测试模块，包含大陆原生标准底图/道路授权观察与路由。
 - `iRingo.Maps.sgmodule`：Surge 兼容模块，额外启用国内道路授权观察与坐标重写。
 - `assets/request.bundle.js`：AUTO 清单分支与另一份清单预热。
 - `assets/response.bundle.js`：自适应 CN/国际资源合并和环视隔离。
-- `assets/cn-native-road.js`：Surge 国内道路授权观察与按坐标重写。
+- `assets/cn-native-road.js`：Egern/Surge 国内标准底图与道路授权观察、按坐标路由。
 - `assets/satellite-route.js`：iOS 27 国内卫星按坐标重写。
 
 ## Egern 默认参数
@@ -55,7 +56,7 @@ Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`�
 
 - 参考版本说明以 iOS 26 + Surge 为主要验证环境；本组合版针对 Egern 模块格式和 iOS 27 卫星路由进行了整合，但仍需实机验证所有组合能力。
 - 国内道路重写依赖 Apple 地图先产生有效的 CN 道路请求并取得授权；没有有效授权时会原样放行国际道路请求。
-- 道路重写只覆盖 `z12-z15`，其他缩放级别保持原请求。
+- 标准底图/道路路由覆盖 `z12-z18`；更远的世界级缩放保持国际请求，避免边界误判影响国外地图。
 - 国内卫星数据较旧，仍可能存在数据源自身的清晰度、覆盖和固有坐标偏移；本测试版本只能保证不再由路由脚本二次改写瓦片坐标。
 - 当前仅保证以 Egern 进行主要测试；Surge 模块属于兼容输出，其他代理软件暂未生成，也不保证功能完整。
 - 不要与稳定 Maps 模块或其他 Maps 测试模块同时启用。

@@ -1,9 +1,10 @@
 /*
- * iRingo Maps v1.4.0 mainland native-road rewrite companion for Surge.
+ * iRingo Maps mainland native standard-map/road route for Egern and Surge.
  *
  * Keep the stable v1.4.0 GeoManifest untouched. Observe the live AutoNavi
- * vector credential already emitted by Maps, then rewrite only mainland-China
- * Apple VECTOR_ROADS (style 20) requests to the native China descriptor.
+ * vector credential already emitted by Maps, then rewrite mainland-China
+ * Apple VECTOR_STANDARD (style 1) and VECTOR_ROADS (style 20) requests to
+ * their native China descriptors.
  * Foreign tiles and every unrelated service pass through unchanged.
  *
  * Surge runs this script with engine=jsc. Do not add URL, URLSearchParams,
@@ -22,8 +23,12 @@
     "gspe19-cn-ssl.ls.apple.com": true,
     "gspe19-2-cn-ssl.ls.apple.com": true,
   };
-  const STORAGE_KEY = "iRingo.Maps.v140.CNNativeRoadAuth.v103";
+  const STORAGE_KEY = "iRingo.Maps.InternationalAll.CNNativeMapAuth.v104";
   const AUTH_MAX_AGE_MS = 30 * 60 * 1000;
+  const CHINA_VECTOR_AUTH_STYLES = {
+    1: true, 11: true, 13: true, 20: true, 22: true,
+    53: true, 56: true, 68: true, 87: true,
+  };
   const WAIT_ATTEMPTS = 12;
   const WAIT_INTERVAL_MS = 50;
 
@@ -104,13 +109,14 @@
       language: value("vlang"),
       preflight: value("preflight"),
       authToken: headers["maps-auth-token"] || null,
+      accessKey: value("accessKey") ?? value("accesskey"),
       packedStyle: packed,
     };
   }
 
   function isMainlandTile(x, y, z) {
     if (![x, y, z].every(Number.isInteger)) return false;
-    if (z < 12 || z > 15) return false;
+    if (z < 12 || z > 18) return false;
     const dimension = 2 ** z;
     if (x < 0 || y < 0 || x >= dimension || y >= dimension) return false;
     const divisor = 2 ** (z - 11);
@@ -118,10 +124,17 @@
     const parentY = Math.floor(y / divisor);
     const row = Z11_ROWS[parentY];
     if (!row) return false;
-    const excluded = EXCLUDED_ROWS[z] && EXCLUDED_ROWS[z][y];
+    // The detailed exclusion mask is available through z15. At higher zooms,
+    // compare the tile's z15 parent so Hong Kong and nearby foreign tiles do
+    // not get caught by the mainland route.
+    const exclusionZoom = Math.min(z, 15);
+    const exclusionDivisor = 2 ** (z - exclusionZoom);
+    const exclusionX = Math.floor(x / exclusionDivisor);
+    const exclusionY = Math.floor(y / exclusionDivisor);
+    const excluded = EXCLUDED_ROWS[exclusionZoom] && EXCLUDED_ROWS[exclusionZoom][exclusionY];
     if (excluded) {
       for (let index = 0; index < excluded.length; index += 2) {
-        if (x >= excluded[index] && x <= excluded[index + 1]) return false;
+        if (exclusionX >= excluded[index] && exclusionX <= excluded[index + 1]) return false;
       }
     }
     for (let index = 0; index < row.length; index += 2) {
@@ -136,7 +149,7 @@
 
   function nativePackedStyle(tile, version) {
     const pairs = [
-      ["style", "20"],
+      ["style", String(tile.style)],
       ["size", tile.size || "2"],
       ["scale", tile.scale || "0"],
       ["v", String(version)],
@@ -154,7 +167,10 @@
       record = storage.read();
       if (typeof record === "string") record = JSON.parse(record);
     } catch (_) { return null; }
-    if (!record || typeof record.token !== "string" || record.token.length < 16) return null;
+    if (!record || !(
+      (typeof record.token === "string" && record.token.length >= 16)
+      || (typeof record.accessKey === "string" && record.accessKey.length >= 16)
+    )) return null;
     if (!Number.isInteger(record.version) || record.version < 2000 || record.version > 99999999) return null;
     if (!Number.isFinite(record.savedAt) || now - record.savedAt < 0 || now - record.savedAt > AUTH_MAX_AGE_MS) return null;
     return record;
@@ -164,21 +180,46 @@
     const observable = tile
       && CHINA_TILE_HOSTS[tile.host]
       && tile.path === "/tiles"
-      && (tile.style === 1 || tile.style === 20 || tile.style === 22)
-      && typeof tile.authToken === "string"
-      && tile.authToken.length >= 16
+      && CHINA_VECTOR_AUTH_STYLES[tile.style]
+      && ((typeof tile.authToken === "string" && tile.authToken.length >= 16)
+        || (typeof tile.accessKey === "string" && tile.accessKey.length >= 16))
       && Number.isInteger(tile.version)
       && tile.version >= 2000;
     if (!observable || !storage || typeof storage.write !== "function") return false;
-    storage.write({ token: tile.authToken, version: tile.version, savedAt: now, sourceStyle: tile.style });
+    const previous = readAuth(storage, now) || {};
+    storage.write({
+      token: tile.authToken || previous.token || null,
+      accessKey: tile.accessKey || previous.accessKey || null,
+      version: tile.version,
+      savedAt: now,
+      sourceStyle: tile.style,
+    });
     return true;
+  }
+
+  function nativeQuery(tile, auth) {
+    const pairs = [
+      ["flags", tile.style === 1 ? "40" : "32"],
+      ["style", String(tile.style)],
+      ["size", tile.size || "2"],
+      ["scale", tile.scale || "0"],
+      ["v", String(auth.version)],
+      ["z", String(tile.z)],
+      ["x", String(tile.x)],
+      ["y", String(tile.y)],
+      ["vertical_datum", tile.verticalDatum || "wgs84"],
+    ];
+    if (tile.language) pairs.push(["vlang", tile.language]);
+    pairs.push(["preflight", tile.preflight || "2"]);
+    if (auth.accessKey) pairs.push(["accessKey", auth.accessKey]);
+    return pairs.map(pair => encodePair(pair[0], pair[1])).join("&");
   }
 
   function makeNativeRewrite(request, tile, auth) {
     const headers = cloneHeaders(request && request.headers);
     replaceHeader(headers, "Host", "gspe19-cn-ssl.ls.apple.com");
     replaceHeader(headers, ":authority", null);
-    replaceHeader(headers, "maps-auth-token", auth.token);
+    replaceHeader(headers, "maps-auth-token", auth.token || null);
     replaceHeader(headers, "maps-tile-style", nativePackedStyle(tile, auth.version));
     replaceHeader(headers, "maps-tile-x", tile.x);
     replaceHeader(headers, "maps-tile-y", tile.y);
@@ -186,7 +227,7 @@
     replaceHeader(headers, "If-None-Match", null);
     replaceHeader(headers, "If-Modified-Since", null);
     replaceHeader(headers, "Content-Length", null);
-    return { url: "https://gspe19-cn-ssl.ls.apple.com/tiles", headers };
+    return { url: "https://gspe19-cn-ssl.ls.apple.com/tiles?" + nativeQuery(tile, auth), headers };
   }
 
   function handle(request, storage, now = Date.now()) {
@@ -195,7 +236,7 @@
     const targeted = tile
       && APPLE_ROAD_HOSTS[tile.host]
       && tile.path === "/tile.vf"
-      && tile.style === 20
+      && (tile.style === 1 || tile.style === 20)
       && isMainlandTile(tile.x, tile.y, tile.z);
     if (!targeted) return { action: "passthrough", modified: false, tile };
     const auth = readAuth(storage, now);
@@ -234,6 +275,7 @@
     parseTileRequest,
     isMainlandTile,
     nativePackedStyle,
+    nativeQuery,
     readAuth,
     observeChinaAuth,
     makeNativeRewrite,
@@ -248,14 +290,14 @@
     };
     handleAsync($request, storage).then(result => {
       if (result.action === "rewrite") {
-        console.log("[iRingo Maps CN native road v1.0.3] rewrite " + result.tile.z + "/" + result.tile.x + "/" + result.tile.y + " -> CN v=" + result.authVersion);
+        console.log("[iRingo Maps CN native map v1.0.4] style=" + result.tile.style + " " + result.tile.z + "/" + result.tile.x + "/" + result.tile.y + " -> CN v=" + result.authVersion);
         $done(result.request);
       } else {
-        if (result.action === "passthrough-no-auth") console.log("[iRingo Maps CN native road v1.0.3] no live CN credential; Apple tile passed through");
+        if (result.action === "passthrough-no-auth") console.log("[iRingo Maps CN native map v1.0.4] no live CN credential; Apple tile passed through");
         $done({});
       }
     }).catch(error => {
-      console.log("[iRingo Maps CN native road v1.0.3] passthrough after error: " + (error && error.message || error));
+      console.log("[iRingo Maps CN native map v1.0.4] passthrough after error: " + (error && error.message || error));
       $done({});
     });
   }
