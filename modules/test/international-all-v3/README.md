@@ -1,8 +1,20 @@
-# Maps International-All Test v3（当前：test25）
+# Maps International-All Test v3（当前：test26）
 
 这是与 `test/international-all-v2` 并行的独立测试线，基于 test19（`e3f6c3f`）的代码继续修改。目标不变：国内标准地图 POI 完整且道路/POI 不偏移；国内卫星图影像/道路/POI/定位对齐、导航正常；国外标准地图 POI 完整、3D 卫星、四处看看与导航正常。
 
-## test25-cache-proof-versioning（当前版本）
+## test26-style98-only-mainland（当前版本）
+
+test25 实机结果：版本化文件名生效，`gspe11-2-cn-ssl` 请求首次出现——**改写链路本身已打通**；但国内卫星影像不显示。结合 CN 真机清单核对：改写目标参数（`/2/tiles?style=7&v=68&size=1&scale=2`）与设备原生签名的 CN 请求格式完全一致，问题只剩 **accessKey**——style=7 国际请求的 accessKey 是为 `gspe11-ssl` 的原始参数签发的，带到 CN 端点被拒。
+
+另一个此前被忽略的事实：全部日志中大陆卫星请求都是 style=7（v=10421），**从未出现 style=98**——因为清单里国际 `RASTER_SATELLITE` 仍向大陆宣告覆盖且排序在 98 之前，geod 从不选 98。而稳定版当年实机验证"国内外卫星均可显示"的正是 **style=98 请求的跨端点改写**（98 的 accessKey 可被 CN 端点接受，v=226→68 映射已验证）。
+
+test26 修法：
+
+- 国际 `RASTER_SATELLITE*` 选择器**挖除大陆覆盖**（复用 test17 的 `excludeMainlandFromVersions`；当时撤销它是因为 CN/国际双描述符锁定，现清单已无 CN 卫星描述符，98/7 同为国际描述符，锁定条件不存在）→ geod 对大陆只能选 style=98；
+- 路由脚本（`satellite-route.v26.js`）撤回 style=7 改写，只改写 style=98，大陆 style=7 残余请求原样放行；
+- 左下角注释更新为 `test.26`。
+
+## test25-cache-proof-versioning（已被 test26 继承）
 
 test24 实机反馈：请求记录里挂着 `Maps.InternationalAllV3.satellite-route.request` 规则名，但既无 `SatRoute` 日志也无改写，大陆 style=7 请求原样直发。已排除逻辑问题（同一 URL 在本地脚本中改写正确），且档案中当年实机可用的 v6 本地模块用的是完全相同的 `$done({url})` 机制——最自洽的解释是 **Egern 按 URL 路径缓存脚本体，`?v=` 查询参数变化不触发重新下载**：设备一直在执行 test20 时代的旧脚本（只匹配 style=98、无日志），遇到 style=7 静默放行，与观察完全一致。
 

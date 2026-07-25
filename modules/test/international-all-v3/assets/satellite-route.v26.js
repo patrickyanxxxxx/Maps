@@ -2,11 +2,15 @@
  * Confirmed on device (2026-07-26 Egern logs): with no CN satellite
  * descriptor in the manifest, geod requests mainland imagery through BOTH
  * the style=98 (v=226) selector and the legacy style=7 (v=10421)
- * international selector, so both styles are routed to the CN endpoint.
- * test24: every decision is logged so Egern logs prove whether this script
- * is installed and which branch each request took. */
+ * international selector. test26: style-7 rewrites are withdrawn - their
+ * accessKey is signed for the original international parameters and the CN
+ * endpoint rejects them (device-verified in test25: requests reached
+ * gspe11-2-cn-ssl but no imagery rendered). The manifest now excludes the
+ * mainland from style-7 coverage instead, pushing geod onto style=98 whose
+ * CN rewrite is the stable branch's device-proven path. Every decision is
+ * logged so Egern logs prove which branch each request took. */
 (() => {
-	const TAG = "[iRingo SatRoute test.25]";
+	const TAG = "[iRingo SatRoute test.26]";
 	const req = globalThis.$request;
 	if (!req?.url) return $done({});
 	let url;
@@ -17,7 +21,7 @@
 		return $done({});
 	}
 	const style = url.searchParams.get("style") ?? url.searchParams.get("tile_style");
-	if (url.hostname !== "gspe11-ssl.ls.apple.com" || url.pathname !== "/tile" || (style !== "98" && style !== "7")) {
+	if (url.hostname !== "gspe11-ssl.ls.apple.com" || url.pathname !== "/tile" || style !== "98") {
 		console.log(`${TAG} pass (style=${style}) ${url.hostname}${url.pathname}`);
 		return $done({});
 	}

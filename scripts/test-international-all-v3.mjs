@@ -114,7 +114,9 @@ const xx = {
 		tile("RASTER_SATELLITE", "https://gspe11-ssl.ls.apple.com/tile", {
 			validVersion: [{ identifier: 9911, availableTiles: [{ minX: 0, minY: 0, maxX: 255, maxY: 255, minZ: 8, maxZ: 21 }] }],
 		}),
-		tile("RASTER_SATELLITE_NIGHT", "https://gspe11-ssl.ls.apple.com/tile"),
+		tile("RASTER_SATELLITE_NIGHT", "https://gspe11-ssl.ls.apple.com/tile", {
+			validVersion: [{ identifier: 9912, availableTiles: [{ minX: 0, minY: 0, maxX: 255, maxY: 255, minZ: 8, maxZ: 21 }] }],
+		}),
 		// iOS 27 international satellite selector: mirrors the live manifest
 		// (identifier 226, empty whitelist, single global region).
 		tile("UNUSED_98", "https://gspe11-ssl.ls.apple.com/tile", {
@@ -181,13 +183,28 @@ const assertTest20Invariants = (result, cnSource, xxSource, label) => {
 		if (resultRegionCount <= sourceRegionCount) throw new Error(`${label}: style-98 mainland coverage was not appended`);
 		if (!routed.validVersion?.[0]?.availableTiles?.slice(0, sourceRegionCount).every((region, index) => JSON.stringify(region) === JSON.stringify(sourceRoutedSatellite.validVersion[0].availableTiles[index]))) throw new Error(`${label}: style-98 original coverage changed`);
 	}
-	// The plain international satellite chain must remain byte-for-byte native.
+	// test26: the plain international satellite chain must exclude the mainland
+	// grid (pushing geod onto the style-98 selector for mainland imagery) while
+	// keeping foreign/global coverage.
+	const inMainlandGrid = region => {
+		if (!region || region.minZ < 8) return false;
+		const factor = 2 ** (region.minZ - 8);
+		const x8 = Math.floor(region.minX / factor);
+		const y8 = Math.floor(region.minY / factor);
+		// Beijing-area probe cell (z8 210,96) must not be advertised.
+		const px = 210, py = 96;
+		const maxX8 = Math.ceil((region.maxX + 1) / factor) - 1;
+		const maxY8 = Math.ceil((region.maxY + 1) / factor) - 1;
+		return px >= x8 && px <= maxX8 && py >= y8 && py <= maxY8;
+	};
 	for (const style of satelliteStyles) {
 		const source = (xxSource.tileSet || []).find(item => item.style === style);
 		if (!source) continue;
 		const output = result.tileSet.find(item => item.style === style && !/-cn-ssl\./.test(item.baseURL ?? ""));
 		if (!output) throw new Error(`${label}: international satellite selector is missing: ${style}`);
-		if (JSON.stringify(output.validVersion) !== JSON.stringify(source.validVersion)) throw new Error(`${label}: international satellite coverage was modified: ${style}`);
+		const sourceHasDetailedCoverage = source.validVersion?.some(version => version.availableTiles?.some(region => region.maxZ >= 8));
+		if (sourceHasDetailedCoverage && !output.validVersion?.length) throw new Error(`${label}: international satellite coverage vanished: ${style}`);
+		if (output.validVersion?.some(version => version.availableTiles?.some(inMainlandGrid))) throw new Error(`${label}: international satellite still advertises mainland coverage: ${style}`);
 	}
 	// Munin/SPR/Look Around stays byte-for-byte international; no CN roads.
 	for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA"]) {
@@ -289,7 +306,7 @@ if (!responseText.includes("u.tileGroup=Array.from(u.tileGroup??[])")) throw new
 
 // --- satellite-route.js: mainland style-98 requests are rewritten, foreign
 // and non-98 requests pass through untouched.
-const routeText = await readFile(`${root}/assets/satellite-route.v25.js`, "utf8");
+const routeText = await readFile(`${root}/assets/satellite-route.v26.js`, "utf8");
 const runRoute = url => {
 	let output;
 	const context = { URL, URLSearchParams, Number, Math, console, globalThis: undefined, $request: { url }, $done: value => { output = value; } };
@@ -307,15 +324,12 @@ if (beijingURL.searchParams.get("vertical_datum") !== "wgs84") throw new Error("
 if (beijingURL.searchParams.get("region") !== null || beijingURL.searchParams.get("h") !== null) throw new Error("mainland satellite request kept international-only parameters");
 const tokyo = runRoute("https://gspe11-ssl.ls.apple.com/tile?style=98&v=226&region=0&z=14&x=14538&y=6450&h=0");
 if (tokyo?.url) throw new Error("foreign style-98 request was modified");
-// test23: the legacy style=7 international selector also serves mainland
-// requests on device (observed failing with v=10421); route those too.
+// test26: style-7 rewrites are withdrawn (accessKey signed for international
+// parameters fails on the CN endpoint); mainland style-7 requests should no
+// longer occur because the manifest excludes mainland from their coverage,
+// and any stragglers must pass through untouched.
 const beijing7 = runRoute("https://gspe11-ssl.ls.apple.com/tile?style=7&size=2&scale=2&v=10421&z=11&x=1615&y=840&vertical_datum=wgs84&preflight=2&accessKey=TEST7");
-if (!beijing7?.url) throw new Error("mainland style-7 request was not rewritten");
-const beijing7URL = new URL(beijing7.url);
-if (beijing7URL.hostname !== "gspe11-2-cn-ssl.ls.apple.com" || beijing7URL.pathname !== "/2/tiles") throw new Error("mainland style-7 endpoint mismatch");
-if (beijing7URL.searchParams.get("style") !== "7" || beijing7URL.searchParams.get("v") !== "68" || beijing7URL.searchParams.get("size") !== "1" || beijing7URL.searchParams.get("scale") !== "2") throw new Error("mainland style-7 target parameters mismatch");
-if (beijing7URL.searchParams.get("x") !== "1615" || beijing7URL.searchParams.get("y") !== "840" || beijing7URL.searchParams.get("z") !== "11") throw new Error("mainland style-7 coordinates changed");
-if (beijing7URL.searchParams.get("accessKey") !== "TEST7") throw new Error("mainland style-7 accessKey was dropped");
+if (beijing7?.url) throw new Error("mainland style-7 request must pass through in test26");
 const tokyo7 = runRoute("https://gspe11-ssl.ls.apple.com/tile?style=7&size=2&scale=2&v=10421&z=11&x=1817&y=806");
 if (tokyo7?.url) throw new Error("foreign style-7 request was modified");
 const sputnik = runRoute("https://gspe11-ssl.ls.apple.com/tile?style=15&v=100&z=14&x=13450&y=6220");
@@ -340,13 +354,13 @@ if (existsSync(realCNPath) && existsSync(realUSPath)) {
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v3",
-	"6.4.0-test.25-cache-proof-versioning",
+	"6.4.0-test.26-style98-only-mainland",
 	'CountryCode:"US"',
 	'TileSet.Satellite:"ROUTE"',
 	"modules/test/international-all-v3/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
-	"assets/satellite-route.v25.js",
+	"assets/satellite-route.v26.js",
 	"gspe11-ssl.ls.apple.com",
 ]) {
 	if (!moduleText.includes(marker)) throw new Error(`Surge module is missing ${marker}`);
@@ -371,10 +385,10 @@ for (const marker of [
 	"modules/test/international-all-v3/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
-	"assets/satellite-route.v25.js",
+	"assets/satellite-route.v26.js",
 	"binary_body: true",
 	"- gspe11-ssl.ls.apple.com",
-	"test25-cache-proof-versioning",
+	"test26-style98-only-mainland",
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }

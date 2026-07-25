@@ -1,7 +1,7 @@
 name: ' iRingo: 🗺️ Maps International-All Test v3'
 description: |-
   Egern 优先测试版本
-  test25-cache-proof-versioning：路由脚本改用带版本号的文件名绕开客户端脚本缓存；地图左下角注释显示 test.25 字样用于确认清单版本
+  test26-style98-only-mainland：国际 style=7 卫星选择器挖除大陆覆盖，大陆卫星统一经 style=98 选择器走已验证的 CN 改写链；左下角注释显示 test.26 用于确认清单版本
   国内高德地图、POI、交通、导航与定位修正
   国际卫星、3D、Flyover、完整四处看看服务链、地球与道路能力
   大陆 style=98/7 卫星请求按瓦片坐标改写到 CN 端点，国外请求保持国际链，卫星模式跨区不再锁定
@@ -44,7 +44,7 @@ compat_arguments_desc: |
       ├ TileSet.Map/POI/Traffic=CN: 国内底图、POI 与交通
       ├ TileSet.Flyover/Munin=XX: 国际原生主组保留 3D、Flyover 与可交互四处看看完整链
       ├ TileSet.Roads=XX: 道路网络/SPR/Munin 能力保持国际链；大陆 VECTOR_ROADS 道路图层由 CN 清单区域化补充（test23）
-      ├ TileSet.Satellite=ROUTE: 单一国际卫星选择器；大陆 style=98/7 请求由 satellite-route.js 按坐标改写到 CN 端点
+      ├ TileSet.Satellite=ROUTE: 单一国际卫星选择器；大陆 style=98 请求由 satellite-route.v26.js 按坐标改写到 CN 端点；style=7 大陆覆盖已从清单挖除
       ├ Munin URL=XX: 四处看看同时保留国际服务及资源入口
       ├ Config.Announcements.Environment=CN: 使用中国公告环境
       └ Storage=Argument: 模块参数优先，避免旧持久化参数覆盖
@@ -77,28 +77,28 @@ scriptings:
 - http_response:
     name: Maps.InternationalAllV3.defaults.response
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.25-cache-proof-versioning
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.26-style98-only-mainland
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Hybrid.MainlandWhitelist="{{{Hybrid.MainlandWhitelist}}}"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
 - http_request:
     name: Maps.InternationalAllV3.manifest.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/request.bundle.js?v=6.4.0-test.25-cache-proof-versioning
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/request.bundle.js?v=6.4.0-test.26-style98-only-mainland
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Hybrid.MainlandWhitelist="{{{Hybrid.MainlandWhitelist}}}"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: Maps.InternationalAllV3.manifest.response
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.25-cache-proof-versioning
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.26-style98-only-mainland
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Hybrid.MainlandWhitelist="{{{Hybrid.MainlandWhitelist}}}"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
     binary_body: true
 - http_request:
-    name: Maps.InternationalAllV3.satellite-route.v25.request
+    name: Maps.InternationalAllV3.satellite-route.v26.request
     match: ^https?:\/\/gspe11-ssl\.ls\.apple\.com\/tile
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/satellite-route.v25.js?v=6.4.0-test.25-cache-proof-versioning
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/satellite-route.v26.js?v=6.4.0-test.26-style98-only-mainland
 mitm:
   hostnames:
     includes:
