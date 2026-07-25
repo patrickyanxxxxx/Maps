@@ -152,10 +152,18 @@ for (const style of ["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT", "SPUTNIK_META
 	if (!descriptors.some(item => item.baseURL.includes("gspe11-ssl"))) throw new Error(`international visual descriptor was not restored: ${style}`);
 	if (descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`CN visual descriptor still shadows international imagery: ${style}`);
 }
-if (cnResult.tileSet.some(item => item.style === "VECTOR_ROADS" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland road selector leaked into Look Around chain");
+if (!cnResult.tileSet.some(item => item.style === "VECTOR_ROADS" && item.baseURL.includes("-cn-ssl"))) throw new Error("native mainland road selector was lost");
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland traffic was not preserved");
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && !item.baseURL.includes("-cn-ssl"))) throw new Error("international traffic fallback was not preserved");
-if (cnResult.releaseInfo !== "XX-release") throw new Error("international capability identity was not applied");
+if (cnResult.releaseInfo !== "CN-release") throw new Error("native CN coordinate identity was not preserved");
+const nativeCNStandard = cnResult.tileSet.find(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"));
+if (!nativeCNStandard) throw new Error("native CN standard map was replaced");
+if (JSON.stringify(nativeCNStandard) !== JSON.stringify(cn.tileSet.find(item => item.style === "VECTOR_STANDARD"))) throw new Error("native CN standard descriptor was mutated");
+for (const style of ["VECTOR_ROADS", "VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTION"]) {
+	if (cn.tileSet.some(item => item.style === style) && !cnResult.tileSet.some(item => item.style === style && item.baseURL.includes("-cn-ssl"))) throw new Error(`native CN road descriptor was lost: ${style}`);
+	if (!cnResult.tileSet.some(item => item.style === style && !item.baseURL.includes("-cn-ssl"))) throw new Error(`international road capability was not appended: ${style}`);
+}
+if (cnResult.tileGroup.length !== 1 || cnResult.tileGroup[0].tileSet.length !== cnResult.tileSet.length) throw new Error("CN inclusive tile group does not reference all international capabilities");
 
 const xxResult = adaptiveFix(xx, { CN: cn, XX: xx }, settings, "US");
 if (!xxResult.urlInfoSet[0].dispatcherURL.includes("autonavi")) throw new Error("mainland dispatcher was not injected into US baseline");
@@ -347,14 +355,12 @@ if (runSatellite(tokyoSatelliteInput) !== tokyoSatelliteInput) throw new Error("
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.8",
-	"cnstandard3",
-	"CountryCode:\"US\"",
+	"6.4.0-test.9-cn-native",
+	"CountryCode:\"CN\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
-	"assets/cn-native-road.js",
 	"assets/satellite-route.js",
 ]) {
 	if (!moduleText.includes(marker)) throw new Error(`Surge module is missing ${marker}`);
@@ -365,7 +371,7 @@ if (moduleText.includes("DOMAIN,gspe11-ssl.ls.apple.com,DIRECT")) throw new Erro
 const egernText = await readFile(`${root}/iRingo.Maps.yaml`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"GeoManifest.Dynamic.Config.CountryCode: US",
+	"GeoManifest.Dynamic.Config.CountryCode: CN",
 	"UrlInfoSet.RAP: Apple",
 	"LogLevel: WARN",
 	'TileSet.Map="CN"',
@@ -384,9 +390,8 @@ for (const marker of [
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("cnstandard3")) throw new Error("Egern module does not expose the cnstandard3 cache identity");
-if (!egernText.includes("assets/cn-native-road.js")) throw new Error("Egern module is missing the mainland native standard-map route");
-if (!egernText.includes("gspe19(?:-kittyhawk)?-ssl")) throw new Error("Egern module is missing the international standard-map request matcher");
+if (!egernText.includes("test.9-cn-native")) throw new Error("Egern module does not expose the test9 cache identity");
+if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
 if (egernText.includes("surge-adaptive-v1.4.0")) throw new Error("Egern module references the retired directory");
 if (egernText.includes("match: gspe11-ssl.ls.apple.com")) throw new Error("Egern module direct-routes international 3D tiles and may make them unreachable");
 

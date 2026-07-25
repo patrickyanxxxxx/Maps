@@ -22,28 +22,29 @@
 - `test.8` 改用 US 原生清单作为默认主体，不再重排国际 `tileSet`、3D `tileGroup`、资源及署名索引；国内高德二维图层追加在国际描述符之后，并只补充国内 POI、导航、反向地理编码和坐标修正服务。目标是避免 Apple 高精度网格/DSM/JPEG/ASTC 纹理链因索引重建而退化为低细节显示。
 - `test.8` 国内标准地图修正：保留高德二维瓦片原始 `dataSet` 标识及 `CN` 服务区域白名单，避免系统把 GCJ-02 图层当作全球 Apple 图层而产生道路、POI 与底图偏移；国际 3D 分组不变。
 - `test.8-cnstandard3` 在不改动 POI、卫星、导航和国际 3D 清单逻辑的前提下，为 Egern 增加实际瓦片请求路由：大陆标准底图和道路强制使用同一套 CN 原生瓦片坐标系，解决 POI 正确但道路仍使用国际 WGS-84 瓦片造成的视觉偏移。
+- `test.9-cn-native` 根据实机 DEBUG 日志调整主体：日志确认旧版实际返回 `CountryCode=US`、`releaseInfo=PROD (24.20)`，且没有请求路由命中记录。因此本版改由 CN 原生清单和 `PROD-CN` 身份负责国内道路、POI、交通、导航及定位坐标解释；US 仅追加国际卫星、3D、Flyover、Munin/SPR、全球覆盖与道路能力，不再改写国内标准底图请求坐标。
 - 测试模块和四个脚本全部放在本目录，避免覆盖稳定 `modules/assets/`。
 - Egern 只公开脚本真正读取的三个参数，其余服务组合固定，避免旧 BoxJs/持久化配置覆盖测试结果。
 - 所有脚本地址指向远程 `test/international-all-v2` 分支；分支上传前不可直接通过远程链接导入。
 
 ## 文件
 
-- `iRingo.Maps.yaml`：Egern 主测试模块，包含大陆原生标准底图/道路授权观察与路由。
+- `iRingo.Maps.yaml`：Egern 主测试模块，默认使用 CN 原生清单主体。
 - `iRingo.Maps.sgmodule`：Surge 兼容模块，额外启用国内道路授权观察与坐标重写。
 - `assets/request.bundle.js`：AUTO 清单分支与另一份清单预热。
 - `assets/response.bundle.js`：自适应 CN/国际资源合并和环视隔离。
-- `assets/cn-native-road.js`：Egern/Surge 国内标准底图与道路授权观察、按坐标路由。
+- `assets/cn-native-road.js`：保留的上一轮诊断脚本；`test.9-cn-native` 模块不再引用。
 - `assets/satellite-route.js`：iOS 27 国内卫星按坐标重写。
 
 ## Egern 默认参数
 
 | 参数 | 默认值 | 作用 |
 | --- | --- | --- |
-| `GeoManifest.Dynamic.Config.CountryCode` | `US` | 以国际清单为主体并保留 Apple 原生 3D 索引/分组；同时预热 CN 清单用于国内图层和服务注入 |
+| `GeoManifest.Dynamic.Config.CountryCode` | `CN` | 以 CN 原生清单负责国内坐标解释，并预热 US 清单用于追加国际功能 |
 | `UrlInfoSet.RAP` | `Apple` | 使用国际评分、照片与反馈服务 |
 | `LogLevel` | `WARN` | 仅记录警告和错误 |
 
-Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`，`Map/POI/Traffic=CN`，`Flyover/Munin/Roads=XX`，`Satellite=HYBRID`，`Storage=Argument`。这样国内标准地图、POI、交通、导航和 GCJ-02 修正由 CN 分支保留，国外卫星、3D、Flyover、四处看看和 Apple 道路能力由国际分支补充。
+Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`，`Map/POI/Traffic=CN`，`Flyover/Munin/Roads=XX`，`Satellite=HYBRID`，`Storage=Argument`。CN 分支保持原生主体和坐标语义；国际功能以附加描述符形式补充。
 
 ## 建议测试方式
 
