@@ -51,7 +51,6 @@ const cn = {
 	dataSet: [{ identifier: 1 }],
 	displayString: [{ key: "cn" }],
 	muninBucket: [{ identifier: 1 }],
-	tileGroup: [{ identifier: 1, qualityMarker: "CN-low" }],
 	releaseInfo: "CN-release",
 };
 const xx = {
@@ -85,7 +84,6 @@ const xx = {
 	dataSet: [{ identifier: 2 }],
 	displayString: [{ key: "xx" }],
 	muninBucket: [{ identifier: 2 }],
-	tileGroup: [{ identifier: 2, qualityMarker: "XX-full" }],
 	releaseInfo: "XX-release",
 };
 
@@ -108,7 +106,6 @@ if (cnResult.tileSet.some(item => item.style === "VECTOR_ROADS" && item.baseURL.
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland traffic was not preserved");
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && !item.baseURL.includes("-cn-ssl"))) throw new Error("international traffic fallback was not preserved");
 if (cnResult.releaseInfo !== "XX-release") throw new Error("international capability identity was not applied");
-if (cnResult.tileGroup?.[0]?.qualityMarker !== "XX-full") throw new Error("international 3D tile-group metadata was not applied");
 
 const xxResult = adaptiveFix(xx, { CN: cn, XX: xx }, settings, "US");
 if (!xxResult.urlInfoSet[0].dispatcherURL.includes("gsp-ssl")) throw new Error("international dispatcher was not preserved");
@@ -169,7 +166,7 @@ if (runSatellite(tokyoSatelliteInput) !== tokyoSatelliteInput) throw new Error("
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.4",
+	"6.4.0-test.5",
 	"CountryCode:\"AUTO\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",

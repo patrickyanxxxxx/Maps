@@ -218,12 +218,6 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     result.attribution = buildAttributions(cn.attribution);
     result.displayString = clone(international.displayString || []);
     result.muninBucket = clone(international.muninBucket || []);
-    // Keep the complete international group metadata as well as the tile
-    // descriptors. The group contains capability/LOD context used by the 3D
-    // renderer; retaining a CN group around international C3M/DSM textures can
-    // make Maps settle on an incomplete or lower-detail presentation.
-    result.tileGroup = clone(international.tileGroup || []);
-
     // v1.3.3 diagnostic: keep the complete China service graph and regulatory
     // metadata, but expose the international manifest identity when testing
     // foreign capability. This is deliberately independent of Dispatcher,
