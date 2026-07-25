@@ -114,6 +114,9 @@ const xx = {
 		tile("RASTER_SATELLITE_NIGHT", "https://gspe11-ssl.ls.apple.com/tile"),
 		tile("SPUTNIK_METADATA", "https://gspe11-ssl.ls.apple.com/tile"),
 		tile("FLYOVER_C3M_MESH", "https://gspe11-ssl.ls.apple.com/tile"),
+		tile("UNUSED_98", "https://gspe11-ssl.ls.apple.com/tile", {
+			validVersion: [{ identifier: 226, availableTiles: [{ minX: 116000, minY: 51000, maxX: 117000, maxY: 52000, minZ: 17, maxZ: 20 }] }],
+		}),
 	],
 	resource: [{ resourceType: 2, filename: "xx.dat", alternateResourceURLIndex: 0 }],
 	attribution: [{ name: "‎", resource: [] }, { name: "Apple", resource: [] }],
@@ -202,7 +205,7 @@ for (const group of cnResult.tileGroup) {
 	if (group.attributionIndex?.some(index => index < 0 || index >= cnResult.attribution.length)) throw new Error("tile group contains an invalid attribution index");
 }
 const activeCapabilityRefs = cnResult.tileGroup.flatMap(group => group.tileSet || []);
-for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "RASTER_SATELLITE", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
+for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "UNUSED_98", "RASTER_SATELLITE", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
 	if (!activeCapabilityRefs.some(ref => cnResult.tileSet[ref.tileSetIndex]?.style === style && !cnResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl"))) throw new Error(`active international group is missing: ${style}`);
 }
 const activeBaseGroup = cnResult.tileGroup.find(group => group.tileSet?.some(ref => cnResult.tileSet[ref.tileSetIndex]?.style === "VECTOR_STANDARD" && !cnResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl")));
@@ -300,7 +303,7 @@ for (const index of nativeUSOrder) {
 for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_POI_V2", "VECTOR_POI_V2_UPDATE", "RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT"]) {
 	if (!mainlandGroup.tileSet.some(ref => xxResult.tileSet[ref.tileSetIndex]?.style === style)) throw new Error(`separate mainland group is missing: ${style}`);
 }
-for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
+for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "UNUSED_98", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
 	if (!mainlandGroup.tileSet.some(ref => xxResult.tileSet[ref.tileSetIndex]?.style === style && !xxResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl"))) {
 		throw new Error(`adaptive group is missing international capability: ${style}`);
 	}
@@ -326,11 +329,18 @@ for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_POI_V2", "VECTOR_P
 		throw new Error(`separate iOS 27 mainland group is missing selector: ${style}`);
 	}
 }
-for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "RASTER_SATELLITE", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
+for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "UNUSED_98", "RASTER_SATELLITE", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
 	if (!separatedRefs.some(ref => singleGroupResult.tileSet[ref.tileSetIndex]?.style === style && !singleGroupResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl"))) {
 		throw new Error(`iOS 27 active group lost international capability: ${style}`);
 	}
 }
+const style98Position = separatedRefs.findIndex(ref => singleGroupResult.tileSet[ref.tileSetIndex]?.style === "UNUSED_98");
+const firstCNSatellitePosition = separatedRefs.findIndex(ref =>
+	singleGroupResult.tileSet[ref.tileSetIndex]?.style === "RASTER_SATELLITE" &&
+	singleGroupResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl")
+);
+if (style98Position < 0) throw new Error("iOS 27 style=98 international 3D satellite selector is missing");
+if (firstCNSatellitePosition >= 0 && style98Position > firstCNSatellitePosition) throw new Error("iOS 27 style=98 selector is still behind the CN satellite fallback");
 if (!responseText.includes("u.tileGroup=Array.from(u.tileGroup??[])")) throw new Error("legacy tile-group rebuilder was not bypassed");
 if (responseText.includes("u=iRingoSurgeAdaptiveHybridFix(u,s,o,t),u.tileGroup=tt.tileGroups")) throw new Error("legacy tile-group rebuilder is still active after test8 fix");
 
@@ -415,7 +425,7 @@ if (outside.action !== "passthrough") throw new Error("foreign road request was 
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.19-international-capability-priority",
+	"6.4.0-test.20-ios27-style98-priority",
 	"CountryCode:\"CN\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
@@ -450,7 +460,7 @@ for (const marker of [
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("test19-international-capability-priority")) throw new Error("Egern module does not expose the test19 cache identity");
+if (!egernText.includes("test20-ios27-style98-priority")) throw new Error("Egern module does not expose the test20 cache identity");
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
 if (egernText.includes("assets/satellite-route.js")) throw new Error("Egern still uses the retired satellite imagery rewrite");
 if (egernText.includes("assets/cn-satellite-road.js")) throw new Error("Egern still performs the retired test14 satellite-road rewrite");
