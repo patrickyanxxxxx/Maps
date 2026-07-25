@@ -40,6 +40,10 @@ const cn = {
 		tile("VECTOR_TRAFFIC_SKELETON", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("VECTOR_ROADS", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("MUNIN_METADATA", "https://gsp76-cn-ssl.ls.apple.com/munin"),
+		tile("RASTER_SATELLITE", "https://gspe11-2-cn-ssl.ls.apple.com/2/tiles"),
+		tile("RASTER_SATELLITE_NIGHT", "https://gspe11-2-cn-ssl.ls.apple.com/2/tiles"),
+		tile("SPUTNIK_METADATA", "https://gspe11-2-cn-ssl.ls.apple.com/2/tiles"),
+		tile("FLYOVER_C3M_MESH", "https://gspe11-2-cn-ssl.ls.apple.com/2/tiles"),
 	],
 	resource: [{ resourceType: 1, filename: "cn.dat" }],
 	attribution: [{ name: "AutoNavi", resource: [] }],
@@ -69,7 +73,10 @@ const xx = {
 		tile("VECTOR_SPR_METADATA", "https://gsp76-ssl.ls.apple.com/spr"),
 		tile("VECTOR_SPR_ROADS", "https://gsp76-ssl.ls.apple.com/spr"),
 		tile("SPR_ASSET_METADATA", "https://gsp76-ssl.ls.apple.com/spr"),
+		tile("RASTER_SATELLITE", "https://gspe11-ssl.ls.apple.com/tile"),
+		tile("RASTER_SATELLITE_NIGHT", "https://gspe11-ssl.ls.apple.com/tile"),
 		tile("SPUTNIK_METADATA", "https://gspe11-ssl.ls.apple.com/tile"),
+		tile("FLYOVER_C3M_MESH", "https://gspe11-ssl.ls.apple.com/tile"),
 	],
 	resource: [{ resourceType: 2, filename: "xx.dat" }],
 	attribution: [{ name: "‎", resource: [] }, { name: "Apple", resource: [] }],
@@ -89,6 +96,11 @@ if (!cnResult.urlInfoSet[0].alternateResourcesURL.includes("gsp-ssl")) throw new
 if (!cnResult.tileSet.some(item => item.style === "MUNIN_METADATA" && item.baseURL.includes("gsp76-ssl"))) throw new Error("international Munin was not restored");
 for (const style of ["VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA"]) {
 	if (!cnResult.tileSet.some(item => item.style === style && item.baseURL.includes("gsp76-ssl"))) throw new Error(`international Look Around selector was not restored: ${style}`);
+}
+for (const style of ["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
+	const descriptors = cnResult.tileSet.filter(item => item.style === style);
+	if (!descriptors.some(item => item.baseURL.includes("gspe11-ssl"))) throw new Error(`international visual descriptor was not restored: ${style}`);
+	if (descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`CN visual descriptor still shadows international imagery: ${style}`);
 }
 if (cnResult.tileSet.some(item => item.style === "VECTOR_ROADS" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland road selector leaked into Look Around chain");
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland traffic was not preserved");
@@ -154,7 +166,7 @@ if (runSatellite(tokyoSatelliteInput) !== tokyoSatelliteInput) throw new Error("
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.2",
+	"6.4.0-test.3",
 	"CountryCode:\"AUTO\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",

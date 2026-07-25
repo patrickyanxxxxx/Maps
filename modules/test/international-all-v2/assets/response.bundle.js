@@ -93,6 +93,31 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     "VECTOR_SPR_POLAR",
     "VECTOR_SPR_MODELS_OCCLUSION"
   ]);
+  // A CN manifest can contain styles with the same names as the international
+  // satellite/Flyover chain. Merely appending missing styles leaves those CN
+  // descriptors first, so Maps may never request foreign imagery. Replace the
+  // complete visual capability chain with the international descriptors; the
+  // separate coordinate router sends only mainland style 98 tiles back to CN.
+  const internationalVisualStyles = new Set([
+    "RASTER_SATELLITE",
+    "RASTER_SATELLITE_NIGHT",
+    "RASTER_SATELLITE_DIGITIZE",
+    "RASTER_SATELLITE_ASTC",
+    "RASTER_SATELLITE_POLAR",
+    "RASTER_SATELLITE_POLAR_NIGHT",
+    "SPUTNIK_METADATA",
+    "SPUTNIK_C3M",
+    "SPUTNIK_DSM",
+    "SPUTNIK_DSM_GLOBAL",
+    "SPUTNIK_VECTOR_BORDER",
+    "FLYOVER_C3M_MESH",
+    "FLYOVER_C3M_JPEG_TEXTURE",
+    "FLYOVER_C3M_ASTC_TEXTURE",
+    "FLYOVER_VISIBILITY",
+    "FLYOVER_SKYBOX",
+    "FLYOVER_NAVGRAPH",
+    "FLYOVER_METADATA"
+  ]);
   const internationalCriticalStyles = new Set([
     "VECTOR_TRANSIT",
     "VECTOR_TRANSIT_SELECTION",
@@ -155,6 +180,7 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
   if (useChinaBaseline) {
     const cnStyles = new Set((cn.tileSet || []).map(tile => tile?.style));
     const replaceStyles = new Set(internationalMuninStyles);
+    for (const style of internationalVisualStyles) replaceStyles.add(style);
     const sharedReplacement = sharedMode === "Balanced" ? balancedSelectorStyles : internationalCriticalStyles;
     for (const style of sharedReplacement) replaceStyles.add(style);
     if (foreignRegionCapability === "International") replaceStyles.add(foreignRegionCapabilityStyle);
