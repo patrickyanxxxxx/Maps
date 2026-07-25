@@ -77,9 +77,10 @@ console.log(JSON.stringify({
 	offlineMetadata: result.offlineMetadata?.map((item, index) => ({ index, regulatoryRegionId: item?.regulatoryRegionId })),
 	tileGroups: result.tileGroup?.map((group, index) => ({ index, identifier: group?.identifier, offlineMetadataIndex: group?.offlineMetadataIndex, refs: group?.tileSet?.length })),
 }));
-if (result.tileGroup.length !== 1) throw new Error(`real manifest must expose one CN-owned activity group, got ${result.tileGroup.length}`);
-const chinaGroup = result.tileGroup[0];
-if (result.offlineMetadata[chinaGroup.offlineMetadataIndex]?.regulatoryRegionId !== 2) throw new Error("real activity group is not owned by CN regulatoryRegionId=2");
+if (result.tileGroup.length !== 2) throw new Error(`real manifest must expose specialized CN base and international capability groups, got ${result.tileGroup.length}`);
+const chinaGroup = result.tileGroup.find(group => result.offlineMetadata[group.offlineMetadataIndex]?.regulatoryRegionId === 2);
+const capabilityGroup = result.tileGroup.find(group => result.offlineMetadata[group.offlineMetadataIndex]?.regulatoryRegionId === 0);
+if (!chinaGroup || !capabilityGroup) throw new Error("real specialized provider groups lost their regulatory identities");
 for (const group of result.tileGroup) {
 	if ((group.tileSet || []).some(ref => ref.tileSetIndex < 0 || ref.tileSetIndex >= result.tileSet.length)) throw new Error("real manifest contains invalid tile index");
 	if ((group.resourceIndex || []).some(index => index < 0 || index >= result.resource.length)) throw new Error("real manifest contains invalid resource index");
@@ -89,8 +90,9 @@ for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_ROADS", "RASTER_SA
 	if (!chinaGroup.tileSet.some(ref => result.tileSet[ref.tileSetIndex]?.style === style && isCN(result.tileSet[ref.tileSetIndex]))) throw new Error(`real CN group is missing ${style}`);
 }
 for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "UNUSED_98", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
-	if (!chinaGroup.tileSet.some(ref => result.tileSet[ref.tileSetIndex]?.style === style && !isCN(result.tileSet[ref.tileSetIndex]))) throw new Error(`real CN-owned capability group is missing international ${style}`);
+	if (!capabilityGroup.tileSet.some(ref => result.tileSet[ref.tileSetIndex]?.style === style && !isCN(result.tileSet[ref.tileSetIndex]))) throw new Error(`real international capability group is missing ${style}`);
 }
+if (capabilityGroup.tileSet.some(ref => ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_TRAFFIC"].includes(result.tileSet[ref.tileSetIndex]?.style))) throw new Error("real international capability group contains ordinary base-map selectors");
 const chinaSatellite = result.tileSet.find(tile => tile?.style === "RASTER_SATELLITE" && isCN(tile));
 const internationalSatellite = result.tileSet.find(tile => tile?.style === "RASTER_SATELLITE" && !isCN(tile));
 const shanghai = { z: 14, x: 12927, y: 6735 };
@@ -104,5 +106,6 @@ console.log(JSON.stringify({
 	outputBytes: bytes.length,
 	tileSets: result.tileSet.length,
 	tileGroups: result.tileGroup.length,
-	activityRegulatoryRegion: result.offlineMetadata[chinaGroup.offlineMetadataIndex]?.regulatoryRegionId,
+	chinaRegulatoryRegion: result.offlineMetadata[chinaGroup.offlineMetadataIndex]?.regulatoryRegionId,
+	capabilityRegulatoryRegion: result.offlineMetadata[capabilityGroup.offlineMetadataIndex]?.regulatoryRegionId,
 }));

@@ -77,6 +77,7 @@ const cn = {
 	dataSet: [{ identifier: 1 }, { identifier: 101 }],
 	displayString: [{ key: "cn" }],
 	muninBucket: [{ identifier: 1 }],
+	offlineMetadata: [{ regulatoryRegionId: 2 }],
 	tileGroup: [{ identifier: 11, tileSet: [{ tileSetIndex: 0, identifier: 1 }], attributionIndex: [0], resourceIndex: [0] }],
 	releaseInfo: "CN-release",
 };
@@ -112,6 +113,7 @@ const xx = {
 	dataSet: [{ identifier: 2 }],
 	displayString: [{ key: "xx" }],
 	muninBucket: [{ identifier: 2 }],
+	offlineMetadata: [{ regulatoryRegionId: 0 }],
 	tileGroup: [{
 		identifier: 22,
 		qualityMarker: "US-native-detail",
@@ -172,7 +174,15 @@ for (const style of ["VECTOR_ROADS", "VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTI
 const satelliteRoads = cnResult.tileSet.filter(item => item.style === "VECTOR_SPR_ROADS");
 if (!satelliteRoads.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error("native CN satellite road overlay was not preserved");
 if (!satelliteRoads.some(item => !item.baseURL.includes("-cn-ssl"))) throw new Error("international satellite/Look Around road fallback was not appended");
-if (cnResult.tileGroup.length !== 1 || cnResult.tileGroup[0].tileSet.length !== cnResult.tileSet.length) throw new Error("CN inclusive tile group does not reference all international capabilities");
+if (cnResult.tileGroup.length !== 2) throw new Error("CN base and international capability groups were not specialized");
+const cnBaseGroup = cnResult.tileGroup.find(group => cnResult.offlineMetadata[group.offlineMetadataIndex]?.regulatoryRegionId === 2);
+const internationalCapabilityGroup = cnResult.tileGroup.find(group => cnResult.offlineMetadata[group.offlineMetadataIndex]?.regulatoryRegionId === 0);
+if (!cnBaseGroup || !internationalCapabilityGroup) throw new Error("specialized provider groups lost their regulatory identities");
+if (!cnBaseGroup.tileSet.some(ref => cnResult.tileSet[ref.tileSetIndex]?.style === "VECTOR_STANDARD" && cnResult.tileSet[ref.tileSetIndex]?.baseURL.includes("-cn-ssl"))) throw new Error("CN base group lost the native standard map");
+if (internationalCapabilityGroup.tileSet.some(ref => cnResult.tileSet[ref.tileSetIndex]?.style === "VECTOR_STANDARD")) throw new Error("international capability group duplicates the standard map selector");
+for (const style of ["RASTER_SATELLITE", "SPUTNIK_METADATA", "MUNIN_METADATA", "VECTOR_SPR_MERCATOR"]) {
+	if (!internationalCapabilityGroup.tileSet.some(ref => cnResult.tileSet[ref.tileSetIndex]?.style === style && !cnResult.tileSet[ref.tileSetIndex]?.baseURL.includes("-cn-ssl"))) throw new Error(`international capability group is missing ${style}`);
+}
 
 const xxResult = adaptiveFix(xx, { CN: cn, XX: xx }, settings, "US");
 if (!xxResult.urlInfoSet[0].dispatcherURL.includes("autonavi")) throw new Error("mainland dispatcher was not injected into US baseline");
@@ -364,7 +374,7 @@ if (runSatellite(tokyoSatelliteInput) !== tokyoSatelliteInput) throw new Error("
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.25-disjoint-satellite-coverage",
+	"6.4.0-test.26-specialized-international-capability-group",
 	"CountryCode:\"CN\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
@@ -397,7 +407,7 @@ for (const marker of [
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("test25-disjoint-satellite-coverage")) throw new Error("Egern module does not expose the test25 cache identity");
+if (!egernText.includes("test26-specialized-international-capability-group")) throw new Error("Egern module does not expose the test26 cache identity");
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
 if (egernText.includes("surge-adaptive-v1.4.0")) throw new Error("Egern module references the retired directory");
 if (egernText.includes("match: gspe11-ssl.ls.apple.com")) throw new Error("Egern module direct-routes international 3D tiles and may make them unreachable");
