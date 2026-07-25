@@ -51,6 +51,7 @@ const cn = {
 	dataSet: [{ identifier: 1 }],
 	displayString: [{ key: "cn" }],
 	muninBucket: [{ identifier: 1 }],
+	tileGroup: [{ identifier: 11, tileSet: [{ tileSetIndex: 0, identifier: 1 }], attributionIndex: [0], resourceIndex: [0] }],
 	releaseInfo: "CN-release",
 };
 const xx = {
@@ -84,6 +85,28 @@ const xx = {
 	dataSet: [{ identifier: 2 }],
 	displayString: [{ key: "xx" }],
 	muninBucket: [{ identifier: 2 }],
+	tileGroup: [{
+		identifier: 22,
+		qualityMarker: "US-native-detail",
+		tileSet: [
+			{ tileSetIndex: 18, identifier: 1 },
+			{ tileSetIndex: 19, identifier: 1 },
+			{ tileSetIndex: 20, identifier: 1 },
+			{ tileSetIndex: 21, identifier: 1 },
+		],
+		attributionIndex: [0, 1],
+		resourceIndex: [0],
+	}, {
+		identifier: 23,
+		qualityMarker: "US-native-base",
+		tileSet: [
+			{ tileSetIndex: 0, identifier: 1 },
+			{ tileSetIndex: 1, identifier: 1 },
+			{ tileSetIndex: 2, identifier: 1 },
+		],
+		attributionIndex: [0, 1],
+		resourceIndex: [0],
+	}],
 	releaseInfo: "XX-release",
 };
 
@@ -108,8 +131,25 @@ if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && !item.base
 if (cnResult.releaseInfo !== "XX-release") throw new Error("international capability identity was not applied");
 
 const xxResult = adaptiveFix(xx, { CN: cn, XX: xx }, settings, "US");
-if (!xxResult.urlInfoSet[0].dispatcherURL.includes("gsp-ssl")) throw new Error("international dispatcher was not preserved");
+if (!xxResult.urlInfoSet[0].dispatcherURL.includes("autonavi")) throw new Error("mainland dispatcher was not injected into US baseline");
+if (!xxResult.urlInfoSet[0].directionsURL.includes("autonavi")) throw new Error("mainland directions were not injected into US baseline");
+if (!xxResult.urlInfoSet[0].muninBaseURL.includes("gsp76-ssl")) throw new Error("international Munin was not preserved in US baseline");
 if (!xxResult.tileSet.some(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland rendering layer was not injected into international baseline");
+for (let index = 0; index < xx.tileSet.length; index++) {
+	if (xxResult.tileSet[index].style !== xx.tileSet[index].style || xxResult.tileSet[index].baseURL !== xx.tileSet[index].baseURL) {
+		throw new Error(`native US tile index changed at ${index}`);
+	}
+}
+for (let index = 0; index < xx.attribution.length; index++) {
+	if (xxResult.attribution[index].name !== xx.attribution[index].name) throw new Error(`native US attribution index changed at ${index}`);
+}
+if (xxResult.tileGroup?.[0]?.qualityMarker !== "US-native-detail") throw new Error("native US detail group metadata was not preserved");
+const native3DRefs = xxResult.tileGroup[0].tileSet.slice(0, 4).map(ref => ref.tileSetIndex);
+if (JSON.stringify(native3DRefs) !== JSON.stringify([18, 19, 20, 21])) throw new Error("native US 3D tile-group indices were changed");
+if (xxResult.tileGroup[0].tileSet.length !== 4 || xxResult.tileGroup[0].attributionIndex.length !== 2 || xxResult.tileGroup[0].resourceIndex.length !== 1) throw new Error("native US 3D group was polluted by mainland references");
+if (!xxResult.tileGroup[1].tileSet.some(ref => ref.tileSetIndex >= xx.tileSet.length)) throw new Error("mainland layers were not appended to the native 2D group");
+if (!responseText.includes("u.tileGroup=Array.from(u.tileGroup??[])")) throw new Error("legacy tile-group rebuilder was not bypassed");
+if (responseText.includes("u=iRingoSurgeAdaptiveHybridFix(u,s,o,t),u.tileGroup=tt.tileGroups")) throw new Error("legacy tile-group rebuilder is still active after test8 fix");
 
 const roadText = await readFile(`${root}/assets/cn-native-road.js`, "utf8");
 const roadContext = { module: { exports: {} }, exports: {}, console, Date, JSON, Number, Math, Promise, setTimeout, decodeURIComponent, encodeURIComponent };
@@ -166,8 +206,8 @@ if (runSatellite(tokyoSatelliteInput) !== tokyoSatelliteInput) throw new Error("
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.7",
-	"CountryCode:\"AUTO\"",
+	"6.4.0-test.8",
+	"CountryCode:\"US\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
 	"assets/request.bundle.js",
@@ -183,7 +223,7 @@ if (moduleText.includes("DOMAIN,gspe11-ssl.ls.apple.com,DIRECT")) throw new Erro
 const egernText = await readFile(`${root}/iRingo.Maps.yaml`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"GeoManifest.Dynamic.Config.CountryCode: AUTO",
+	"GeoManifest.Dynamic.Config.CountryCode: US",
 	"UrlInfoSet.RAP: Apple",
 	"LogLevel: WARN",
 	'TileSet.Map="CN"',

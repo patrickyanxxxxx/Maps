@@ -50,7 +50,92 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     return result;
   };
 
+  // test.8 keeps the US manifest's original indices authoritative. Apple 3D
+  // groups link mesh, DSM, metadata and texture descriptors by tile-set index;
+  // rebuilding every group with every descriptor can make Maps select a
+  // partial/lower-detail chain. Mainland-only descriptors are appended after
+  // all native US entries, then referenced without changing any native index.
+  const preserveInternationalTileGroups = result => {
+    const nativeTileCount = international.tileSet?.length ?? 0;
+    const nativeAttributionCount = international.attribution?.length ?? 0;
+    const nativeResourceCount = international.resource?.length ?? 0;
+    const groups = clone(international.tileGroup || []);
+    // Add mainland descriptors only to the native 2D/base-map group. The 3D
+    // detail groups remain byte-for-byte equivalent at the object-field level:
+    // no CN tile, attribution or resource reference is inserted into them.
+    const baseMatch = groups.reduce((best, group) => {
+      const styles = (group.tileSet || []).map(ref => international.tileSet?.[ref?.tileSetIndex]?.style);
+      const baseScore = styles.filter(style => mainlandRenderingStyles.has(style)).length * 10;
+      const visualPenalty = styles.filter(style => internationalVisualStyles.has(style) || internationalMuninStyles.has(style)).length * 20;
+      const score = baseScore - visualPenalty;
+      return !best || score > best.score ? { group, score } : best;
+    }, null);
+    if (!baseMatch || baseMatch.score <= 0) return groups;
+    const baseGroup = baseMatch.group;
+
+    const tileRefs = Array.isArray(baseGroup.tileSet) ? baseGroup.tileSet : [];
+    const seenTiles = new Set(tileRefs.map(ref => ref?.tileSetIndex));
+    for (let index = nativeTileCount; index < result.tileSet.length; index++) {
+      if (seenTiles.has(index)) continue;
+      const identifier = result.tileSet[index]?.validVersion?.[0]?.identifier;
+      const ref = { tileSetIndex: index };
+      if (typeof identifier !== "undefined") ref.identifier = identifier;
+      tileRefs.push(ref);
+    }
+    baseGroup.tileSet = tileRefs;
+
+    const attributionRefs = Array.isArray(baseGroup.attributionIndex) ? baseGroup.attributionIndex : [];
+    const seenAttributions = new Set(attributionRefs);
+    for (let index = nativeAttributionCount; index < result.attribution.length; index++) {
+      if (!seenAttributions.has(index)) attributionRefs.push(index);
+    }
+    baseGroup.attributionIndex = attributionRefs;
+
+    const resourceRefs = Array.isArray(baseGroup.resourceIndex) ? baseGroup.resourceIndex : [];
+    const seenResources = new Set(resourceRefs);
+    for (let index = nativeResourceCount; index < result.resource.length; index++) {
+      if (!seenResources.has(index)) resourceRefs.push(index);
+    }
+    baseGroup.resourceIndex = resourceRefs;
+    return groups;
+  };
+
+  // Forced CN remains available as a diagnostic fallback. Its descriptor order
+  // is intentionally rebuilt because that branch replaces existing entries;
+  // test.8's default US path never uses this inclusive fallback.
+  const buildInclusiveTileGroups = result => clone(result.tileGroup || cn.tileGroup || international.tileGroup || []).map(group => ({
+    ...group,
+    tileSet: result.tileSet.map((tile, tileSetIndex) => {
+      const ref = { tileSetIndex };
+      const identifier = tile?.validVersion?.[0]?.identifier;
+      if (typeof identifier !== "undefined") ref.identifier = identifier;
+      return ref;
+    }),
+    attributionIndex: result.attribution.map((_, index) => index),
+    resourceIndex: result.resource.map((_, index) => index)
+  }));
+
   const attributionKey = item => [item?.name, item?.dataSet ?? ""].join("|");
+  const appendMainlandAttributions = primary => {
+    const result = clone(primary || []);
+    const seen = new Set(result.map(attributionKey));
+    for (const source of cn.attribution || []) {
+      const attribution = clone(source);
+      if (attribution.name === "AutoNavi" || attribution.name === "高德地图") {
+        attribution.name = "高德地图";
+        attribution.resource = (attribution.resource || []).filter(resource =>
+          resource?.resourceType !== 6 && resource?.resourceType !== "ATTRIBUTION_BADGE"
+        );
+        attribution.region = mainlandRegions(8, 21);
+      }
+      const key = attributionKey(attribution);
+      if (!seen.has(key)) {
+        result.push(attribution);
+        seen.add(key);
+      }
+    }
+    return result;
+  };
   const buildAttributions = baseAttributions => {
     const result = [];
     const seen = new Set();
@@ -247,6 +332,7 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
       if (internationalURLInfo[key]) cnURLInfo[key] = clone(internationalURLInfo[key]);
     }
     result.urlInfoSet = [cnURLInfo];
+    result.tileGroup = buildInclusiveTileGroups(result);
 
     if (!/dispatcher\.is\.autonavi\.com/i.test(endpoint(cnURLInfo.dispatcherURL))) throw new Error("China Dispatcher is missing");
     if (!/direction2\.is\.autonavi\.com/i.test(endpoint(cnURLInfo.directionsURL))) throw new Error("China Directions is missing");
@@ -293,26 +379,60 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
       }).filter(version => version.availableTiles.length);
       if (tile.validVersion.length) chinaTiles.push(tile);
     }
-    result.tileSet = [...chinaTiles, ...clone(international.tileSet || [])];
+    // Append mainland-only layers. Prepending them would shift every native US
+    // tile-set index and break the original high-detail 3D group references.
+    result.tileSet = [...clone(international.tileSet || []), ...chinaTiles];
     result.resource = mergeResources(international.resource, cn.resource);
-    result.attribution = buildAttributions(international.attribution);
-    result.urlInfoSet = clone(international.urlInfoSet || []);
+    // Preserve every native international attribution index. Tile groups refer
+    // to these positions directly, so mainland attribution must only append.
+    result.attribution = appendMainlandAttributions(international.attribution);
+    const internationalURLInfo = clone(international.urlInfoSet?.[0] || {});
+    const mainlandURLInfo = cn.urlInfoSet?.[0] || {};
+    const copyURLKeys = keys => {
+      for (const key of keys) {
+        if (typeof mainlandURLInfo[key] !== "undefined") internationalURLInfo[key] = clone(mainlandURLInfo[key]);
+      }
+    };
+    // Keep the US capability graph authoritative, but restore only the CN
+    // services needed by mainland POI, navigation, reverse geocoding and
+    // GCJ-02. International Munin/RAP/resource entry points remain untouched.
+    copyURLKeys([
+      "dispatcherURL",
+      "backgroundDispatcherURL",
+      "bluePOIDispatcherURL",
+      "spatialLookupURL",
+      "batchReverseGeocoderURL",
+      "backgroundRevGeoURL",
+      "batchReverseGeocoderPlaceRequestURL",
+      "reverseGeocoderVersionsURL",
+      "directionsURL",
+      "etaURL",
+      "simpleETAURL",
+      "proactiveRoutingURL",
+      "realtimeTrafficProbeURL",
+      "batchTrafficProbeURL",
+      "polyLocationShiftURL",
+      "locationShiftURL",
+      "locationShiftEnabledRegion",
+      "locationShiftVersion"
+    ]);
+    result.urlInfoSet = [internationalURLInfo];
     result.dataSet = clone(international.dataSet || []);
     result.displayString = clone(international.displayString || []);
     result.muninBucket = clone(international.muninBucket || []);
+    result.tileGroup = preserveInternationalTileGroups(result);
 
     const urlInfo = result.urlInfoSet?.[0] || {};
-    if (!/gsp-ssl\.ls\.apple\.com/i.test(endpoint(urlInfo.dispatcherURL))) throw new Error("Apple international Dispatcher is missing");
-    if (!/gsp-ssl\.ls\.apple\.com/i.test(endpoint(urlInfo.directionsURL))) throw new Error("Apple international Directions is missing");
-    for (const [key, value] of Object.entries(urlInfo)) {
-      if (isMainlandEndpoint(value)) throw new Error("Mainland endpoint leaked into international URL set: " + key);
-    }
+    if (!/dispatcher\.is\.autonavi\.com/i.test(endpoint(urlInfo.dispatcherURL))) throw new Error("China Dispatcher is missing from US baseline");
+    if (!/direction2\.is\.autonavi\.com/i.test(endpoint(urlInfo.directionsURL))) throw new Error("China Directions is missing from US baseline");
+    if (!/\.is\.autonavi\.com/i.test(endpoint(urlInfo.backgroundRevGeoURL))) throw new Error("China reverse geocoder is missing from US baseline");
+    if (!/gsp(?:e)?76-ssl\.ls\.apple\.com/i.test(endpoint(urlInfo.muninBaseURL))) throw new Error("International Munin URL was replaced in US baseline");
     const leaked = result.tileSet.find(tile => internationalCriticalStyles.has(tile?.style) && isMainlandEndpoint(tile?.baseURL));
     if (leaked) throw new Error("Mainland critical selector leaked into international baseline: " + leaked.style);
-    console.log("[iRingo Maps International-All Test v2] US baseline preserved; injected " + chinaTiles.length + " mainland rendering layers without CN background geocoder/location shift");
+    console.log("[iRingo Maps International-All Test v2 test.8] native US 3D indices/groups preserved; appended " + chinaTiles.length + " mainland rendering layers");
   }
 
   return result;
 }
 
-async function ti(e,t,i){let a=new URL(e.url);M.info(`url: ${a.toJSON()}`);let n=a.pathname.split("/").filter(Boolean);M.info(`PATHs: ${n}`);let r=(t.headers?.["Content-Type"]??t.headers?.["content-type"])?.split(";")?.[0];M.info(`FORMAT: ${r}`);let s=["Maps"];"watchos"===a.searchParams.get("os")&&s.push("Watch"),M.info(`PLATFORM: ${s}`);let{Settings:o,Caches:l,Configs:c}=await H("iRingo",s,Z);M.logLevel=o.LogLevel;let u={};switch(r){case void 0:case"application/x-www-form-urlencoded":case"text/plain":default:case"application/x-mpegURL":case"application/x-mpegurl":case"application/vnd.apple.mpegurl":case"audio/mpegurl":case"text/vtt":case"application/vtt":break;case"text/xml":case"text/html":case"text/plist":case"application/xml":case"application/plist":case"application/x-plist":switch(a.hostname){case"configuration.ls.apple.com":if(BigInt.prototype.toJSON=function(){return this.toString()},u=Y.parse(t.body),"/config/defaults"===a.pathname){let e=u.plist;e&&(e["com.apple.GEO"].CountryProviders.CN.ShouldEnableLagunaBeach=!0,delete e["com.apple.GEO"]?.CountryProviders?.CN?.DrivingMultiWaypointRoutesEnabled,delete e["com.apple.GEO"]?.CountryProviders?.CN?.LocalitiesAndLandmarksSupported,delete e["com.apple.GEO"]?.CountryProviders?.CN?.NavigationShowHeadingKey,delete e["com.apple.GEO"]?.CountryProviders?.CN?.POIBusynessRealTime,delete e["com.apple.GEO"]?.CountryProviders?.CN?.PedestrianAREnabled,e["com.apple.GEO"].CountryProviders.CN.SupportsCarIntegration=!0,e["com.apple.GEO"].DrivingMultiWaypointRoutesEnabled=!0,e["com.apple.GEO"].LocalitiesAndLandmarksSupported=!0,e["com.apple.GEO"].NavigationShowHeadingKey=!0,e["com.apple.GEO"]["6694982d2b14e95815e44e970235e230"]=!0,e["com.apple.GEO"].OpticalHeadingEnabled=!0,e["com.apple.GEO"].PedestrianAREnabled=!0,e["com.apple.GEO"].TransitPayEnabled=!0,e["com.apple.GEO"].UseCLPedestrianMapMatchedLocations=!0)}t.body=Y.stringify(u);break;case"gspe1-ssl.ls.apple.com":a.pathname}break;case"text/json":case"application/json":u=JSON.parse(t.body),M.debug(`body: ${JSON.stringify(u)}`),t.body=JSON.stringify(u);break;case"application/protobuf":case"application/x-protobuf":case"application/vnd.google.protobuf":case"application/grpc":case"application/grpc+proto":case"application/octet-stream":{let e=t.bodyBytes?new Uint8Array(t.bodyBytes):t.body??new Uint8Array;switch(r){case"application/protobuf":case"application/x-protobuf":case"application/vnd.google.protobuf":case"application/octet-stream":if("gspe35-ssl.ls.apple.com"===a.hostname)switch(a.pathname){case"/config/announcements":break;case"/geo_manifest/dynamic/config":{u=te.decode(e);let t=a.searchParams.get("country_code"),n=new URL(a.toString());n.searchParams.set("country_code","CN");let r=new URL(a.toString());r.searchParams.set("country_code","US");let s={},c=!0;switch(t){case"CN":s.CN=u,s.XX=await tt.decodeCache(l,r.search,i),s.XX||(M.warn("Missing cache: XX"),c=!1);break;case"KR":s.KR=u,s.CN=await tt.decodeCache(l,n.search,i),s.XX=await tt.decodeCache(l,r.search,i),s.CN&&s.XX||(M.warn(`Missing cache: ${!s.CN?"CN":"XX"}`),c=!1);break;default:s.XX=u,s.CN=await tt.decodeCache(l,n.search,i),s.CN||(M.warn("Missing cache: CN"),c=!1)}if(!c)break;u=iRingoSurgeAdaptiveHybridFix(u,s,o,t),u.tileGroup=tt.tileGroups(u.tileGroup,u.tileSet,u.attribution,u.resource),M.debug(`releaseInfo: ${u.releaseInfo}`),e=te.encode(u),$response.headers=$response.headers??{},$response.headers["Cache-Control"]="no-store, no-cache, must-revalidate, max-age=0",$response.headers.Pragma="no-cache",$response.headers.Expires="0",delete $response.headers.ETag,delete $response.headers.etag,delete $response.headers["Last-Modified"],delete $response.headers["last-modified"],delete $response.headers["Content-Length"],delete $response.headers["content-length"]}}}t.body=e}}return t}(async()=>{$response=await ti($request,$response)})().catch(e=>M.error(e)).finally(()=>(function(e={}){switch(X){case"Surge":e.policy&&$.set(e,"headers.X-Surge-Policy",e.policy),M.log("\uD83D\uDEA9 执行结束!",`🕛 ${new Date().getTime()/1e3-$script.startTime} 秒`),$done(e);break;case"Loon":e.policy&&(e.node=e.policy),M.log("\uD83D\uDEA9 执行结束!",`🕛 ${(new Date-$script.startTime)/1e3} 秒`),$done(e);break;case"Stash":e.policy&&$.set(e,"headers.X-Stash-Selected-Proxy",encodeURI(e.policy)),M.log("\uD83D\uDEA9 执行结束!",`🕛 ${(new Date-$script.startTime)/1e3} 秒`),$done(e);break;case"Egern":case"Shadowrocket":M.log("\uD83D\uDEA9 执行结束!"),$done(e);break;case"Quantumult X":switch(e.policy&&$.set(e,"opts.policy",e.policy),typeof(e=$.pick(e,["status","url","headers","body","bodyBytes"])).status){case"number":e.status=`HTTP/1.1 ${e.status} ${j[e.status]}`;break;case"string":case"undefined":break;default:throw TypeError(`${Function.name}: 参数类型错误, status 必须为数字或字符串`)}e.body instanceof ArrayBuffer?(e.bodyBytes=e.body,e.body=void 0):ArrayBuffer.isView(e.body)?(e.bodyBytes=e.body.buffer.slice(e.body.byteOffset,e.body.byteLength+e.body.byteOffset),e.body=void 0):e.body&&(e.bodyBytes=void 0),M.log("\uD83D\uDEA9 执行结束!"),$done(e);break;case"Worker":default:M.log("\uD83D\uDEA9 执行结束!");break;case"Node.js":M.log("\uD83D\uDEA9 执行结束!"),process.exit(1)}})($response))})();
+async function ti(e,t,i){let a=new URL(e.url);M.info(`url: ${a.toJSON()}`);let n=a.pathname.split("/").filter(Boolean);M.info(`PATHs: ${n}`);let r=(t.headers?.["Content-Type"]??t.headers?.["content-type"])?.split(";")?.[0];M.info(`FORMAT: ${r}`);let s=["Maps"];"watchos"===a.searchParams.get("os")&&s.push("Watch"),M.info(`PLATFORM: ${s}`);let{Settings:o,Caches:l,Configs:c}=await H("iRingo",s,Z);M.logLevel=o.LogLevel;let u={};switch(r){case void 0:case"application/x-www-form-urlencoded":case"text/plain":default:case"application/x-mpegURL":case"application/x-mpegurl":case"application/vnd.apple.mpegurl":case"audio/mpegurl":case"text/vtt":case"application/vtt":break;case"text/xml":case"text/html":case"text/plist":case"application/xml":case"application/plist":case"application/x-plist":switch(a.hostname){case"configuration.ls.apple.com":if(BigInt.prototype.toJSON=function(){return this.toString()},u=Y.parse(t.body),"/config/defaults"===a.pathname){let e=u.plist;e&&(e["com.apple.GEO"].CountryProviders.CN.ShouldEnableLagunaBeach=!0,delete e["com.apple.GEO"]?.CountryProviders?.CN?.DrivingMultiWaypointRoutesEnabled,delete e["com.apple.GEO"]?.CountryProviders?.CN?.LocalitiesAndLandmarksSupported,delete e["com.apple.GEO"]?.CountryProviders?.CN?.NavigationShowHeadingKey,delete e["com.apple.GEO"]?.CountryProviders?.CN?.POIBusynessRealTime,delete e["com.apple.GEO"]?.CountryProviders?.CN?.PedestrianAREnabled,e["com.apple.GEO"].CountryProviders.CN.SupportsCarIntegration=!0,e["com.apple.GEO"].DrivingMultiWaypointRoutesEnabled=!0,e["com.apple.GEO"].LocalitiesAndLandmarksSupported=!0,e["com.apple.GEO"].NavigationShowHeadingKey=!0,e["com.apple.GEO"]["6694982d2b14e95815e44e970235e230"]=!0,e["com.apple.GEO"].OpticalHeadingEnabled=!0,e["com.apple.GEO"].PedestrianAREnabled=!0,e["com.apple.GEO"].TransitPayEnabled=!0,e["com.apple.GEO"].UseCLPedestrianMapMatchedLocations=!0)}t.body=Y.stringify(u);break;case"gspe1-ssl.ls.apple.com":a.pathname}break;case"text/json":case"application/json":u=JSON.parse(t.body),M.debug(`body: ${JSON.stringify(u)}`),t.body=JSON.stringify(u);break;case"application/protobuf":case"application/x-protobuf":case"application/vnd.google.protobuf":case"application/grpc":case"application/grpc+proto":case"application/octet-stream":{let e=t.bodyBytes?new Uint8Array(t.bodyBytes):t.body??new Uint8Array;switch(r){case"application/protobuf":case"application/x-protobuf":case"application/vnd.google.protobuf":case"application/octet-stream":if("gspe35-ssl.ls.apple.com"===a.hostname)switch(a.pathname){case"/config/announcements":break;case"/geo_manifest/dynamic/config":{u=te.decode(e);let t=a.searchParams.get("country_code"),n=new URL(a.toString());n.searchParams.set("country_code","CN");let r=new URL(a.toString());r.searchParams.set("country_code","US");let s={},c=!0;switch(t){case"CN":s.CN=u,s.XX=await tt.decodeCache(l,r.search,i),s.XX||(M.warn("Missing cache: XX"),c=!1);break;case"KR":s.KR=u,s.CN=await tt.decodeCache(l,n.search,i),s.XX=await tt.decodeCache(l,r.search,i),s.CN&&s.XX||(M.warn(`Missing cache: ${!s.CN?"CN":"XX"}`),c=!1);break;default:s.XX=u,s.CN=await tt.decodeCache(l,n.search,i),s.CN||(M.warn("Missing cache: CN"),c=!1)}if(!c)break;u=iRingoSurgeAdaptiveHybridFix(u,s,o,t),u.tileGroup=Array.from(u.tileGroup??[]),M.debug(`releaseInfo: ${u.releaseInfo}`),e=te.encode(u),$response.headers=$response.headers??{},$response.headers["Cache-Control"]="no-store, no-cache, must-revalidate, max-age=0",$response.headers.Pragma="no-cache",$response.headers.Expires="0",delete $response.headers.ETag,delete $response.headers.etag,delete $response.headers["Last-Modified"],delete $response.headers["last-modified"],delete $response.headers["Content-Length"],delete $response.headers["content-length"]}}}t.body=e}}return t}(async()=>{$response=await ti($request,$response)})().catch(e=>M.error(e)).finally(()=>(function(e={}){switch(X){case"Surge":e.policy&&$.set(e,"headers.X-Surge-Policy",e.policy),M.log("\uD83D\uDEA9 执行结束!",`🕛 ${new Date().getTime()/1e3-$script.startTime} 秒`),$done(e);break;case"Loon":e.policy&&(e.node=e.policy),M.log("\uD83D\uDEA9 执行结束!",`🕛 ${(new Date-$script.startTime)/1e3} 秒`),$done(e);break;case"Stash":e.policy&&$.set(e,"headers.X-Stash-Selected-Proxy",encodeURI(e.policy)),M.log("\uD83D\uDEA9 执行结束!",`🕛 ${(new Date-$script.startTime)/1e3} 秒`),$done(e);break;case"Egern":case"Shadowrocket":M.log("\uD83D\uDEA9 执行结束!"),$done(e);break;case"Quantumult X":switch(e.policy&&$.set(e,"opts.policy",e.policy),typeof(e=$.pick(e,["status","url","headers","body","bodyBytes"])).status){case"number":e.status=`HTTP/1.1 ${e.status} ${j[e.status]}`;break;case"string":case"undefined":break;default:throw TypeError(`${Function.name}: 参数类型错误, status 必须为数字或字符串`)}e.body instanceof ArrayBuffer?(e.bodyBytes=e.body,e.body=void 0):ArrayBuffer.isView(e.body)?(e.bodyBytes=e.body.buffer.slice(e.body.byteOffset,e.body.byteLength+e.body.byteOffset),e.body=void 0):e.body&&(e.bodyBytes=void 0),M.log("\uD83D\uDEA9 执行结束!"),$done(e);break;case"Worker":default:M.log("\uD83D\uDEA9 执行结束!");break;case"Node.js":M.log("\uD83D\uDEA9 执行结束!"),process.exit(1)}})($response))})();
