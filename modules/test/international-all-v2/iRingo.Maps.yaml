@@ -1,0 +1,95 @@
+name: ' iRingo: 🗺️ Maps International-All Test v2'
+description: |-
+  Egern 优先测试版本
+  国内高德地图、POI、交通、导航与定位修正
+  国际卫星、3D、Flyover、完整四处看看服务链、地球与道路能力
+  国内卫星沿用实机请求坐标，避免脚本二次换算造成漂移
+compat_arguments:
+  GeoManifest.Dynamic.Config.CountryCode: AUTO
+  UrlInfoSet.RAP: Apple
+  LogLevel: WARN
+compat_arguments_desc: |
+  本测试版本以 Egern 为主要验证客户端。为避免无效参数和旧 BoxJs 配置干扰，国内/国际服务组合采用固定策略，只开放实际会被脚本读取的参数。
+
+  GeoManifest.Dynamic.Config.CountryCode: [动态配置] 清单主体
+      ├ AUTO: 保留设备当前 CN/国际分支并预热另一份清单（默认）
+      ├ CN: 强制以中国清单为主体，国内数据优先
+      └ US: 强制以国际清单为主体，国外能力优先
+
+  UrlInfoSet.RAP: [URL信息集] 评分、照片与反馈
+      ├ Apple: 使用国际评分、照片和反馈服务（默认）
+      └ AutoNavi: 保持中国清单的相关服务
+
+  LogLevel: [调试] 日志等级
+      ├ WARN: 仅警告和错误（默认）
+      ├ INFO: 输出一般运行信息
+      └ DEBUG: 输出详细排错信息
+
+  固定策略:
+      ├ UrlInfoSet.Dispatcher=AutoNavi: 国内地点、搜索与 POI 使用高德
+      ├ UrlInfoSet.Directions=AutoNavi: CN 分支使用高德导航，国际分支保持 Apple/TomTom
+      ├ UrlInfoSet.LocationShift=AutoNavi: 国内 GCJ-02 坐标修正
+      ├ TileSet.Map/POI/Traffic=CN: 国内底图、POI 与交通
+      ├ TileSet.Flyover/Munin/Roads=XX: 国际 3D、四处看看与 Apple 道路能力
+      ├ TileSet.Satellite=HYBRID: 国内外卫星并存
+      ├ Munin URL=XX: 四处看看同时保留国际服务及资源入口
+      ├ Config.Announcements.Environment=CN: 使用中国公告环境
+      └ Storage=Argument: 模块参数优先，避免旧持久化参数覆盖
+author: patrickyanxxxxx; VirgilClyne
+homepage: https://github.com/patrickyanxxxxx/Maps
+icon: https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
+rules:
+- domain:
+    match: gspe11-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe12-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe79-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gsp76-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain_suffix:
+    match: is.autonavi.com
+    policy: DIRECT
+scriptings:
+- http_response:
+    name: Maps.InternationalAllV2.defaults.response
+    match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.2
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+- http_request:
+    name: Maps.InternationalAllV2.manifest.request
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.2
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+- http_response:
+    name: Maps.InternationalAllV2.manifest.response
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.2
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+    binary_body: true
+- http_request:
+    name: Maps.InternationalAllV2.satellite.route
+    match: ^https:\/\/gspe11-ssl\.ls\.apple\.com\/tile(?:\?|$)
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/satellite-route.js?v=6.4.0-test.2
+mitm:
+  hostnames:
+    includes:
+    - configuration.ls.apple.com
+    - gspe35-ssl.ls.apple.com
+    - gspe35-ssl.ls.apple.cn
+    - gspe11-ssl.ls.apple.com
