@@ -4,10 +4,10 @@
 
 ## 采用的参考逻辑
 
-- `CountryCode=US`：保持国际 `PROD` 清单身份，用于激活 iOS 27 的国际卫星、3D、Flyover 与四处看看；同时预热 CN 清单注入大陆区域数据。
+- `CountryCode=CN`：请求层保持国内服务身份并预热 US 清单；响应仍以国际原生主组承载卫星、3D、Flyover 与四处看看，但主组采用 Apple CN 原生监管坐标元数据解释大陆图层。
 - CN 清单分支保留高德底图、POI、实时交通、导航、反向地理编码与 GCJ-02 修正。
 - 国际 Munin、SPR、3D 卫星、Flyover、道路及区域能力选择器与大陆高德服务隔离。
-- Egern 与 Surge 模块均可观察 Apple 地图已取得的高德瓦片授权，在中国大陆坐标、`z12-z18` 范围内将国际 `VECTOR_STANDARD/style 1` 与 `VECTOR_ROADS/style 20` 转为 CN 原生请求；国外瓦片保持原样。
+- 不改写瓦片请求或复用 `accessKey`；国内标准道路、卫星道路和卫星影像直接使用 Apple CN 清单下发的原生描述符，国际瓦片保持原始请求链。
 
 ## 本项目额外保留
 
@@ -33,6 +33,7 @@
 - `test.15-cn-first-native-groups` 根据 test14 实机“只显示国内卫星，且国内标准/卫星道路偏移，但国外四处看看正常”的结果，停止在一个组内混合 CN/US 同名 selector，也移除 `cn-satellite-road.js` 二次请求改写。完整 CN 原生组保持首位并独占国内标准、POI、道路、卫星及坐标解释；完整 US 原生组按原索引追加，负责国外标准、卫星、3D、Munin/SPR 与四处看看。清单身份继续保持 `PROD-CN` 和 `regulatoryRegionId=2`。
 - `test.16-international-primary-cn-regional` 根据 test15 实机“国外显示全局高德、无国际卫星；四处看看放大后仅出现图标但点击无图像”的结果，确认 iOS 27 实际只采用首个/主服务组。改为保留国际原生组、索引和资源引用作为唯一能力主体，将国内标准图、POI、交通和卫星严格区域化后插入国际基础组；不再建立 CN 首组，也不改写国际 Munin/SPR 请求。目标是让国外标准图、卫星、3D 与四处看看图像资源真正生效，同时防止 CN 描述符覆盖全球。
 - `test.17-disjoint-satellite-cn-coordinate` 根据 test16 实机“国内 POI 正常但标准道路与卫星影像偏移；从国内卫星直接移动到国外不加载，必须先切回标准地图”的结果，将国内标准道路和卫星描述符显式设为与已对齐 POI 相同的 CN 坐标归属。国际卫星描述符从 z8 以上的中国大陆范围精确扣除，CN 卫星仅覆盖大陆，使两套同 style 卫星选择器不存在覆盖重叠，避免 iOS 27 在卫星模式中持续锁定国内源。国际主组、国外 3D 和已正常的四处看看链保持不变，且不增加任何瓦片请求改写。
+- `test.18-cn-regulatory-international-capabilities` 根据 test17 实机仍出现“国内标准道路与卫星影像漂移，卫星模式跨区仍锁定国内源”的结果，不再依靠人为 `countryRegionWhitelist=CN` 决定坐标解释。实际生效的国际能力主组改为引用 Apple CN 清单原生 `offlineMetadata/regulatoryRegionId=2`；CN 标准道路、卫星道路和卫星影像恢复各自原始 provider metadata，并只在大陆范围加入主组。国际道路、卫星、Sputnik/Flyover 与完整 Munin/SPR 链仍由 US 清单提供，目标是在统一 CN 坐标语义下消除国内道路/影像漂移，同时保留境外卫星跨区回退、3D 与四处看看。
 - 测试模块和脚本全部放在本目录，避免覆盖稳定 `modules/assets/`。
 - Egern 只公开脚本真正读取的三个参数，其余服务组合固定，避免旧 BoxJs/持久化配置覆盖测试结果。
 - 所有脚本地址指向远程 `test/international-all-v2` 分支；分支上传前不可直接通过远程链接导入。
@@ -45,7 +46,7 @@
 - `assets/response.bundle.js`：自适应 CN/国际资源合并和环视隔离。
 - `assets/cn-native-road.js`：保留的上一轮诊断脚本；`test.9-cn-native` 模块不再引用。
 - `assets/satellite-route.js`：保留的 test10 请求改写脚本，仅供版本对比；test11/test12 模块不再引用。
-- `assets/cn-satellite-road.js`：保留的 test14 诊断脚本；test17 模块不再引用，避免道路请求被二次改写。
+- `assets/cn-satellite-road.js`：保留的 test14 诊断脚本；test18 模块不再引用，避免道路请求被二次改写。
 
 ## Egern 默认参数
 
@@ -55,7 +56,7 @@
 | `UrlInfoSet.RAP` | `Apple` | 使用国际评分、照片与反馈服务 |
 | `LogLevel` | `WARN` | 仅记录警告和错误 |
 
-Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`，`Map/POI/Traffic=CN`，`Flyover/Munin=XX`，`Satellite=HYBRID`，`Storage=Argument`。国际原生主组负责国外标准地图、POI、卫星、3D、Flyover 与可交互四处看看；国内标准道路、POI、交通和 2D 卫星以统一 CN 坐标归属加入主组。CN 与国际卫星的 z8+ 覆盖互斥，避免跨区时锁定错误数据源。导航沿用上一实机版本已确认“国内外均可导航”的服务组合。
+Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`，`Map/POI/Traffic=CN`，`Roads/Satellite=HYBRID`，`Flyover/Munin=XX`，`Storage=Argument`。国际原生主组负责国外标准地图、POI、卫星、3D、Flyover 与可交互四处看看；该主组引用 CN 原生 `regulatoryRegionId=2`，国内标准道路、POI、交通和卫星图层因此使用同一监管坐标语义。CN 道路与卫星描述符只覆盖大陆，国际同类描述符继续负责境外回退。导航沿用上一实机版本已确认“国内外均可导航”的服务组合。
 
 ## 建议测试方式
 
@@ -67,7 +68,7 @@ Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`�
 ## 已知风险
 
 - 参考版本说明以 iOS 26 + Surge 为主要验证环境；本组合版针对 Egern 模块格式和 iOS 27 卫星路由进行了整合，但仍需实机验证所有组合能力。
-- 国内与国外能力现在共用 iOS 27 实际采用的国际原生主组；CN 描述符虽已严格限制到中国范围，但同 style 区域选择优先级仍需实机验证。
+- 国内与国外能力现在共用 iOS 27 实际采用的国际原生主组，并由 CN `regulatoryRegionId=2` 解释坐标；该组合能否同时修正道路/影像漂移并解除卫星跨区锁定仍需实机验证。
 - 国内卫星数据较旧，仍可能存在数据源自身的清晰度、覆盖和固有偏移；本测试版本保留 Apple 原始 CN 描述符，不执行人工坐标换算。
 - 国际卫星、3D 和四处看看依赖国际 Apple 地图节点；若用户网络或代理规则无法访问对应域名，仍可能加载缓慢或功能不可用。本模块不会强制将国际节点设为直连。
 - 当前仅保证以 Egern 进行主要测试；Surge 模块属于兼容输出，其他代理软件暂未生成，也不保证功能完整。
