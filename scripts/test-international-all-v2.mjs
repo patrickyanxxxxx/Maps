@@ -150,7 +150,10 @@ for (const style of ["VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MAT
 for (const style of ["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
 	const descriptors = cnResult.tileSet.filter(item => item.style === style);
 	if (!descriptors.some(item => item.baseURL.includes("gspe11-ssl"))) throw new Error(`international visual descriptor was not restored: ${style}`);
-	if (descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`CN visual descriptor still shadows international imagery: ${style}`);
+	if (style.startsWith("RASTER_SATELLITE")) {
+		if (!descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`native CN satellite descriptor was not preserved: ${style}`);
+		if (!descriptors[0].baseURL.includes("-cn-ssl")) throw new Error(`native CN satellite is not the mainland-first selector: ${style}`);
+	} else if (descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`CN 3D visual descriptor still shadows international imagery: ${style}`);
 }
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_ROADS" && item.baseURL.includes("-cn-ssl"))) throw new Error("native mainland road selector was lost");
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland traffic was not preserved");
@@ -217,7 +220,7 @@ for (let index = 0; index < xx.tileSet.length; index++) {
 }
 for (let index = 0; index < xx.attribution.length; index++) {
 	if (index === 0) {
-		if (!xxResult.attribution[index].name.startsWith(" iRingo: 📍 GEOResourceManifest\n")) throw new Error("iRingo manifest update attribution was not restored");
+		if (!xxResult.attribution[index].name.startsWith(" iRingo: 📍 adaptive hybrid\n")) throw new Error("iRingo adaptive hybrid attribution was not restored");
 		if (xxResult.attribution[index].plainTextURLSHA256Checksum) throw new Error("iRingo attribution retained Apple's stale checksum");
 	} else if (xxResult.attribution[index].name !== xx.attribution[index].name) throw new Error(`native US attribution index changed at ${index}`);
 }
@@ -355,13 +358,12 @@ if (runSatellite(tokyoSatelliteInput) !== tokyoSatelliteInput) throw new Error("
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.9-cn-native",
+	"6.4.0-test.9-cn-satellite-native",
 	"CountryCode:\"CN\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
-	"assets/satellite-route.js",
 ]) {
 	if (!moduleText.includes(marker)) throw new Error(`Surge module is missing ${marker}`);
 }
@@ -385,13 +387,13 @@ for (const marker of [
 	"modules/test/international-all-v2/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
-	"assets/satellite-route.js",
 	"binary_body: true",
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("test.9-cn-native")) throw new Error("Egern module does not expose the test9 cache identity");
+if (!egernText.includes("test.9-cn-satellite-native")) throw new Error("Egern module does not expose the native-satellite test9 cache identity");
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
+if (egernText.includes("assets/satellite-route.js")) throw new Error("Egern still rewrites native CN satellite requests");
 if (egernText.includes("surge-adaptive-v1.4.0")) throw new Error("Egern module references the retired directory");
 if (egernText.includes("match: gspe11-ssl.ls.apple.com")) throw new Error("Egern module direct-routes international 3D tiles and may make them unreachable");
 

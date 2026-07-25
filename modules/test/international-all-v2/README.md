@@ -23,6 +23,7 @@
 - `test.8` 国内标准地图修正：保留高德二维瓦片原始 `dataSet` 标识及 `CN` 服务区域白名单，避免系统把 GCJ-02 图层当作全球 Apple 图层而产生道路、POI 与底图偏移；国际 3D 分组不变。
 - `test.8-cnstandard3` 在不改动 POI、卫星、导航和国际 3D 清单逻辑的前提下，为 Egern 增加实际瓦片请求路由：大陆标准底图和道路强制使用同一套 CN 原生瓦片坐标系，解决 POI 正确但道路仍使用国际 WGS-84 瓦片造成的视觉偏移。
 - `test.9-cn-native` 根据实机 DEBUG 日志调整主体：日志确认旧版实际返回 `CountryCode=US`、`releaseInfo=PROD (24.20)`，且没有请求路由命中记录。因此本版改由 CN 原生清单和 `PROD-CN` 身份负责国内道路、POI、交通、导航及定位坐标解释；US 仅追加国际卫星、3D、Flyover、Munin/SPR、全球覆盖与道路能力，不再改写国内标准底图请求坐标。
+- `test.9-cn-satellite-native` 根据实机“标准地图正确、卫星定位偏移”结果，恢复 CN 清单原生 2D 卫星描述符作为大陆第一选择，并追加 US 卫星作为国外回退；国际 3D/Flyover 仍完全采用 US 描述符。模块不再引用 `satellite-route.js`，避免把 US `style 98` 的瓦片坐标直接改投 CN `style 7`。
 - 测试模块和四个脚本全部放在本目录，避免覆盖稳定 `modules/assets/`。
 - Egern 只公开脚本真正读取的三个参数，其余服务组合固定，避免旧 BoxJs/持久化配置覆盖测试结果。
 - 所有脚本地址指向远程 `test/international-all-v2` 分支；分支上传前不可直接通过远程链接导入。
@@ -34,7 +35,7 @@
 - `assets/request.bundle.js`：AUTO 清单分支与另一份清单预热。
 - `assets/response.bundle.js`：自适应 CN/国际资源合并和环视隔离。
 - `assets/cn-native-road.js`：保留的上一轮诊断脚本；`test.9-cn-native` 模块不再引用。
-- `assets/satellite-route.js`：iOS 27 国内卫星按坐标重写。
+- `assets/satellite-route.js`：保留的旧版诊断脚本；当前原生卫星版本不再引用。
 
 ## Egern 默认参数
 
