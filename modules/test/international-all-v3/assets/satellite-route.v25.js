@@ -6,7 +6,7 @@
  * test24: every decision is logged so Egern logs prove whether this script
  * is installed and which branch each request took. */
 (() => {
-	const TAG = "[iRingo SatRoute test.24]";
+	const TAG = "[iRingo SatRoute test.25]";
 	const req = globalThis.$request;
 	if (!req?.url) return $done({});
 	let url;

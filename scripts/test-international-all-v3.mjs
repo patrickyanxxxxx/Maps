@@ -289,7 +289,7 @@ if (!responseText.includes("u.tileGroup=Array.from(u.tileGroup??[])")) throw new
 
 // --- satellite-route.js: mainland style-98 requests are rewritten, foreign
 // and non-98 requests pass through untouched.
-const routeText = await readFile(`${root}/assets/satellite-route.js`, "utf8");
+const routeText = await readFile(`${root}/assets/satellite-route.v25.js`, "utf8");
 const runRoute = url => {
 	let output;
 	const context = { URL, URLSearchParams, Number, Math, console, globalThis: undefined, $request: { url }, $done: value => { output = value; } };
@@ -340,13 +340,13 @@ if (existsSync(realCNPath) && existsSync(realUSPath)) {
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v3",
-	"6.4.0-test.24-observable-satellite-route",
+	"6.4.0-test.25-cache-proof-versioning",
 	'CountryCode:"US"',
 	'TileSet.Satellite:"ROUTE"',
 	"modules/test/international-all-v3/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
-	"assets/satellite-route.js",
+	"assets/satellite-route.v25.js",
 	"gspe11-ssl.ls.apple.com",
 ]) {
 	if (!moduleText.includes(marker)) throw new Error(`Surge module is missing ${marker}`);
@@ -371,10 +371,10 @@ for (const marker of [
 	"modules/test/international-all-v3/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
-	"assets/satellite-route.js",
+	"assets/satellite-route.v25.js",
 	"binary_body: true",
 	"- gspe11-ssl.ls.apple.com",
-	"test24-observable-satellite-route",
+	"test25-cache-proof-versioning",
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }

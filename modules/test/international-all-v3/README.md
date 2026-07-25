@@ -1,8 +1,18 @@
-# Maps International-All Test v3（当前：test24）
+# Maps International-All Test v3（当前：test25）
 
 这是与 `test/international-all-v2` 并行的独立测试线，基于 test19（`e3f6c3f`）的代码继续修改。目标不变：国内标准地图 POI 完整且道路/POI 不偏移；国内卫星图影像/道路/POI/定位对齐、导航正常；国外标准地图 POI 完整、3D 卫星、四处看看与导航正常。
 
-## test24-observable-satellite-route（当前版本）
+## test25-cache-proof-versioning（当前版本）
+
+test24 实机反馈：请求记录里挂着 `Maps.InternationalAllV3.satellite-route.request` 规则名，但既无 `SatRoute` 日志也无改写，大陆 style=7 请求原样直发。已排除逻辑问题（同一 URL 在本地脚本中改写正确），且档案中当年实机可用的 v6 本地模块用的是完全相同的 `$done({url})` 机制——最自洽的解释是 **Egern 按 URL 路径缓存脚本体，`?v=` 查询参数变化不触发重新下载**：设备一直在执行 test20 时代的旧脚本（只匹配 style=98、无日志），遇到 style=7 静默放行，与观察完全一致。
+
+test25 应对与自证：
+
+- 路由脚本改名为 `satellite-route.v25.js`（URL 路径变化强制重新下载），规则名同步改为 `satellite-route.v25.request`；今后每次修改路由脚本都随版本改名。
+- 地图左下角注释改为 ` iRingo: 📍 adaptive hybrid test.25`——把地图缩到最小即可确认设备用的清单版本，不再依赖日志。
+- 路由逻辑与 test23/24 相同（style=98/7 大陆坐标 → CN 端点），决策日志保留（前缀 `[iRingo SatRoute test.25]`；注意 console.log 输出在 Egern 的“日志”面板，不在请求记录里）。
+
+## test24-observable-satellite-route（已被 test25 继承）
 
 test23 实机反馈：仍无 `gspe11-2-cn-ssl` 请求、大陆 `style=7` 请求原样发到国际端点。但把反馈中的失败 URL（z=15, x=25859, y=13463 → z8 折算 (202,105)，命中大陆网格）直接输入 test23 路由脚本，**它会被正确改写**——结论：设备当时执行的不是 test23 脚本（Egern 模块/脚本缓存未刷新，或脚本拉取失败被静默跳过）。
 
