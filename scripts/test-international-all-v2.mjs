@@ -207,8 +207,18 @@ for (const style of ["VECTOR_ROADS", "VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTI
 	if (xxResult.tileSet.some(item => item.style === style && item.baseURL.includes("-cn-ssl"))) throw new Error(`redundant mainland road selector leaked into US baseline: ${style}`);
 	if (!xxResult.tileSet.some(item => item.style === style && !item.baseURL.includes("-cn-ssl"))) throw new Error(`international road capability is missing: ${style}`);
 }
-if (xxResult.tileSet.some(item => item.style === "VECTOR_SPR_ROADS" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland SPR road leaked into international Look Around");
+const mainlandSPRRoad = xxResult.tileSet.find(item => item.style === "VECTOR_SPR_ROADS" && item.baseURL.includes("-cn-ssl"));
+if (!mainlandSPRRoad) throw new Error("regional mainland satellite-road overlay is missing");
+if (JSON.stringify(mainlandSPRRoad.countryRegionWhitelist || []) !== JSON.stringify(cn.tileSet.find(item => item.style === "VECTOR_SPR_ROADS")?.countryRegionWhitelist || [])) throw new Error("mainland satellite-road provider metadata changed");
+if (!mainlandSPRRoad.validVersion?.every(version => version.availableTiles?.every(region => region.minX >= 180 && region.maxX <= 223))) throw new Error("mainland satellite-road overlay was not regionalized");
 if (!xxResult.tileSet.some(item => item.style === "VECTOR_SPR_ROADS" && !item.baseURL.includes("-cn-ssl"))) throw new Error("international SPR road was lost while aligning mainland roads");
+for (const style of ["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT"]) {
+	const mainland = xxResult.tileSet.find(item => item.style === style && item.baseURL.includes("-cn-ssl"));
+	const foreign = xxResult.tileSet.find(item => item.style === style && !item.baseURL.includes("-cn-ssl"));
+	if (!mainland || !foreign) throw new Error(`regional CN plus international satellite chain is incomplete: ${style}`);
+	if (!mainland.validVersion?.every(version => version.availableTiles?.every(region => region.minX >= 180 && region.maxX <= 223))) throw new Error(`mainland satellite descriptor was not regionalized: ${style}`);
+}
+if (xxResult.releaseInfo !== xx.releaseInfo) throw new Error("international PROD identity was not preserved");
 for (const filename of ["POITypeMapping-CN-1.json", "POITypeMapping-CN-2.json", "China.cms-lpr"]) {
 	const resource = xxResult.resource.find(item => item.filename === filename);
 	if (!resource) throw new Error(`mainland POI resource is missing: ${filename}`);
@@ -340,73 +350,26 @@ const outside = road.handle({
 }, storage, 1100);
 if (outside.action !== "passthrough") throw new Error("foreign road request was modified");
 
-const satelliteText = await readFile(`${root}/assets/satellite-route.js`, "utf8");
-const runSatellite = input => {
-	let result;
-	vm.runInNewContext(satelliteText, {
-		URL,
-		Number,
-		$request: { url: input },
-		$done: value => { result = value; },
-	});
-	return result?.url ?? input;
-};
-const mainlandSatelliteInput = "https://gspe11-ssl.ls.apple.com/tile?style=98&v=226&region=0&z=14&x=12927&y=6735&h=0&preflight=2";
-const mainlandSatellite = new URL(runSatellite(mainlandSatelliteInput));
-if (mainlandSatellite.hostname !== "gspe11-2-cn-ssl.ls.apple.com" || mainlandSatellite.pathname !== "/2/tiles") throw new Error("mainland satellite endpoint was not applied");
-if (mainlandSatellite.searchParams.get("x") !== "12927" || mainlandSatellite.searchParams.get("y") !== "6735") throw new Error("mainland satellite coordinates were changed and may drift");
-const tokyoSatelliteInput = "https://gspe11-ssl.ls.apple.com/tile?style=98&v=226&region=0&z=17&x=116423&y=51615&h=0&preflight=2";
-if (runSatellite(tokyoSatelliteInput) !== tokyoSatelliteInput) throw new Error("foreign satellite request was modified");
-
-const satelliteRoadText = await readFile(`${root}/assets/cn-satellite-road.js`, "utf8");
-const satelliteRoadModule = { exports: {} };
-vm.runInNewContext(satelliteRoadText, { module: satelliteRoadModule, console, URL, Number, Date, JSON, Object, String, RegExp, encodeURIComponent, decodeURIComponent });
-const satelliteRoad = satelliteRoadModule.exports;
-const satelliteRoadRecords = new Map();
-const satelliteRoadStorage = {
-	read: () => satelliteRoadRecords.get("auth"),
-	write: record => satelliteRoadRecords.set("auth", JSON.stringify(record)),
-};
-const satelliteRoadAccessKey = "1784590536_" + "C".repeat(48);
-if (satelliteRoad.handle({
-	url: `https://gspe19-cn-ssl.ls.apple.com/tiles?flags=32&style=66&v=2912&z=14&x=12928&y=6730&accessKey=${satelliteRoadAccessKey}`,
-	headers: {},
-}, satelliteRoadStorage, 1000).action !== "observe") throw new Error("CN satellite-road credential was not observed");
-const mainlandSatelliteRoad = satelliteRoad.handle({
-	url: "https://gspe19-ssl.ls.apple.com/tile.vf?flags=32&style=66&v=19783974&z=14&x=12928&y=6730&size=2&scale=0&preflight=2",
-	headers: {},
-}, satelliteRoadStorage, 1100);
-if (mainlandSatelliteRoad.action !== "rewrite") throw new Error("mainland satellite road overlay was not routed to CN");
-const mainlandSatelliteRoadURL = new URL(mainlandSatelliteRoad.request.url);
-if (mainlandSatelliteRoadURL.hostname !== "gspe19-cn-ssl.ls.apple.com" || mainlandSatelliteRoadURL.searchParams.get("style") !== "66") throw new Error("mainland satellite road descriptor mismatch");
-if (mainlandSatelliteRoadURL.searchParams.get("x") !== "12928" || mainlandSatelliteRoadURL.searchParams.get("y") !== "6730") throw new Error("mainland satellite road coordinates were changed");
-const tokyoSatelliteRoad = satelliteRoad.handle({
-	url: "https://gspe19-ssl.ls.apple.com/tile.vf?flags=32&style=66&v=19783974&z=17&x=116423&y=51615",
-	headers: {},
-}, satelliteRoadStorage, 1200);
-if (tokyoSatelliteRoad.action !== "passthrough") throw new Error("foreign Look Around road request was modified");
-
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.10-international-selector-route",
-	"CountryCode:\"CN\"",
+	"6.4.0-test.11-us-capability-cn-regional",
+	"CountryCode:\"US\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
-	"assets/satellite-route.js",
-	"assets/cn-satellite-road.js",
 ]) {
 	if (!moduleText.includes(marker)) throw new Error(`Surge module is missing ${marker}`);
 }
 if (moduleText.includes("surge-adaptive-v1.4.0")) throw new Error("Surge module still references the retired directory");
 if (moduleText.includes("DOMAIN,gspe11-ssl.ls.apple.com,DIRECT")) throw new Error("Surge module direct-routes international 3D tiles and may make them unreachable");
+if (moduleText.includes("assets/satellite-route.js") || moduleText.includes("assets/cn-satellite-road.js")) throw new Error("Surge still uses slow request-time satellite rewrites");
 
 const egernText = await readFile(`${root}/iRingo.Maps.yaml`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"GeoManifest.Dynamic.Config.CountryCode: CN",
+	"GeoManifest.Dynamic.Config.CountryCode: US",
 	"UrlInfoSet.RAP: Apple",
 	"LogLevel: WARN",
 	'TileSet.Map="CN"',
@@ -420,14 +383,13 @@ for (const marker of [
 	"modules/test/international-all-v2/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
-	"assets/satellite-route.js",
-	"assets/cn-satellite-road.js",
 	"binary_body: true",
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("test.10-international-selector-route")) throw new Error("Egern module does not expose the single-selector test10 cache identity");
+if (!egernText.includes("test.11-us-capability-cn-regional")) throw new Error("Egern module does not expose the test11 cache identity");
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
+if (egernText.includes("assets/satellite-route.js") || egernText.includes("assets/cn-satellite-road.js")) throw new Error("Egern still uses slow request-time satellite rewrites");
 if (egernText.includes("surge-adaptive-v1.4.0")) throw new Error("Egern module references the retired directory");
 if (egernText.includes("policy: DIRECT\n- domain:\n    match: gspe11-ssl.ls.apple.com")) throw new Error("Egern module direct-routes international 3D tiles and may make them unreachable");
 

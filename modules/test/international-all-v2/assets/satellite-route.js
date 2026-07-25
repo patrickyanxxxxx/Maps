@@ -1,4 +1,4 @@
-/* iOS 27 mainland satellite route: style 98/226 -> CN style 7/68. */
+/* Archived test10 route: kept for comparison; test11 modules do not reference it. */
 (() => {
 	const req = globalThis.$request;
 	if (!req?.url) return $done({});
