@@ -214,6 +214,8 @@ for (let index = 0; index < xx.attribution.length; index++) {
 	} else if (xxResult.attribution[index].name !== xx.attribution[index].name) throw new Error(`native US attribution index changed at ${index}`);
 }
 if (xxResult.tileGroup?.[0]?.qualityMarker !== "US-native-detail") throw new Error("native US detail group metadata was not preserved");
+if (!Number.isInteger(xxResult.tileGroup[1].identifier) || xxResult.tileGroup[1].identifier <= 0 || xxResult.tileGroup[1].identifier > 2147483647) throw new Error("base-map refresh identifier is not a valid positive int32");
+if (xxResult.tileGroup[1].identifier === xx.tileGroup[1].identifier) throw new Error("base-map group identifier was not refreshed");
 const native3DRefs = xxResult.tileGroup[0].tileSet.slice(0, 4).map(ref => ref.tileSetIndex);
 if (JSON.stringify(native3DRefs) !== JSON.stringify([19, 20, 21, 22])) throw new Error("native US 3D tile-group indices were changed");
 if (xxResult.tileGroup[0].tileSet.length !== 4 || xxResult.tileGroup[0].attributionIndex.length !== 2 || xxResult.tileGroup[0].resourceIndex.length !== 1) throw new Error("native US 3D group was polluted by mainland references");
@@ -233,6 +235,8 @@ singleGroupXX.tileGroup = [{
 }];
 const singleGroupResult = adaptiveFix(singleGroupXX, { CN: cn, XX: singleGroupXX }, settings, "US");
 const combinedRefs = singleGroupResult.tileGroup[0].tileSet;
+if (!Number.isInteger(singleGroupResult.tileGroup[0].identifier) || singleGroupResult.tileGroup[0].identifier <= 0 || singleGroupResult.tileGroup[0].identifier > 2147483647) throw new Error("combined iOS 27 group refresh identifier is not a valid positive int32");
+if (singleGroupResult.tileGroup[0].identifier === singleGroupXX.tileGroup[0].identifier) throw new Error("combined iOS 27 group identifier was not refreshed");
 if (!combinedRefs.some(ref => ref.tileSetIndex >= singleGroupXX.tileSet.length)) throw new Error("single combined iOS 27 group left mainland descriptors orphaned");
 const firstCombinedTile = singleGroupResult.tileSet[combinedRefs[0].tileSetIndex];
 if (!firstCombinedTile.baseURL.includes("-cn-ssl")) throw new Error("mainland descriptors do not precede international fallback in the combined group");
@@ -300,7 +304,7 @@ const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
 	"6.4.0-test.8",
-	"cnstandard1",
+	"cnstandard2",
 	"CountryCode:\"US\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
