@@ -10,7 +10,7 @@ author: |-
 homepage: "https://github.com/patrickyanxxxxx/Maps"
 icon: "https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png"
 category: " iRingo"
-version: "6.4.1"
+version: "6.4.1.1"
 
 # 参数与默认值（Stash override 无交互参数面板；可直接修改下方各 script 的 argument）
 # GeoManifest.Dynamic.Config.CountryCode=US：国际清单主体，保留国际卫星、3D、Flyover 与四处看看；不建议改为 CN
@@ -82,11 +82,11 @@ http:
 
 script-providers:
   iRingo.Maps.v6.request:
-    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1/modules/assets/request.bundle.js
+    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.1/modules/assets/request.bundle.js
     interval: 86400
   iRingo.Maps.v6.response:
-    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1/modules/assets/response.bundle.js
+    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.1/modules/assets/response.bundle.js
     interval: 86400
   iRingo.Maps.v6.route:
-    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1/modules/assets/satellite-route.js
+    url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.1/modules/assets/satellite-route.js
     interval: 86400
