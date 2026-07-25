@@ -5,7 +5,7 @@
 #!homepage = https://github.com/patrickyanxxxxx/Maps
 #!icon = https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
 #!category =  iRingo
-#!version = 6.4.1.1
+#!version = 6.4.1.2
 
 # 参数与默认值（Quantumult X snippet 无交互参数面板；默认值内置于 request/response bundle）
 # GeoManifest.Dynamic.Config.CountryCode=US：国际清单主体，保留国际卫星、3D、Flyover 与四处看看；不建议改为 CN
@@ -37,16 +37,16 @@ host, gspe79-cn-ssl.ls.apple.com, direct
 
 #[rewrite_local]
 # 🗺️ Network Defaults
-^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.1/modules/assets/request.bundle.js
-^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.1/modules/assets/response.bundle.js
+^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.2/modules/assets/request.bundle.js
+^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.2/modules/assets/response.bundle.js
 # 🗺️ Announcements
-^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.1/modules/assets/request.bundle.js
-^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.1/modules/assets/response.bundle.js
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.2/modules/assets/request.bundle.js
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/config\/announcements url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.2/modules/assets/response.bundle.js
 # 🗺️ Resource Manifest
-^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.1/modules/assets/request.bundle.js
-^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.1/modules/assets/response.bundle.js
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.2/modules/assets/request.bundle.js
+^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config url script-response-body https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.2/modules/assets/response.bundle.js
 # 🗺️ iOS 27 Satellite Route
-^https?:\/\/gspe11-ssl\.ls\.apple\.com\/tile url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.1/modules/assets/satellite-route.js
+^https?:\/\/gspe11-ssl\.ls\.apple\.com\/tile url script-request-header https://raw.githubusercontent.com/patrickyanxxxxx/Maps/v6.4.1.2/modules/assets/satellite-route.js
 
 #[mitm]
 hostname = configuration.ls.apple.com, gspe35-ssl.ls.apple.com, gspe35-ssl.ls.apple.cn, gspe11-ssl.ls.apple.com
