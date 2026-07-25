@@ -44,7 +44,11 @@ const cn = {
 		tile("VECTOR_STANDARD", "https://gspe12-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
 		tile("VECTOR_POI", "https://gspe19-cn-ssl.ls.apple.com/tiles", {
 			dataSet: 101,
-			validVersion: [{ identifier: 31, availableTiles: [{ minX: 53, minY: 20, maxX: 54, maxY: 21, minZ: 6, maxZ: 21 }] }],
+			countryRegionWhitelist: [],
+			validVersion: [{ identifier: 31, availableTiles: [
+				{ minX: 0, minY: 0, maxX: 63, maxY: 63, minZ: 6, maxZ: 10 },
+				{ minX: 0, minY: 0, maxX: 4095, maxY: 4095, minZ: 12, maxZ: 15 },
+			] }],
 		}),
 		tile("VECTOR_STREET_POI", "https://gspe19-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
 		tile("VECTOR_POI_V2", "https://gspe19-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
@@ -165,8 +169,9 @@ if (mainlandStandard.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw ne
 if (!xxResult.dataSet.some(item => item.identifier === 101)) throw new Error("mainland dataset definition was not appended to US manifest");
 const mainlandPOI = xxResult.tileSet.find(item => item.style === "VECTOR_POI" && item.baseURL.includes("-cn-ssl"));
 if (!mainlandPOI) throw new Error("mainland POI layer was not injected into international baseline");
-if (mainlandPOI.dataSet !== 101 || mainlandPOI.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error("mainland POI provider identity was not preserved");
+if (mainlandPOI.dataSet !== 101 || mainlandPOI.countryRegionWhitelist?.length !== 0) throw new Error("native mainland POI selector state was not preserved");
 if (mainlandPOI.validVersion?.[0]?.availableTiles?.[0]?.minZ !== 6) throw new Error("native mainland POI zoom coverage was replaced");
+if (mainlandPOI.validVersion[0].availableTiles.some(region => region.minZ === 6 && region.maxX === 63)) throw new Error("mainland POI coverage was left global");
 for (const style of ["VECTOR_STREET_POI", "VECTOR_POI_V2", "VECTOR_POLYGON_SELECTION", "POI_BUSYNESS", "POI_DP_BUSYNESS", "VECTOR_POI_V2_UPDATE"]) {
 	if (!xxResult.tileSet.some(item => item.style === style && item.baseURL.includes("-cn-ssl"))) throw new Error(`mainland POI companion layer is missing: ${style}`);
 }
@@ -183,7 +188,10 @@ for (let index = 0; index < xx.tileSet.length; index++) {
 	}
 }
 for (let index = 0; index < xx.attribution.length; index++) {
-	if (xxResult.attribution[index].name !== xx.attribution[index].name) throw new Error(`native US attribution index changed at ${index}`);
+	if (index === 0) {
+		if (!xxResult.attribution[index].name.startsWith(" iRingo: 📍 GEOResourceManifest\n")) throw new Error("iRingo manifest update attribution was not restored");
+		if (xxResult.attribution[index].plainTextURLSHA256Checksum) throw new Error("iRingo attribution retained Apple's stale checksum");
+	} else if (xxResult.attribution[index].name !== xx.attribution[index].name) throw new Error(`native US attribution index changed at ${index}`);
 }
 if (xxResult.tileGroup?.[0]?.qualityMarker !== "US-native-detail") throw new Error("native US detail group metadata was not preserved");
 const native3DRefs = xxResult.tileGroup[0].tileSet.slice(0, 4).map(ref => ref.tileSetIndex);
@@ -272,6 +280,7 @@ const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
 	"6.4.0-test.8",
+	"cnpoi3",
 	"CountryCode:\"US\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
