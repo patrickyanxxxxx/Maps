@@ -1,0 +1,97 @@
+name: ' iRingo: 🗺️ Maps International-All Test v3'
+description: |-
+  Egern 优先测试版本
+  test20-proven-satellite-route：回归稳定版已实机验证的单一国际卫星选择器 + 大陆坐标请求路由，清单不再包含 CN 卫星描述符
+  国内高德地图、POI、交通、导航与定位修正
+  国际卫星、3D、Flyover、完整四处看看服务链、地球与道路能力
+  大陆 style=98 卫星请求按瓦片坐标改写到 CN 端点，国外请求保持国际链，卫星模式跨区不再锁定
+compat_arguments:
+  GeoManifest.Dynamic.Config.CountryCode: US
+  UrlInfoSet.RAP: Apple
+  LogLevel: WARN
+compat_arguments_desc: |
+  本测试版本以 Egern 为主要验证客户端。为避免无效参数和旧 BoxJs 配置干扰，国内/国际服务组合采用固定策略，只开放实际会被脚本读取的参数。
+
+  GeoManifest.Dynamic.Config.CountryCode: [动态配置] 清单主体
+      ├ US: 请求改写为国际身份，US 清单为主体并预热 CN 清单缓存；与稳定版一致的已验证身份路径（默认，test20）
+      ├ AUTO: 根据设备当前分支选择主体并预热另一份清单
+      └ CN: 中国服务身份仅用于回退诊断；与国际主组内容错位，可能导致漂移
+
+  UrlInfoSet.RAP: [URL信息集] 评分、照片与反馈
+      ├ Apple: 使用国际评分、照片和反馈服务（默认）
+      └ AutoNavi: 保持中国清单的相关服务
+
+  LogLevel: [调试] 日志等级
+      ├ WARN: 仅警告和错误（默认）
+      ├ INFO: 输出一般运行信息
+      └ DEBUG: 输出详细排错信息
+
+  固定策略:
+      ├ UrlInfoSet.Dispatcher=AutoNavi: 国内地点、搜索与 POI 使用高德
+      ├ UrlInfoSet.Directions=AutoNavi: 保留上一实机版本已验证的国内外导航组合
+      ├ UrlInfoSet.LocationShift=AutoNavi: 国内 GCJ-02 坐标修正
+      ├ TileSet.Map/POI/Traffic=CN: 国内底图、POI 与交通
+      ├ TileSet.Flyover/Munin=XX: 国际原生主组保留 3D、Flyover 与可交互四处看看完整链
+      ├ TileSet.Roads=XX: 道路能力与 SPR/Munin 完全使用国际链，避免 CN 同名选择器抢占四处看看
+      ├ TileSet.Satellite=ROUTE: 单一国际卫星选择器；大陆 style=98 请求由 satellite-route.js 按坐标改写到 CN 端点
+      ├ Munin URL=XX: 四处看看同时保留国际服务及资源入口
+      ├ Config.Announcements.Environment=CN: 使用中国公告环境
+      └ Storage=Argument: 模块参数优先，避免旧持久化参数覆盖
+author: patrickyanxxxxx; VirgilClyne
+homepage: https://github.com/patrickyanxxxxx/Maps
+icon: https://developer.apple.com/assets/elements/icons/maps/maps-128x128.png
+rules:
+- domain:
+    match: gspe11-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe12-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe19-2-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gspe79-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain:
+    match: gsp76-cn-ssl.ls.apple.com
+    policy: DIRECT
+- domain_suffix:
+    match: is.autonavi.com
+    policy: DIRECT
+scriptings:
+- http_response:
+    name: Maps.InternationalAllV3.defaults.response
+    match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.20-proven-satellite-route
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+- http_request:
+    name: Maps.InternationalAllV3.manifest.request
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/request.bundle.js?v=6.4.0-test.20-proven-satellite-route
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+- http_response:
+    name: Maps.InternationalAllV3.manifest.response
+    match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.20-proven-satellite-route
+    env:
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+    body_required: true
+    binary_body: true
+- http_request:
+    name: Maps.InternationalAllV3.satellite-route.request
+    match: ^https?:\/\/gspe11-ssl\.ls\.apple\.com\/tile
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/satellite-route.js?v=6.4.0-test.20-proven-satellite-route
+mitm:
+  hostnames:
+    includes:
+    - configuration.ls.apple.com
+    - gspe35-ssl.ls.apple.com
+    - gspe35-ssl.ls.apple.cn
+    - gspe11-ssl.ls.apple.com
