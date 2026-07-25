@@ -1,8 +1,41 @@
-# Maps International-All Test v3（test20）
+# Maps International-All Test v3（当前：test21）
 
 这是与 `test/international-all-v2` 并行的独立测试线，基于 test19（`e3f6c3f`）的代码继续修改。目标不变：国内标准地图 POI 完整且道路/POI 不偏移；国内卫星图影像/道路/POI/定位对齐、导航正常；国外标准地图 POI 完整、3D 卫星、四处看看与导航正常。
 
-## test20-proven-satellite-route 的设计依据
+## test21-uniform-coordinate-identity（当前版本）
+
+test20 实机结果：**国外四处看看、3D 卫星、导航全部正常**（国际主组 + 单卫星选择器机制成立）；国内标准地图道路偏移、国内卫星模式影像/道路/POI/定位偏移仍在。
+
+对 test16→test20 的证据复盘发现一个从未测过的状态：
+
+| 版本 | 大陆道路图层白名单 | 大陆 POI 图层白名单 | 实机结果 |
+| --- | --- | --- | --- |
+| test16 | 原生 | 强制 CN | POI 对齐、道路漂移 |
+| test17 | 强制 CN | 强制 CN | 仍漂移（当时 POI 资源重映射尚未就位） |
+| test18~20 | 原生 | 强制 CN | POI 对齐、道路漂移 |
+| **test21 默认** | **原生** | **原生（统一）** | 待实机验证 |
+
+推理：真机 CN 清单下所有大陆图层以原生身份在同一坐标帧（GCJ-02）渲染，定位点由 `polyLocationShift` 换算进同一帧；"对齐"的本质是**互相一致**。而 test16 起一直处于"POI 被单独标记 CN（系统单独修正）、道路保持原生（不修正）"的混合状态，两套空间必然互相错开。
+
+test21 把坐标身份改为**统一处理**，并开放两个可在 Egern 参数面板直接切换的诊断开关：
+
+- `Hybrid.MainlandWhitelist`：`NATIVE`（默认，全部大陆图层保留原生白名单）/ `CN`（全部统一标记 countryCode=CN）。
+- `UrlInfoSet.LocationShift`：`AutoNavi`（默认，定位点 GCJ-02 修正）/ `Apple`（不修正）。
+
+### 2×2 实机测试方案
+
+每换一组参数后强退地图 App 再测。重点观察三组相对关系：①道路 vs POI ②道路/POI vs 卫星影像 ③定位点 vs 周围道路。
+
+| 组合 | MainlandWhitelist | LocationShift | 预期 |
+| --- | --- | --- | --- |
+| A（默认） | NATIVE | AutoNavi | 图层互相一致（GCJ-02 帧），定位点换算进同帧 |
+| B | NATIVE | Apple | 图层互相一致，但定位点可能整体偏移固定距离 |
+| C | CN | AutoNavi | 全部触发系统大陆坐标解释 |
+| D | CN | Apple | 对照组 |
+
+把四种组合各自的三组相对关系记录下来，即可确定坐标解释机制并锁定最终组合。
+
+## test20-proven-satellite-route 的设计依据（已由 test21 继承）
 
 19 轮实机迭代已确认的约束：
 

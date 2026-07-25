@@ -1,21 +1,33 @@
 name: ' iRingo: 🗺️ Maps International-All Test v3'
 description: |-
   Egern 优先测试版本
-  test20-proven-satellite-route：回归稳定版已实机验证的单一国际卫星选择器 + 大陆坐标请求路由，清单不再包含 CN 卫星描述符
+  test21-uniform-coordinate-identity：在 test20 单一国际卫星选择器 + 大陆坐标请求路由的基础上，统一全部大陆图层的坐标身份，并开放白名单/定位修正两个诊断开关
   国内高德地图、POI、交通、导航与定位修正
   国际卫星、3D、Flyover、完整四处看看服务链、地球与道路能力
   大陆 style=98 卫星请求按瓦片坐标改写到 CN 端点，国外请求保持国际链，卫星模式跨区不再锁定
 compat_arguments:
   GeoManifest.Dynamic.Config.CountryCode: US
+  Hybrid.MainlandWhitelist: NATIVE
+  UrlInfoSet.LocationShift: AutoNavi
   UrlInfoSet.RAP: Apple
   LogLevel: WARN
 compat_arguments_desc: |
   本测试版本以 Egern 为主要验证客户端。为避免无效参数和旧 BoxJs 配置干扰，国内/国际服务组合采用固定策略，只开放实际会被脚本读取的参数。
 
   GeoManifest.Dynamic.Config.CountryCode: [动态配置] 清单主体
-      ├ US: 请求改写为国际身份，US 清单为主体并预热 CN 清单缓存；与稳定版一致的已验证身份路径（默认，test20）
+      ├ US: 请求改写为国际身份，US 清单为主体并预热 CN 清单缓存；与稳定版一致的已验证身份路径（默认，test20 起）
       ├ AUTO: 根据设备当前分支选择主体并预热另一份清单
       └ CN: 中国服务身份仅用于回退诊断；与国际主组内容错位，可能导致漂移
+
+  Hybrid.MainlandWhitelist: [瓦片数据集] 大陆图层坐标身份（test21 诊断开关）
+      ├ NATIVE: 全部大陆图层保留 Apple CN 清单原生 provider 白名单，互相处于同一坐标帧（默认）
+      └ CN: 全部大陆图层统一标记 countryCode=CN，触发系统的大陆坐标解释
+      说明: 此前版本混用两种身份（POI 标 CN、道路保留原生），是国内道路/POI 互相偏移的疑似根因；本开关保证统一，且两档都可实机对比
+
+  UrlInfoSet.LocationShift: [URL信息集] 定位修正（test21 诊断开关）
+      ├ AutoNavi: 使用高德 GCJ-02 修正服务，定位点换算进大陆图层坐标帧（默认）
+      └ Apple: 不做修正，定位点保持 WGS-84
+      说明: 与 MainlandWhitelist 组成 2×2 组合，用于确定国内图层、POI 与定位点互相对齐的组合
 
   UrlInfoSet.RAP: [URL信息集] 评分、照片与反馈
       ├ Apple: 使用国际评分、照片和反馈服务（默认）
@@ -29,7 +41,6 @@ compat_arguments_desc: |
   固定策略:
       ├ UrlInfoSet.Dispatcher=AutoNavi: 国内地点、搜索与 POI 使用高德
       ├ UrlInfoSet.Directions=AutoNavi: 保留上一实机版本已验证的国内外导航组合
-      ├ UrlInfoSet.LocationShift=AutoNavi: 国内 GCJ-02 坐标修正
       ├ TileSet.Map/POI/Traffic=CN: 国内底图、POI 与交通
       ├ TileSet.Flyover/Munin=XX: 国际原生主组保留 3D、Flyover 与可交互四处看看完整链
       ├ TileSet.Roads=XX: 道路能力与 SPR/Munin 完全使用国际链，避免 CN 同名选择器抢占四处看看
@@ -66,28 +77,28 @@ scriptings:
 - http_response:
     name: Maps.InternationalAllV3.defaults.response
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.20-proven-satellite-route
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.21-uniform-coordinate-identity
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Hybrid.MainlandWhitelist="{{{Hybrid.MainlandWhitelist}}}"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
 - http_request:
     name: Maps.InternationalAllV3.manifest.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/request.bundle.js?v=6.4.0-test.20-proven-satellite-route
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/request.bundle.js?v=6.4.0-test.21-uniform-coordinate-identity
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Hybrid.MainlandWhitelist="{{{Hybrid.MainlandWhitelist}}}"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: Maps.InternationalAllV3.manifest.response
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.20-proven-satellite-route
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.21-uniform-coordinate-identity
     env:
-      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
+      _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Hybrid.MainlandWhitelist="{{{Hybrid.MainlandWhitelist}}}"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
     binary_body: true
 - http_request:
     name: Maps.InternationalAllV3.satellite-route.request
     match: ^https?:\/\/gspe11-ssl\.ls\.apple\.com\/tile
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/satellite-route.js?v=6.4.0-test.20-proven-satellite-route
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/satellite-route.js?v=6.4.0-test.21-uniform-coordinate-identity
 mitm:
   hostnames:
     includes:

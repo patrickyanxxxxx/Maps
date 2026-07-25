@@ -251,6 +251,22 @@ for (let index = 0; index < xx.tileSet.length; index++) {
 }
 if (!xxResult.attribution[0].name.includes("iRingo: 📍 adaptive hybrid")) throw new Error("iRingo adaptive hybrid attribution was not restored");
 
+// test21: uniform coordinate identity across ALL injected mainland layers.
+// NATIVE (default) preserves each source descriptor's own whitelist; CN marks
+// every layer. A mixed state (POI forced CN while roads stay native) is the
+// suspected root cause of the mutual mainland drift and must never reappear.
+const whitelistOf = (result, style) => JSON.stringify(result.tileSet.find(item => item.style === style && /-cn-ssl\./.test(item.baseURL ?? ""))?.countryRegionWhitelist ?? null);
+const sourceWhitelistOf = style => JSON.stringify(cn.tileSet.find(item => item.style === style)?.countryRegionWhitelist ?? []);
+for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_TRAFFIC"]) {
+	if (whitelistOf(xxResult, style) !== sourceWhitelistOf(style)) throw new Error(`NATIVE mode did not preserve the source whitelist: ${style}`);
+}
+const cnModeSettings = { UrlInfoSet: { RAP: "Apple" }, Hybrid: { MainlandWhitelist: "CN" } };
+const cnModeResult = adaptiveFix(structuredClone(xx), { CN: structuredClone(cn), XX: structuredClone(xx) }, cnModeSettings, "US");
+assertTest20Invariants(cnModeResult, cn, xx, "fixture US whitelist=CN");
+for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_TRAFFIC"]) {
+	if (whitelistOf(cnModeResult, style) !== JSON.stringify([{ countryCode: "CN", region: "" }])) throw new Error(`CN mode did not mark the mainland layer: ${style}`);
+}
+
 // The CN-identity diagnostic path must produce the same test20 structure.
 const cnResult = adaptiveFix(structuredClone(cn), { CN: structuredClone(cn), XX: structuredClone(xx) }, settings, "CN");
 assertTest20Invariants(cnResult, cn, xx, "fixture CN");
@@ -297,7 +313,7 @@ if (existsSync(realCNPath) && existsSync(realUSPath)) {
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v3",
-	"6.4.0-test.20-proven-satellite-route",
+	"6.4.0-test.21-uniform-coordinate-identity",
 	'CountryCode:"US"',
 	'TileSet.Satellite:"ROUTE"',
 	"modules/test/international-all-v3/assets/",
@@ -331,7 +347,7 @@ for (const marker of [
 	"assets/satellite-route.js",
 	"binary_body: true",
 	"- gspe11-ssl.ls.apple.com",
-	"test20-proven-satellite-route",
+	"test21-uniform-coordinate-identity",
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
