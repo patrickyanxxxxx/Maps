@@ -427,7 +427,7 @@ if (outside.action !== "passthrough") throw new Error("foreign road request was 
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.21-cn-release-disjoint-style98",
+	"6.4.0-test.22-cache-self-healing",
 	"CountryCode:\"CN\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
@@ -462,7 +462,7 @@ for (const marker of [
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("test21-cn-release-disjoint-style98")) throw new Error("Egern module does not expose the test21 cache identity");
+if (!egernText.includes("test22-cache-self-healing")) throw new Error("Egern module does not expose the test22 cache identity");
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
 if (egernText.includes("assets/satellite-route.js")) throw new Error("Egern still uses the retired satellite imagery rewrite");
 if (egernText.includes("assets/cn-satellite-road.js")) throw new Error("Egern still performs the retired test14 satellite-road rewrite");
