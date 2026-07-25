@@ -64,20 +64,20 @@ scriptings:
 - http_response:
     name: Maps.InternationalAllV2.defaults.response
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.3
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.4
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
 - http_request:
     name: Maps.InternationalAllV2.manifest.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.3
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.4
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: Maps.InternationalAllV2.manifest.response
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.3
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.4
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
@@ -85,7 +85,7 @@ scriptings:
 - http_request:
     name: Maps.InternationalAllV2.satellite.route
     match: ^https:\/\/gspe11-ssl\.ls\.apple\.com\/tile(?:\?|$)
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/satellite-route.js?v=6.4.0-test.3
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/satellite-route.js?v=6.4.0-test.4
 mitm:
   hostnames:
     includes:
