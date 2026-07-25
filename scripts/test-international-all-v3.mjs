@@ -183,28 +183,14 @@ const assertTest20Invariants = (result, cnSource, xxSource, label) => {
 		if (resultRegionCount <= sourceRegionCount) throw new Error(`${label}: style-98 mainland coverage was not appended`);
 		if (!routed.validVersion?.[0]?.availableTiles?.slice(0, sourceRegionCount).every((region, index) => JSON.stringify(region) === JSON.stringify(sourceRoutedSatellite.validVersion[0].availableTiles[index]))) throw new Error(`${label}: style-98 original coverage changed`);
 	}
-	// test26: the plain international satellite chain must exclude the mainland
-	// grid (pushing geod onto the style-98 selector for mainland imagery) while
-	// keeping foreign/global coverage.
-	const inMainlandGrid = region => {
-		if (!region || region.minZ < 8) return false;
-		const factor = 2 ** (region.minZ - 8);
-		const x8 = Math.floor(region.minX / factor);
-		const y8 = Math.floor(region.minY / factor);
-		// Beijing-area probe cell (z8 210,96) must not be advertised.
-		const px = 210, py = 96;
-		const maxX8 = Math.ceil((region.maxX + 1) / factor) - 1;
-		const maxY8 = Math.ceil((region.maxY + 1) / factor) - 1;
-		return px >= x8 && px <= maxX8 && py >= y8 && py <= maxY8;
-	};
+	// test27: the plain international satellite chain is byte-for-byte native
+	// again (the test26 mainland carve-out regressed on device).
 	for (const style of satelliteStyles) {
 		const source = (xxSource.tileSet || []).find(item => item.style === style);
 		if (!source) continue;
 		const output = result.tileSet.find(item => item.style === style && !/-cn-ssl\./.test(item.baseURL ?? ""));
 		if (!output) throw new Error(`${label}: international satellite selector is missing: ${style}`);
-		const sourceHasDetailedCoverage = source.validVersion?.some(version => version.availableTiles?.some(region => region.maxZ >= 8));
-		if (sourceHasDetailedCoverage && !output.validVersion?.length) throw new Error(`${label}: international satellite coverage vanished: ${style}`);
-		if (output.validVersion?.some(version => version.availableTiles?.some(inMainlandGrid))) throw new Error(`${label}: international satellite still advertises mainland coverage: ${style}`);
+		if (JSON.stringify(output.validVersion) !== JSON.stringify(source.validVersion)) throw new Error(`${label}: international satellite coverage was modified: ${style}`);
 	}
 	// Munin/SPR/Look Around stays byte-for-byte international; no CN roads.
 	for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA"]) {
@@ -302,11 +288,17 @@ for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_TRAFFIC"]) {
 const cnResult = adaptiveFix(structuredClone(cn), { CN: structuredClone(cn), XX: structuredClone(xx) }, settings, "CN");
 assertTest20Invariants(cnResult, cn, xx, "fixture CN");
 
+// test27: Hybrid.Enabled=false must return the native manifest untouched.
+const passthrough = adaptiveFix(structuredClone(cn), { CN: structuredClone(cn), XX: structuredClone(xx) }, { ...settings, Hybrid: { Enabled: "false" } }, "CN");
+if (JSON.stringify(passthrough) !== JSON.stringify(cn)) throw new Error("Hybrid.Enabled=false did not pass the native manifest through");
+const passthroughBool = adaptiveFix(structuredClone(xx), { CN: structuredClone(cn), XX: structuredClone(xx) }, { ...settings, Hybrid: { Enabled: false } }, "US");
+if (JSON.stringify(passthroughBool) !== JSON.stringify(xx)) throw new Error("Hybrid.Enabled=false (boolean) did not pass the native manifest through");
+
 if (!responseText.includes("u.tileGroup=Array.from(u.tileGroup??[])")) throw new Error("legacy tile-group rebuilder was not bypassed");
 
 // --- satellite-route.js: mainland style-98 requests are rewritten, foreign
 // and non-98 requests pass through untouched.
-const routeText = await readFile(`${root}/assets/satellite-route.v26.js`, "utf8");
+const routeText = await readFile(`${root}/assets/satellite-route.v27.js`, "utf8");
 const runRoute = url => {
 	let output;
 	const context = { URL, URLSearchParams, Number, Math, console, globalThis: undefined, $request: { url }, $done: value => { output = value; } };
@@ -354,13 +346,13 @@ if (existsSync(realCNPath) && existsSync(realUSPath)) {
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v3",
-	"6.4.0-test.26-style98-only-mainland",
+	"6.4.0-test.27-known-good-plus-dual-mode",
 	'CountryCode:"US"',
 	'TileSet.Satellite:"ROUTE"',
 	"modules/test/international-all-v3/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
-	"assets/satellite-route.v26.js",
+	"assets/satellite-route.v27.js",
 	"gspe11-ssl.ls.apple.com",
 ]) {
 	if (!moduleText.includes(marker)) throw new Error(`Surge module is missing ${marker}`);
@@ -385,10 +377,10 @@ for (const marker of [
 	"modules/test/international-all-v3/assets/",
 	"assets/request.bundle.js",
 	"assets/response.bundle.js",
-	"assets/satellite-route.v26.js",
+	"assets/satellite-route.v27.js",
 	"binary_body: true",
 	"- gspe11-ssl.ls.apple.com",
-	"test26-style98-only-mainland",
+	"test27-known-good-plus-dual-mode",
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }

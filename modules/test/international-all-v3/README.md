@@ -1,8 +1,19 @@
-# Maps International-All Test v3（当前：test26）
+# Maps International-All Test v3（当前：test27）
 
 这是与 `test/international-all-v2` 并行的独立测试线，基于 test19（`e3f6c3f`）的代码继续修改。目标不变：国内标准地图 POI 完整且道路/POI 不偏移；国内卫星图影像/道路/POI/定位对齐、导航正常；国外标准地图 POI 完整、3D 卫星、四处看看与导航正常。
 
-## test26-style98-only-mainland（当前版本）
+## test27-known-good-plus-dual-mode（当前版本）
+
+test26 实机结果（重要的否定性结论）：把大陆覆盖只留给 style=98 后，geod **拒绝**用 98 请求大陆细节（日志无 98 请求），只显示 z≤7 缩略图拉伸；同轮国外标准地图受损。结论：此 iOS 27 版本上 UNUSED_98 不是卫星主渲染管线的选择器——此前"稳定版靠 98→CN 改写显示国内卫星"的前提有误，稳定版当年显示的实为国际影像（其 README 的"定位有偏移"已知限制与此一致）。style=7 改写亦被 test25 证伪（US 卫星为 PX512、CN 仅 PX256，且 accessKey 参数绑定）。
+
+**大陆卫星影像经清单/改写路由到 CN 端点这条路，三种机制均被实机证伪。** test27 回退到已知最佳状态并转向双模式：
+
+- 回退 test26 挖除：大陆细节影像恢复经国际 style=7（清晰、WGS-84 帧，与 GCJ 覆盖层有已知偏移）；
+- 新增 `Hybrid.Enabled` 开关：`false` + `CountryCode=CN` = 原生国内模式（国内标准/卫星/道路/POI/定位全部对齐，国外无 3D/四处看看）；`true`（默认）= 混合模式（国外全套正常，国内 POI/导航为高德、道路与影像可能偏移）；
+- `gspe11-2-cn-ssl` 加入 MITM：后续任何 CN 卫星流量的状态码可直接观察（test26 中该主机出现 222KB 下行且无 98 改写，来源待查）；
+- 左下角注释 `test.27`。
+
+## test26-style98-only-mainland（已被 test27 回退）
 
 test25 实机结果：版本化文件名生效，`gspe11-2-cn-ssl` 请求首次出现——**改写链路本身已打通**；但国内卫星影像不显示。结合 CN 真机清单核对：改写目标参数（`/2/tiles?style=7&v=68&size=1&scale=2`）与设备原生签名的 CN 请求格式完全一致，问题只剩 **accessKey**——style=7 国际请求的 accessKey 是为 `gspe11-ssl` 的原始参数签发的，带到 CN 端点被拒。
 

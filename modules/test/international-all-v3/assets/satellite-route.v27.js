@@ -10,7 +10,7 @@
  * CN rewrite is the stable branch's device-proven path. Every decision is
  * logged so Egern logs prove which branch each request took. */
 (() => {
-	const TAG = "[iRingo SatRoute test.26]";
+	const TAG = "[iRingo SatRoute test.27]";
 	const req = globalThis.$request;
 	if (!req?.url) return $done({});
 	let url;
