@@ -22,20 +22,36 @@ const cnURLInfo = {
 	dispatcherURL: "https://dispatcher.is.autonavi.com/dispatcher",
 	directionsURL: "https://direction2.is.autonavi.com/direction",
 	backgroundRevGeoURL: "https://reverse.is.autonavi.com/reverse",
+	addressCorrectionInitURL: "https://address.is.autonavi.com/init",
+	addressCorrectionUpdateURL: "https://address.is.autonavi.com/update",
 	polyLocationShiftURL: "https://shift.is.autonavi.com/shift",
+	alternateResourcesURL: [
+		{ url: "https://cn-resources.example/primary" },
+		{ url: "https://cn-resources.example/poi" },
+	],
 };
 const xxURLInfo = {
 	dispatcherURL: "https://gsp-ssl.ls.apple.com/dispatcher",
 	directionsURL: "https://gsp-ssl.ls.apple.com/directions",
 	backgroundRevGeoURL: "https://gsp-ssl.ls.apple.com/reverse",
 	muninBaseURL: "https://gsp76-ssl.ls.apple.com/munin",
-	alternateResourcesURL: "https://gsp-ssl.ls.apple.com/resources",
+	alternateResourcesURL: [{ url: "https://gsp-ssl.ls.apple.com/resources" }],
 	problemSubmissionURL: "https://gsp-ssl.ls.apple.com/problem",
 };
 
 const cn = {
 	tileSet: [
 		tile("VECTOR_STANDARD", "https://gspe12-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
+		tile("VECTOR_POI", "https://gspe19-cn-ssl.ls.apple.com/tiles", {
+			dataSet: 101,
+			validVersion: [{ identifier: 31, availableTiles: [{ minX: 53, minY: 20, maxX: 54, maxY: 21, minZ: 6, maxZ: 21 }] }],
+		}),
+		tile("VECTOR_STREET_POI", "https://gspe19-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
+		tile("VECTOR_POI_V2", "https://gspe19-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
+		tile("VECTOR_POLYGON_SELECTION", "https://gspe19-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
+		tile("POI_BUSYNESS", "https://gspe19-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
+		tile("POI_DP_BUSYNESS", "https://gspe19-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
+		tile("VECTOR_POI_V2_UPDATE", "https://gspe19-cn-ssl.ls.apple.com/tiles", { dataSet: 101 }),
 		tile("VECTOR_TRAFFIC", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("VECTOR_TRAFFIC_SKELETON", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
 		tile("VECTOR_ROADS", "https://gspe19-cn-ssl.ls.apple.com/tiles"),
@@ -45,7 +61,12 @@ const cn = {
 		tile("SPUTNIK_METADATA", "https://gspe11-2-cn-ssl.ls.apple.com/2/tiles"),
 		tile("FLYOVER_C3M_MESH", "https://gspe11-2-cn-ssl.ls.apple.com/2/tiles"),
 	],
-	resource: [{ resourceType: 1, filename: "cn.dat" }],
+	resource: [
+		{ resourceType: 1, filename: "cn.dat", alternateResourceURLIndex: 0 },
+		{ resourceType: 1, filename: "POITypeMapping-CN-1.json", alternateResourceURLIndex: 1 },
+		{ resourceType: 1, filename: "POITypeMapping-CN-2.json", alternateResourceURLIndex: 1 },
+		{ resourceType: 1, filename: "China.cms-lpr", alternateResourceURLIndex: 1 },
+	],
 	attribution: [{ name: "AutoNavi", resource: [] }],
 	urlInfoSet: [cnURLInfo],
 	dataSet: [{ identifier: 1 }, { identifier: 101 }],
@@ -57,6 +78,7 @@ const cn = {
 const xx = {
 	tileSet: [
 		tile("VECTOR_STANDARD", "https://gspe12-ssl.ls.apple.com/tiles"),
+		tile("VECTOR_POI", "https://gspe19-ssl.ls.apple.com/tile.vf"),
 		tile("VECTOR_TRAFFIC", "https://gspe19-ssl.ls.apple.com/tile.vf"),
 		tile("VECTOR_TRAFFIC_SKELETON", "https://gspe19-ssl.ls.apple.com/tile.vf"),
 		tile("VECTOR_ROADS", "https://gspe19-ssl.ls.apple.com/tile.vf"),
@@ -79,7 +101,7 @@ const xx = {
 		tile("SPUTNIK_METADATA", "https://gspe11-ssl.ls.apple.com/tile"),
 		tile("FLYOVER_C3M_MESH", "https://gspe11-ssl.ls.apple.com/tile"),
 	],
-	resource: [{ resourceType: 2, filename: "xx.dat" }],
+	resource: [{ resourceType: 2, filename: "xx.dat", alternateResourceURLIndex: 0 }],
 	attribution: [{ name: "‎", resource: [] }, { name: "Apple", resource: [] }],
 	urlInfoSet: [xxURLInfo],
 	dataSet: [{ identifier: 2 }],
@@ -89,10 +111,10 @@ const xx = {
 		identifier: 22,
 		qualityMarker: "US-native-detail",
 		tileSet: [
-			{ tileSetIndex: 18, identifier: 1 },
 			{ tileSetIndex: 19, identifier: 1 },
 			{ tileSetIndex: 20, identifier: 1 },
 			{ tileSetIndex: 21, identifier: 1 },
+			{ tileSetIndex: 22, identifier: 1 },
 		],
 		attributionIndex: [0, 1],
 		resourceIndex: [0],
@@ -103,6 +125,7 @@ const xx = {
 			{ tileSetIndex: 0, identifier: 1 },
 			{ tileSetIndex: 1, identifier: 1 },
 			{ tileSetIndex: 2, identifier: 1 },
+			{ tileSetIndex: 3, identifier: 1 },
 		],
 		attributionIndex: [0, 1],
 		resourceIndex: [0],
@@ -115,7 +138,7 @@ const cnResult = adaptiveFix(cn, { CN: cn, XX: xx }, settings, "CN");
 if (!cnResult.urlInfoSet[0].dispatcherURL.includes("autonavi")) throw new Error("CN dispatcher was not preserved");
 if (!cnResult.urlInfoSet[0].directionsURL.includes("autonavi")) throw new Error("CN directions were not preserved");
 if (!cnResult.urlInfoSet[0].muninBaseURL.includes("gsp76-ssl")) throw new Error("international Munin service URL was not restored");
-if (!cnResult.urlInfoSet[0].alternateResourcesURL.includes("gsp-ssl")) throw new Error("international alternate resources URL was not restored");
+if (!cnResult.urlInfoSet[0].alternateResourcesURL.some(item => item.url.includes("gsp-ssl"))) throw new Error("international alternate resources URL was not restored");
 if (!cnResult.tileSet.some(item => item.style === "MUNIN_METADATA" && item.baseURL.includes("gsp76-ssl"))) throw new Error("international Munin was not restored");
 for (const style of ["VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA"]) {
 	if (!cnResult.tileSet.some(item => item.style === style && item.baseURL.includes("gsp76-ssl"))) throw new Error(`international Look Around selector was not restored: ${style}`);
@@ -133,12 +156,27 @@ if (cnResult.releaseInfo !== "XX-release") throw new Error("international capabi
 const xxResult = adaptiveFix(xx, { CN: cn, XX: xx }, settings, "US");
 if (!xxResult.urlInfoSet[0].dispatcherURL.includes("autonavi")) throw new Error("mainland dispatcher was not injected into US baseline");
 if (!xxResult.urlInfoSet[0].directionsURL.includes("autonavi")) throw new Error("mainland directions were not injected into US baseline");
+if (!xxResult.urlInfoSet[0].addressCorrectionInitURL.includes("autonavi")) throw new Error("mainland address-correction service was not injected into US baseline");
 if (!xxResult.urlInfoSet[0].muninBaseURL.includes("gsp76-ssl")) throw new Error("international Munin was not preserved in US baseline");
 if (!xxResult.tileSet.some(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland rendering layer was not injected into international baseline");
 const mainlandStandard = xxResult.tileSet.find(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"));
 if (mainlandStandard.dataSet !== 101) throw new Error("mainland standard-map dataset identity was removed and may cause coordinate displacement");
 if (mainlandStandard.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error("mainland standard-map CN provider whitelist is missing");
 if (!xxResult.dataSet.some(item => item.identifier === 101)) throw new Error("mainland dataset definition was not appended to US manifest");
+const mainlandPOI = xxResult.tileSet.find(item => item.style === "VECTOR_POI" && item.baseURL.includes("-cn-ssl"));
+if (!mainlandPOI) throw new Error("mainland POI layer was not injected into international baseline");
+if (mainlandPOI.dataSet !== 101 || mainlandPOI.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error("mainland POI provider identity was not preserved");
+if (mainlandPOI.validVersion?.[0]?.availableTiles?.[0]?.minZ !== 6) throw new Error("native mainland POI zoom coverage was replaced");
+for (const style of ["VECTOR_STREET_POI", "VECTOR_POI_V2", "VECTOR_POLYGON_SELECTION", "POI_BUSYNESS", "POI_DP_BUSYNESS", "VECTOR_POI_V2_UPDATE"]) {
+	if (!xxResult.tileSet.some(item => item.style === style && item.baseURL.includes("-cn-ssl"))) throw new Error(`mainland POI companion layer is missing: ${style}`);
+}
+for (const filename of ["POITypeMapping-CN-1.json", "POITypeMapping-CN-2.json", "China.cms-lpr"]) {
+	const resource = xxResult.resource.find(item => item.filename === filename);
+	if (!resource) throw new Error(`mainland POI resource is missing: ${filename}`);
+	if (xxResult.urlInfoSet[0].alternateResourcesURL[resource.alternateResourceURLIndex]?.url !== "https://cn-resources.example/poi") throw new Error(`mainland POI resource URL index was not remapped: ${filename}`);
+}
+if (xxResult.resource.some(item => item.filename === "cn.dat")) throw new Error("unrelated mainland resource leaked into international baseline");
+if (xxResult.urlInfoSet[0].alternateResourcesURL[0]?.url !== "https://gsp-ssl.ls.apple.com/resources") throw new Error("native international resource URL index changed");
 for (let index = 0; index < xx.tileSet.length; index++) {
 	if (xxResult.tileSet[index].style !== xx.tileSet[index].style || xxResult.tileSet[index].baseURL !== xx.tileSet[index].baseURL) {
 		throw new Error(`native US tile index changed at ${index}`);
@@ -149,7 +187,7 @@ for (let index = 0; index < xx.attribution.length; index++) {
 }
 if (xxResult.tileGroup?.[0]?.qualityMarker !== "US-native-detail") throw new Error("native US detail group metadata was not preserved");
 const native3DRefs = xxResult.tileGroup[0].tileSet.slice(0, 4).map(ref => ref.tileSetIndex);
-if (JSON.stringify(native3DRefs) !== JSON.stringify([18, 19, 20, 21])) throw new Error("native US 3D tile-group indices were changed");
+if (JSON.stringify(native3DRefs) !== JSON.stringify([19, 20, 21, 22])) throw new Error("native US 3D tile-group indices were changed");
 if (xxResult.tileGroup[0].tileSet.length !== 4 || xxResult.tileGroup[0].attributionIndex.length !== 2 || xxResult.tileGroup[0].resourceIndex.length !== 1) throw new Error("native US 3D group was polluted by mainland references");
 if (!xxResult.tileGroup[1].tileSet.some(ref => ref.tileSetIndex >= xx.tileSet.length)) throw new Error("mainland layers were not appended to the native 2D group");
 if (xxResult.tileGroup[1].tileSet[0].tileSetIndex < xx.tileSet.length) throw new Error("mainland standard-map selectors do not precede the Apple 2D fallback");

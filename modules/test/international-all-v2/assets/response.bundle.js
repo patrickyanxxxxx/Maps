@@ -50,6 +50,41 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     return result;
   };
 
+  const mainlandPOIResourceNames = new Set([
+    "POITypeMapping-CN-1.json",
+    "POITypeMapping-CN-2.json",
+    "China.cms-lpr"
+  ]);
+  const urlKey = item => endpoint(item) || JSON.stringify(item);
+  const appendMainlandPOIResources = (primaryResources = [], mainlandResources = [], primaryURLs = [], mainlandURLs = []) => {
+    const resources = clone(primaryResources || []);
+    const alternateResourcesURL = clone(primaryURLs || []);
+    const seenResources = new Set(resources.map(resourceKey));
+    const urlIndexes = new Map(alternateResourcesURL.map((item, index) => [urlKey(item), index]));
+    for (const source of mainlandResources || []) {
+      if (!mainlandPOIResourceNames.has(source?.filename)) continue;
+      const resource = clone(source);
+      const sourceIndex = resource.alternateResourceURLIndex;
+      if (Number.isInteger(sourceIndex) && mainlandURLs?.[sourceIndex]) {
+        const sourceURL = clone(mainlandURLs[sourceIndex]);
+        const key = urlKey(sourceURL);
+        let targetIndex = urlIndexes.get(key);
+        if (typeof targetIndex === "undefined") {
+          targetIndex = alternateResourcesURL.length;
+          alternateResourcesURL.push(sourceURL);
+          urlIndexes.set(key, targetIndex);
+        }
+        resource.alternateResourceURLIndex = targetIndex;
+      }
+      const key = resourceKey(resource);
+      if (!seenResources.has(key)) {
+        resources.push(resource);
+        seenResources.add(key);
+      }
+    }
+    return { resources, alternateResourcesURL };
+  };
+
   const dataSetKey = item => String(item?.identifier ?? JSON.stringify(item));
   const mergeDataSets = (primary = [], secondary = []) => {
     const result = clone(primary || []);
@@ -254,6 +289,15 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     "VECTOR_TRAFFIC",
     "VECTOR_TRAFFIC_SKELETON"
   ]);
+  const mainlandPOIStyles = new Set([
+    "VECTOR_POI",
+    "VECTOR_STREET_POI",
+    "VECTOR_POI_V2",
+    "VECTOR_POLYGON_SELECTION",
+    "POI_BUSYNESS",
+    "POI_DP_BUSYNESS",
+    "VECTOR_POI_V2_UPDATE"
+  ]);
   const mainlandRenderingStyles = new Set([
     "VECTOR_STANDARD",
     "VECTOR_BUILDINGS",
@@ -272,6 +316,7 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     "VECTOR_TOPOGRAPHIC",
     "VECTOR_CONTOURS"
   ]);
+  for (const style of mainlandPOIStyles) mainlandRenderingStyles.add(style);
 
   const useChinaBaseline = String(countryCode).toUpperCase() === "CN";
   // Fixed direct mode: no A/B switch and no persisted BoxJs value can put the
@@ -387,23 +432,30 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
       // Apple layer, which produces the familiar GCJ-02/WGS-84 road and POI
       // displacement. Coverage remains mainland-only below.
       tile.countryRegionWhitelist = [{ countryCode: "CN", region: "" }];
-      tile.validVersion = (tile.validVersion || []).map(version => {
-        const sourceRegions = version.availableTiles || [];
-        const sourceMinZ = Math.min(...sourceRegions.map(region => region.minZ));
-        const sourceMaxZ = Math.max(...sourceRegions.map(region => region.maxZ));
-        const minZ = Math.max(8, sourceMinZ);
-        return {
-          ...version,
-          availableTiles: Number.isFinite(sourceMaxZ) && sourceMaxZ >= minZ ? mainlandRegions(minZ, sourceMaxZ) : [],
-          timeToLiveSeconds: Math.min(version.timeToLiveSeconds || 3600, 3600)
-        };
-      }).filter(version => version.availableTiles.length);
+      if (mainlandPOIStyles.has(tile.style)) {
+        // POI descriptors carry provider-specific zoom/coverage metadata. Keep
+        // the native CN versions intact; replacing them with the coarse common
+        // mainland polygon drops low-zoom POIs and can make Apple POI fallback
+        // labels appear over GCJ-02 geometry.
+        tile.validVersion = clone(sourceTile.validVersion || []);
+      } else {
+        tile.validVersion = (tile.validVersion || []).map(version => {
+          const sourceRegions = version.availableTiles || [];
+          const sourceMinZ = Math.min(...sourceRegions.map(region => region.minZ));
+          const sourceMaxZ = Math.max(...sourceRegions.map(region => region.maxZ));
+          const minZ = Math.max(8, sourceMinZ);
+          return {
+            ...version,
+            availableTiles: Number.isFinite(sourceMaxZ) && sourceMaxZ >= minZ ? mainlandRegions(minZ, sourceMaxZ) : [],
+            timeToLiveSeconds: Math.min(version.timeToLiveSeconds || 3600, 3600)
+          };
+        }).filter(version => version.availableTiles.length);
+      }
       if (tile.validVersion.length) chinaTiles.push(tile);
     }
     // Append mainland-only layers. Prepending them would shift every native US
     // tile-set index and break the original high-detail 3D group references.
     result.tileSet = [...clone(international.tileSet || []), ...chinaTiles];
-    result.resource = mergeResources(international.resource, cn.resource);
     // Preserve every native international attribution index. Tile groups refer
     // to these positions directly, so mainland attribution must only append.
     result.attribution = appendMainlandAttributions(international.attribution);
@@ -422,6 +474,8 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
       "backgroundDispatcherURL",
       "bluePOIDispatcherURL",
       "spatialLookupURL",
+      "addressCorrectionInitURL",
+      "addressCorrectionUpdateURL",
       "batchReverseGeocoderURL",
       "backgroundRevGeoURL",
       "batchReverseGeocoderPlaceRequestURL",
@@ -437,6 +491,18 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
       "locationShiftEnabledRegion",
       "locationShiftVersion"
     ]);
+    // CN POI mapping files reference the CN alternateResourcesURL array by
+    // numeric index. Append only those three files and remap their indices into
+    // the untouched international URL array; blindly merging resources while
+    // keeping the US URL array makes the client download the wrong mappings.
+    const poiResources = appendMainlandPOIResources(
+      international.resource,
+      cn.resource,
+      internationalURLInfo.alternateResourcesURL,
+      mainlandURLInfo.alternateResourcesURL
+    );
+    result.resource = poiResources.resources;
+    internationalURLInfo.alternateResourcesURL = poiResources.alternateResourcesURL;
     result.urlInfoSet = [internationalURLInfo];
     result.dataSet = mergeDataSets(international.dataSet, cn.dataSet);
     result.displayString = clone(international.displayString || []);
