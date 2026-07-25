@@ -18,14 +18,6 @@ const tile = (style, url, extra = {}) => ({
 	...extra,
 });
 
-const isMainlandRegion = region => {
-	if (!region || region.minZ < 8) return false;
-	const factor = 2 ** (region.minZ - 8);
-	const minXAtZ8 = Math.floor(region.minX / factor);
-	const maxXAtZ8 = Math.ceil((region.maxX + 1) / factor) - 1;
-	return minXAtZ8 >= 180 && maxXAtZ8 <= 223;
-};
-
 const cnURLInfo = {
 	dispatcherURL: "https://dispatcher.is.autonavi.com/dispatcher",
 	directionsURL: "https://direction2.is.autonavi.com/direction",
@@ -85,8 +77,7 @@ const cn = {
 	dataSet: [{ identifier: 1 }, { identifier: 101 }],
 	displayString: [{ key: "cn" }],
 	muninBucket: [{ identifier: 1 }],
-	offlineMetadata: [{ dataVersion: 101, regulatoryRegionId: 2 }],
-	tileGroup: [{ identifier: 11, tileSet: [{ tileSetIndex: 0, identifier: 1 }], attributionIndex: [0], resourceIndex: [0], offlineMetadataIndex: 0 }],
+	tileGroup: [{ identifier: 11, tileSet: [{ tileSetIndex: 0, identifier: 1 }], attributionIndex: [0], resourceIndex: [0] }],
 	releaseInfo: "CN-release",
 };
 const xx = {
@@ -114,9 +105,6 @@ const xx = {
 		tile("RASTER_SATELLITE_NIGHT", "https://gspe11-ssl.ls.apple.com/tile"),
 		tile("SPUTNIK_METADATA", "https://gspe11-ssl.ls.apple.com/tile"),
 		tile("FLYOVER_C3M_MESH", "https://gspe11-ssl.ls.apple.com/tile"),
-		tile("UNUSED_98", "https://gspe11-ssl.ls.apple.com/tile", {
-			validVersion: [{ identifier: 226, availableTiles: [{ minX: 116000, minY: 51000, maxX: 117000, maxY: 52000, minZ: 17, maxZ: 20 }] }],
-		}),
 	],
 	resource: [{ resourceType: 2, filename: "xx.dat", alternateResourceURLIndex: 0 }],
 	attribution: [{ name: "‎", resource: [] }, { name: "Apple", resource: [] }],
@@ -124,7 +112,6 @@ const xx = {
 	dataSet: [{ identifier: 2 }],
 	displayString: [{ key: "xx" }],
 	muninBucket: [{ identifier: 2 }],
-	offlineMetadata: [{ dataVersion: 202, regulatoryRegionId: 0 }],
 	tileGroup: [{
 		identifier: 22,
 		qualityMarker: "US-native-detail",
@@ -136,7 +123,6 @@ const xx = {
 		],
 		attributionIndex: [0, 1],
 		resourceIndex: [0],
-		offlineMetadataIndex: 0,
 	}, {
 		identifier: 23,
 		qualityMarker: "US-native-base",
@@ -148,79 +134,41 @@ const xx = {
 		],
 		attributionIndex: [0, 1],
 		resourceIndex: [0],
-		offlineMetadataIndex: 0,
 	}],
 	releaseInfo: "XX-release",
 };
-
-// Real iOS 27 CN manifests reference the complete 41-tile provider graph from
-// their single native group. Keep the fixture representative so group-level
-// coordinate ownership tests cover standard, POI, roads and satellite.
-cn.tileGroup[0].tileSet = cn.tileSet.map((item, tileSetIndex) => ({
-	tileSetIndex,
-	identifier: item.validVersion?.[0]?.identifier,
-}));
 
 const settings = { UrlInfoSet: { RAP: "Apple" } };
 const cnResult = adaptiveFix(cn, { CN: cn, XX: xx }, settings, "CN");
 if (!cnResult.urlInfoSet[0].dispatcherURL.includes("autonavi")) throw new Error("CN dispatcher was not preserved");
 if (!cnResult.urlInfoSet[0].directionsURL.includes("autonavi")) throw new Error("CN directions were not preserved");
-if (cnResult.urlInfoSet[0].muninBaseURL !== xxURLInfo.muninBaseURL) throw new Error("international Munin service URL was not preserved");
-if (cnResult.releaseInfo !== cn.releaseInfo) throw new Error("CN request did not preserve the native CN release identity");
+if (cnResult.urlInfoSet[0].muninBaseURL !== xxURLInfo.muninBaseURL) throw new Error("international Munin service URL was not restored");
+if (!cnResult.urlInfoSet[0].alternateResourcesURL.some(item => item.url.includes("gsp-ssl"))) throw new Error("international alternate resources URL was not restored");
+if (!cnResult.tileSet.some(item => item.style === "MUNIN_METADATA" && item.baseURL.includes("gsp76-ssl"))) throw new Error("international Munin was not restored");
 for (const style of ["VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA"]) {
-	if (!cnResult.tileSet.some(item => item.style === style && item.baseURL.includes("gsp76-ssl"))) throw new Error(`international Look Around selector was not preserved: ${style}`);
+	if (!cnResult.tileSet.some(item => item.style === style && item.baseURL.includes("gsp76-ssl"))) throw new Error(`international Look Around selector was not restored: ${style}`);
 }
-const cnSatelliteRoads = cnResult.tileSet.filter(item => item.style === "VECTOR_SPR_ROADS");
-if (!cnSatelliteRoads.some(item => item.baseURL.includes("gsp76-ssl"))) throw new Error("international satellite/Look Around road descriptor was not preserved");
-const regionalCNSPRRoads = cnSatelliteRoads.filter(item => item.baseURL.includes("-cn-ssl"));
-if (!regionalCNSPRRoads.length) throw new Error("CN satellite road descriptor was not restored to the CN regulatory group");
-if (regionalCNSPRRoads.some(item => item.validVersion?.some(version => version.availableTiles?.some(region => !isMainlandRegion(region))))) throw new Error("CN satellite road descriptor was left global");
 for (const style of ["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
 	const descriptors = cnResult.tileSet.filter(item => item.style === style);
-	if (!descriptors.some(item => item.baseURL.includes("gspe11-ssl"))) throw new Error(`international visual descriptor was not preserved: ${style}`);
-	if (style.startsWith("RASTER_SATELLITE")) {
-		const mainland = descriptors.filter(item => item.baseURL.includes("-cn-ssl"));
-		if (style === "RASTER_SATELLITE" && !mainland.length) throw new Error("regional CN satellite descriptor is missing");
-		if (mainland.some(item => item.validVersion?.some(version => version.availableTiles?.some(region => !isMainlandRegion(region))))) throw new Error(`CN satellite descriptor was left global: ${style}`);
-	} else {
-		if (descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`CN 3D descriptor competes with the international chain: ${style}`);
-	}
+	if (!descriptors.some(item => item.baseURL.includes("gspe11-ssl"))) throw new Error(`international visual descriptor was not restored: ${style}`);
+	if (["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT"].includes(style) && !descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`native CN satellite descriptor was not preserved: ${style}`);
+	if (["SPUTNIK_METADATA", "FLYOVER_C3M_MESH"].includes(style) && descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`CN 3D descriptor still shadows international imagery: ${style}`);
 }
-if (!cnResult.tileSet.some(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"))) throw new Error("regional mainland standard selector was lost");
-if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && item.baseURL.includes("-cn-ssl"))) throw new Error("regional mainland traffic was not preserved");
+if (!cnResult.tileSet.some(item => item.style === "VECTOR_ROADS" && item.baseURL.includes("-cn-ssl"))) throw new Error("native mainland road selector was lost");
+if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland traffic was not preserved");
+if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && !item.baseURL.includes("-cn-ssl"))) throw new Error("international traffic fallback was not preserved");
+if (cnResult.releaseInfo !== "CN-release") throw new Error("native CN coordinate identity was not preserved");
 const nativeCNStandard = cnResult.tileSet.find(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"));
-if (!nativeCNStandard) throw new Error("regional CN standard map was not injected");
-const sourceCNStandard = cn.tileSet.find(item => item.style === "VECTOR_STANDARD");
-if (nativeCNStandard.dataSet !== sourceCNStandard.dataSet) throw new Error("native CN standard dataset identity was mutated");
-if (JSON.stringify(nativeCNStandard.countryRegionWhitelist || []) !== JSON.stringify(sourceCNStandard.countryRegionWhitelist || [])) throw new Error("native mainland standard provider metadata was mutated");
-if (!nativeCNStandard.validVersion?.every(version => version.availableTiles?.every(isMainlandRegion))) throw new Error("native CN standard descriptor was not mainland-limited");
+if (!nativeCNStandard) throw new Error("native CN standard map was replaced");
+if (JSON.stringify(nativeCNStandard) !== JSON.stringify(cn.tileSet.find(item => item.style === "VECTOR_STANDARD"))) throw new Error("native CN standard descriptor was mutated");
 for (const style of ["VECTOR_ROADS", "VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTION"]) {
-	const mainlandRoads = cnResult.tileSet.filter(item => item.style === style && item.baseURL.includes("-cn-ssl"));
-	if (cn.tileSet.some(item => item.style === style) && !mainlandRoads.length) throw new Error(`CN road capability is missing from the CN regulatory group: ${style}`);
-	if (mainlandRoads.some(item => item.validVersion?.some(version => version.availableTiles?.some(region => !isMainlandRegion(region))))) throw new Error(`CN road capability was left global: ${style}`);
-	if (!cnResult.tileSet.some(item => item.style === style && !item.baseURL.includes("-cn-ssl"))) throw new Error(`international road capability is missing: ${style}`);
+	if (cn.tileSet.some(item => item.style === style) && !cnResult.tileSet.some(item => item.style === style && item.baseURL.includes("-cn-ssl"))) throw new Error(`native CN road descriptor was lost: ${style}`);
+	if (!cnResult.tileSet.some(item => item.style === style && !item.baseURL.includes("-cn-ssl"))) throw new Error(`international road capability was not appended: ${style}`);
 }
-if (cnResult.tileGroup.length !== xx.tileGroup.length + 1) throw new Error("CN request did not append exactly one CN regulatory group");
-for (const group of cnResult.tileGroup) {
-	if (group.tileSet.some(ref => ref.tileSetIndex < 0 || ref.tileSetIndex >= cnResult.tileSet.length)) throw new Error("tile group contains an invalid tile index");
-	if (group.resourceIndex?.some(index => index < 0 || index >= cnResult.resource.length)) throw new Error("tile group contains an invalid resource index");
-	if (group.attributionIndex?.some(index => index < 0 || index >= cnResult.attribution.length)) throw new Error("tile group contains an invalid attribution index");
-}
-const activeCapabilityRefs = cnResult.tileGroup.flatMap(group => group.tileSet || []);
-for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "UNUSED_98", "RASTER_SATELLITE", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
-	if (!activeCapabilityRefs.some(ref => cnResult.tileSet[ref.tileSetIndex]?.style === style && !cnResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl"))) throw new Error(`active international group is missing: ${style}`);
-}
-const activeBaseGroup = cnResult.tileGroup.find(group => group.tileSet?.some(ref => cnResult.tileSet[ref.tileSetIndex]?.style === "VECTOR_STANDARD" && !cnResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl")));
-if (!activeBaseGroup) throw new Error("international base group is missing");
-const activeCNGroup = cnResult.tileGroup.find(group => group.tileSet?.some(ref => cnResult.tileSet[ref.tileSetIndex]?.style === "VECTOR_STANDARD" && cnResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl")));
-if (!activeCNGroup) throw new Error("separate CN regulatory group is missing");
-if (activeCNGroup === activeBaseGroup) throw new Error("CN and international selectors still share one regulatory group");
-if (cnResult.offlineMetadata[activeBaseGroup.offlineMetadataIndex]?.regulatoryRegionId !== 0) throw new Error("international group lost regulatoryRegionId=0");
-if (cnResult.offlineMetadata[activeCNGroup.offlineMetadataIndex]?.regulatoryRegionId !== 2) throw new Error("CN group lost regulatoryRegionId=2");
-for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_ROADS", "VECTOR_SPR_ROADS", "RASTER_SATELLITE"]) {
-	if (cn.tileSet.some(item => item.style === style) && !activeCNGroup.tileSet.some(ref => cnResult.tileSet[ref.tileSetIndex]?.style === style && cnResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl"))) throw new Error(`CN regulatory group is missing: ${style}`);
-	if (activeBaseGroup.tileSet.some(ref => cnResult.tileSet[ref.tileSetIndex]?.style === style && cnResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl"))) throw new Error(`international group contains CN selector: ${style}`);
-}
+const satelliteRoads = cnResult.tileSet.filter(item => item.style === "VECTOR_SPR_ROADS");
+if (!satelliteRoads.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error("native CN satellite road overlay was not preserved");
+if (!satelliteRoads.some(item => !item.baseURL.includes("-cn-ssl"))) throw new Error("international satellite/Look Around road fallback was not appended");
+if (cnResult.tileGroup.length !== 1 || cnResult.tileGroup[0].tileSet.length !== cnResult.tileSet.length) throw new Error("CN inclusive tile group does not reference all international capabilities");
 
 const xxResult = adaptiveFix(xx, { CN: cn, XX: xx }, settings, "US");
 if (!xxResult.urlInfoSet[0].dispatcherURL.includes("autonavi")) throw new Error("mainland dispatcher was not injected into US baseline");
@@ -230,18 +178,18 @@ if (xxResult.urlInfoSet[0].muninBaseURL !== xxURLInfo.muninBaseURL) throw new Er
 if (!xxResult.tileSet.some(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland rendering layer was not injected into international baseline");
 const mainlandStandard = xxResult.tileSet.find(item => item.style === "VECTOR_STANDARD" && item.baseURL.includes("-cn-ssl"));
 if (mainlandStandard.dataSet !== 101) throw new Error("mainland standard-map dataset identity was removed and may cause coordinate displacement");
-if (JSON.stringify(mainlandStandard.countryRegionWhitelist || []) !== JSON.stringify(cn.tileSet[0].countryRegionWhitelist || [])) throw new Error("mainland standard-map native provider metadata changed");
+if (JSON.stringify(mainlandStandard.countryRegionWhitelist || []) !== JSON.stringify(cn.tileSet[0].countryRegionWhitelist || [])) throw new Error("mainland standard-map provider metadata changed and may double-shift roads");
+if (mainlandStandard.countryRegionWhitelist?.some(region => region.countryCode === "CN")) throw new Error("mainland standard-map was force-labelled CN and may shift roads twice");
 if (!xxResult.dataSet.some(item => item.identifier === 101)) throw new Error("mainland dataset definition was not appended to US manifest");
 const mainlandPOI = xxResult.tileSet.find(item => item.style === "VECTOR_POI" && item.baseURL.includes("-cn-ssl"));
 if (!mainlandPOI) throw new Error("mainland POI layer was not injected into international baseline");
-if (mainlandPOI.dataSet !== 101) throw new Error("mainland POI dataset identity changed");
-if (JSON.stringify(mainlandPOI.countryRegionWhitelist || []) !== JSON.stringify(cn.tileSet.find(item => item.style === "VECTOR_POI")?.countryRegionWhitelist || [])) throw new Error("mainland POI native provider metadata changed");
-if (!mainlandPOI.validVersion?.every(version => version.availableTiles?.every(isMainlandRegion))) throw new Error("mainland POI coverage was left global");
+if (mainlandPOI.dataSet !== 101 || mainlandPOI.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error("mainland POI does not share the CN coordinate identity");
+if (mainlandPOI.validVersion?.[0]?.availableTiles?.[0]?.minZ !== 6) throw new Error("native mainland POI zoom coverage was replaced");
+if (mainlandPOI.validVersion[0].availableTiles.some(region => region.minZ === 6 && region.maxX === 63)) throw new Error("mainland POI coverage was left global");
 for (const style of ["VECTOR_STREET_POI", "VECTOR_POI_V2", "VECTOR_POLYGON_SELECTION", "POI_BUSYNESS", "POI_DP_BUSYNESS", "VECTOR_POI_V2_UPDATE"]) {
 	const descriptor = xxResult.tileSet.find(item => item.style === style && item.baseURL.includes("-cn-ssl"));
 	if (!descriptor) throw new Error(`mainland POI companion layer is missing: ${style}`);
-	const source = cn.tileSet.find(item => item.style === style);
-	if (JSON.stringify(descriptor.countryRegionWhitelist || []) !== JSON.stringify(source?.countryRegionWhitelist || [])) throw new Error(`mainland POI companion native metadata changed: ${style}`);
+	if (descriptor.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error(`mainland POI companion layer does not share the CN coordinate identity: ${style}`);
 }
 for (const descriptor of xxResult.tileSet.filter(item => item.baseURL.includes("-cn-ssl") && [
 	"VECTOR_BUILDINGS",
@@ -251,33 +199,21 @@ for (const descriptor of xxResult.tileSet.filter(item => item.baseURL.includes("
 	"VECTOR_STREET_LANDMARKS",
 	"VECTOR_BUILDINGS_V2",
 ].includes(item.style))) {
-	const source = cn.tileSet.find(item => item.style === descriptor.style);
-	if (JSON.stringify(descriptor.countryRegionWhitelist || []) !== JSON.stringify(source?.countryRegionWhitelist || [])) throw new Error(`mainland geometry native metadata changed: ${descriptor.style}`);
+	if (descriptor.countryRegionWhitelist?.[0]?.countryCode !== "CN") throw new Error(`mainland geometry layer does not share the CN coordinate identity: ${descriptor.style}`);
 }
 if (xxResult.urlInfoSet[0].polyLocationShiftURL !== cnURLInfo.polyLocationShiftURL) throw new Error("AutoNavi mainland location-shift service was not preserved");
 for (const style of ["VECTOR_ROADS", "VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTION"]) {
-	const mainlandRoads = xxResult.tileSet.filter(item => item.style === style && item.baseURL.includes("-cn-ssl"));
-	if (cn.tileSet.some(item => item.style === style) && !mainlandRoads.length) throw new Error(`mainland road selector is missing from the CN regulatory group: ${style}`);
-	if (mainlandRoads.some(item => item.validVersion?.some(version => version.availableTiles?.some(region => !isMainlandRegion(region))))) throw new Error(`mainland road selector was left global: ${style}`);
+	if (xxResult.tileSet.some(item => item.style === style && item.baseURL.includes("-cn-ssl"))) throw new Error(`redundant mainland road selector leaked into US baseline: ${style}`);
 	if (!xxResult.tileSet.some(item => item.style === style && !item.baseURL.includes("-cn-ssl"))) throw new Error(`international road capability is missing: ${style}`);
 }
-const mainlandSPRRoad = xxResult.tileSet.find(item => item.style === "VECTOR_SPR_ROADS" && item.baseURL.includes("-cn-ssl"));
-if (!mainlandSPRRoad) throw new Error("mainland SPR road selector is missing from the CN regulatory group");
-if (mainlandSPRRoad.validVersion?.some(version => version.availableTiles?.some(region => !isMainlandRegion(region)))) throw new Error("mainland SPR road selector was left global");
+if (xxResult.tileSet.some(item => item.style === "VECTOR_SPR_ROADS" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland SPR road leaked into international Look Around");
 if (!xxResult.tileSet.some(item => item.style === "VECTOR_SPR_ROADS" && !item.baseURL.includes("-cn-ssl"))) throw new Error("international SPR road was lost while aligning mainland roads");
-for (const style of ["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT"]) {
-	const mainland = xxResult.tileSet.find(item => item.style === style && item.baseURL.includes("-cn-ssl"));
-	const foreign = xxResult.tileSet.find(item => item.style === style && !item.baseURL.includes("-cn-ssl"));
-	if (!mainland || !foreign) throw new Error(`regional CN plus international satellite chain is incomplete: ${style}`);
-	if (!mainland.validVersion?.every(version => version.availableTiles?.every(isMainlandRegion))) throw new Error(`mainland satellite descriptor was not regionalized: ${style}`);
-}
-if (xxResult.releaseInfo !== cn.releaseInfo) throw new Error("hybrid baseline did not adopt the native CN release identity");
 for (const filename of ["POITypeMapping-CN-1.json", "POITypeMapping-CN-2.json", "China.cms-lpr"]) {
 	const resource = xxResult.resource.find(item => item.filename === filename);
 	if (!resource) throw new Error(`mainland POI resource is missing: ${filename}`);
 	if (xxResult.urlInfoSet[0].alternateResourcesURL[resource.alternateResourceURLIndex]?.url !== "https://cn-resources.example/poi") throw new Error(`mainland POI resource URL index was not remapped: ${filename}`);
 }
-if (!xxResult.resource.some(item => item.filename === "cn.dat")) throw new Error("CN group resource array is incomplete");
+if (xxResult.resource.some(item => item.filename === "cn.dat")) throw new Error("unrelated mainland resource leaked into international baseline");
 if (xxResult.urlInfoSet[0].alternateResourcesURL[0]?.url !== "https://gsp-ssl.ls.apple.com/resources") throw new Error("native international resource URL index changed");
 for (let index = 0; index < xx.tileSet.length; index++) {
 	if (xxResult.tileSet[index].style !== xx.tileSet[index].style || xxResult.tileSet[index].baseURL !== xx.tileSet[index].baseURL) {
@@ -290,37 +226,18 @@ for (let index = 0; index < xx.attribution.length; index++) {
 		if (xxResult.attribution[index].plainTextURLSHA256Checksum) throw new Error("iRingo attribution retained Apple's stale checksum");
 	} else if (xxResult.attribution[index].name !== xx.attribution[index].name) throw new Error(`native US attribution index changed at ${index}`);
 }
-if (xxResult.tileGroup.length !== xx.tileGroup.length + 1) throw new Error("exactly one CN regulatory group was not appended");
-const internationalGroup = xxResult.tileGroup.find(group => group.tileSet?.some(ref => xxResult.tileSet[ref.tileSetIndex]?.style === "VECTOR_STANDARD" && !xxResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl")));
-const mainlandGroup = xxResult.tileGroup.find(group => group.tileSet?.some(ref => xxResult.tileSet[ref.tileSetIndex]?.style === "VECTOR_STANDARD" && xxResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl")));
-if (!internationalGroup || !mainlandGroup || internationalGroup === mainlandGroup) throw new Error("provider regulatory groups were not separated");
-if (!Number.isInteger(mainlandGroup.identifier) || mainlandGroup.identifier <= 0 || mainlandGroup.identifier > 2147483647) throw new Error("CN group identifier is not a valid positive int32");
-if (xxResult.offlineMetadata.length !== xx.offlineMetadata.length + cn.offlineMetadata.length) throw new Error("CN regulatory metadata was not appended");
-if (xxResult.offlineMetadata[internationalGroup.offlineMetadataIndex]?.regulatoryRegionId !== 0) throw new Error("international group no longer uses regulatoryRegionId=0");
-if (xxResult.offlineMetadata[mainlandGroup.offlineMetadataIndex]?.regulatoryRegionId !== 2) throw new Error("CN group no longer uses regulatoryRegionId=2");
-if (!mainlandGroup.tileSet.length || !internationalGroup.tileSet.length) throw new Error("a provider group has no tile references");
-if (mainlandGroup.tileSet.some(ref => !xxResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl"))) throw new Error("CN group contains an international selector");
-if (internationalGroup.tileSet.some(ref => xxResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl"))) throw new Error("international group contains a CN selector");
-const nativeBaseGroup = xx.tileGroup.find(group => group.qualityMarker === "US-native-base") ?? xx.tileGroup.at(-1);
-const nativeUSOrder = nativeBaseGroup.tileSet.map(ref => ref.tileSetIndex);
-const outputUSOrder = internationalGroup.tileSet.filter(ref => ref.tileSetIndex < xx.tileSet.length).map(ref => ref.tileSetIndex);
-let cursor = -1;
-for (const index of nativeUSOrder) {
-	const next = outputUSOrder.indexOf(index, cursor + 1);
-	if (next < 0) throw new Error(`native US group reference order lost tile index ${index}`);
-	cursor = next;
-}
-for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_POI_V2", "VECTOR_POI_V2_UPDATE", "RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT"]) {
-	if (!mainlandGroup.tileSet.some(ref => xxResult.tileSet[ref.tileSetIndex]?.style === style)) throw new Error(`CN regulatory group is missing: ${style}`);
-}
-for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "UNUSED_98", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
-	if (!internationalGroup.tileSet.some(ref => xxResult.tileSet[ref.tileSetIndex]?.style === style && !xxResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl"))) {
-		throw new Error(`international group is missing capability: ${style}`);
-	}
-}
+if (xxResult.tileGroup?.[0]?.qualityMarker !== "US-native-detail") throw new Error("native US detail group metadata was not preserved");
+if (!Number.isInteger(xxResult.tileGroup[1].identifier) || xxResult.tileGroup[1].identifier <= 0 || xxResult.tileGroup[1].identifier > 2147483647) throw new Error("base-map refresh identifier is not a valid positive int32");
+if (xxResult.tileGroup[1].identifier === xx.tileGroup[1].identifier) throw new Error("base-map group identifier was not refreshed");
+const native3DRefs = xxResult.tileGroup[0].tileSet.slice(0, 4).map(ref => ref.tileSetIndex);
+if (JSON.stringify(native3DRefs) !== JSON.stringify([19, 20, 21, 22])) throw new Error("native US 3D tile-group indices were changed");
+if (xxResult.tileGroup[0].tileSet.length !== 4 || xxResult.tileGroup[0].attributionIndex.length !== 2 || xxResult.tileGroup[0].resourceIndex.length !== 1) throw new Error("native US 3D group was polluted by mainland references");
+if (!xxResult.tileGroup[1].tileSet.some(ref => ref.tileSetIndex >= xx.tileSet.length)) throw new Error("mainland layers were not appended to the native 2D group");
+if (xxResult.tileGroup[1].tileSet[0].tileSetIndex < xx.tileSet.length) throw new Error("mainland standard-map selectors do not precede the Apple 2D fallback");
 
-// Even when iOS 27 starts with one combined international group, test23 must
-// append a separate CN regulatory group instead of mixing provider semantics.
+// Current iOS 27 manifests can use one combined group for base-map and 3D
+// capabilities. Mainland descriptors must still be referenced by that group;
+// the historical visual penalty used to leave all appended CN layers orphaned.
 const singleGroupXX = structuredClone(xx);
 singleGroupXX.tileGroup = [{
 	identifier: 24,
@@ -330,31 +247,17 @@ singleGroupXX.tileGroup = [{
 	resourceIndex: [0],
 }];
 const singleGroupResult = adaptiveFix(singleGroupXX, { CN: cn, XX: singleGroupXX }, settings, "US");
-if (singleGroupResult.tileGroup.length !== 2) throw new Error("iOS 27 combined manifest did not gain one CN regulatory group");
-const singleInternationalGroup = singleGroupResult.tileGroup.find(group => singleGroupResult.offlineMetadata[group.offlineMetadataIndex]?.regulatoryRegionId === 0);
-const singleCNGroup = singleGroupResult.tileGroup.find(group => singleGroupResult.offlineMetadata[group.offlineMetadataIndex]?.regulatoryRegionId === 2);
-if (!singleInternationalGroup || !singleCNGroup) throw new Error("iOS 27 provider groups do not expose both regulatory identities");
-const separatedRefs = singleInternationalGroup.tileSet;
-const singleCNRefs = singleCNGroup.tileSet;
+const combinedRefs = singleGroupResult.tileGroup[0].tileSet;
+if (!Number.isInteger(singleGroupResult.tileGroup[0].identifier) || singleGroupResult.tileGroup[0].identifier <= 0 || singleGroupResult.tileGroup[0].identifier > 2147483647) throw new Error("combined iOS 27 group refresh identifier is not a valid positive int32");
+if (singleGroupResult.tileGroup[0].identifier === singleGroupXX.tileGroup[0].identifier) throw new Error("combined iOS 27 group identifier was not refreshed");
+if (!combinedRefs.some(ref => ref.tileSetIndex >= singleGroupXX.tileSet.length)) throw new Error("single combined iOS 27 group left mainland descriptors orphaned");
+const firstCombinedTile = singleGroupResult.tileSet[combinedRefs[0].tileSetIndex];
+if (!firstCombinedTile.baseURL.includes("-cn-ssl")) throw new Error("mainland descriptors do not precede international fallback in the combined group");
 for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_POI_V2", "VECTOR_POI_V2_UPDATE"]) {
-	if (!singleCNRefs.some(ref => singleGroupResult.tileSet[ref.tileSetIndex]?.style === style && singleGroupResult.tileSet[ref.tileSetIndex]?.baseURL.includes("-cn-ssl"))) {
-		throw new Error(`iOS 27 CN regulatory group is missing selector: ${style}`);
+	if (!combinedRefs.some(ref => singleGroupResult.tileSet[ref.tileSetIndex]?.style === style && singleGroupResult.tileSet[ref.tileSetIndex]?.baseURL.includes("-cn-ssl"))) {
+		throw new Error(`combined iOS 27 group is missing mainland selector: ${style}`);
 	}
 }
-for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "UNUSED_98", "RASTER_SATELLITE", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
-	if (!separatedRefs.some(ref => singleGroupResult.tileSet[ref.tileSetIndex]?.style === style && !singleGroupResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl"))) {
-		throw new Error(`iOS 27 active group lost international capability: ${style}`);
-	}
-}
-const style98Position = separatedRefs.findIndex(ref => singleGroupResult.tileSet[ref.tileSetIndex]?.style === "UNUSED_98");
-const firstCNSatellitePosition = singleCNRefs.findIndex(ref =>
-	singleGroupResult.tileSet[ref.tileSetIndex]?.style === "RASTER_SATELLITE" &&
-	singleGroupResult.tileSet[ref.tileSetIndex]?.baseURL?.includes("-cn-ssl")
-);
-if (style98Position < 0) throw new Error("iOS 27 style=98 international 3D satellite selector is missing");
-if (firstCNSatellitePosition < 0) throw new Error("iOS 27 CN group is missing native satellite");
-const style98 = singleGroupResult.tileSet[separatedRefs[style98Position].tileSetIndex];
-if (style98.validVersion?.some(version => version.availableTiles?.some(isMainlandRegion))) throw new Error("iOS 27 style=98 still advertises mainland coverage and can suppress native CN satellite detail");
 if (!responseText.includes("u.tileGroup=Array.from(u.tileGroup??[])")) throw new Error("legacy tile-group rebuilder was not bypassed");
 if (responseText.includes("u=iRingoSurgeAdaptiveHybridFix(u,s,o,t),u.tileGroup=tt.tileGroups")) throw new Error("legacy tile-group rebuilder is still active after test8 fix");
 
@@ -436,10 +339,28 @@ const outside = road.handle({
 }, storage, 1100);
 if (outside.action !== "passthrough") throw new Error("foreign road request was modified");
 
+const satelliteText = await readFile(`${root}/assets/satellite-route.js`, "utf8");
+const runSatellite = input => {
+	let result;
+	vm.runInNewContext(satelliteText, {
+		URL,
+		Number,
+		$request: { url: input },
+		$done: value => { result = value; },
+	});
+	return result?.url ?? input;
+};
+const mainlandSatelliteInput = "https://gspe11-ssl.ls.apple.com/tile?style=98&v=226&region=0&z=14&x=12927&y=6735&h=0&preflight=2";
+const mainlandSatellite = new URL(runSatellite(mainlandSatelliteInput));
+if (mainlandSatellite.hostname !== "gspe11-2-cn-ssl.ls.apple.com" || mainlandSatellite.pathname !== "/2/tiles") throw new Error("mainland satellite endpoint was not applied");
+if (mainlandSatellite.searchParams.get("x") !== "12927" || mainlandSatellite.searchParams.get("y") !== "6735") throw new Error("mainland satellite coordinates were changed and may drift");
+const tokyoSatelliteInput = "https://gspe11-ssl.ls.apple.com/tile?style=98&v=226&region=0&z=17&x=116423&y=51615&h=0&preflight=2";
+if (runSatellite(tokyoSatelliteInput) !== tokyoSatelliteInput) throw new Error("foreign satellite request was modified");
+
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.23-disjoint-cn-regulatory-group",
+	"6.4.0-test.24-cn-primary-international-capabilities",
 	"CountryCode:\"CN\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
@@ -450,8 +371,6 @@ for (const marker of [
 }
 if (moduleText.includes("surge-adaptive-v1.4.0")) throw new Error("Surge module still references the retired directory");
 if (moduleText.includes("DOMAIN,gspe11-ssl.ls.apple.com,DIRECT")) throw new Error("Surge module direct-routes international 3D tiles and may make them unreachable");
-if (moduleText.includes("assets/satellite-route.js")) throw new Error("Surge still uses the retired satellite imagery rewrite");
-if (moduleText.includes("assets/cn-satellite-road.js")) throw new Error("Surge still performs the retired test14 satellite-road rewrite");
 
 const egernText = await readFile(`${root}/iRingo.Maps.yaml`, "utf8");
 for (const marker of [
@@ -474,11 +393,9 @@ for (const marker of [
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("test23-disjoint-cn-regulatory-group")) throw new Error("Egern module does not expose the test23 cache identity");
+if (!egernText.includes("test24-cn-primary-international-capabilities")) throw new Error("Egern module does not expose the test24 cache identity");
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
-if (egernText.includes("assets/satellite-route.js")) throw new Error("Egern still uses the retired satellite imagery rewrite");
-if (egernText.includes("assets/cn-satellite-road.js")) throw new Error("Egern still performs the retired test14 satellite-road rewrite");
 if (egernText.includes("surge-adaptive-v1.4.0")) throw new Error("Egern module references the retired directory");
-if (egernText.includes("policy: DIRECT\n- domain:\n    match: gspe11-ssl.ls.apple.com")) throw new Error("Egern module direct-routes international 3D tiles and may make them unreachable");
+if (egernText.includes("match: gspe11-ssl.ls.apple.com")) throw new Error("Egern module direct-routes international 3D tiles and may make them unreachable");
 
 console.log("International-All v2 Egern-first integration tests passed");

@@ -71,21 +71,19 @@ console.log(JSON.stringify({
 	offlineMetadata: result.offlineMetadata?.map((item, index) => ({ index, regulatoryRegionId: item?.regulatoryRegionId })),
 	tileGroups: result.tileGroup?.map((group, index) => ({ index, identifier: group?.identifier, offlineMetadataIndex: group?.offlineMetadataIndex, refs: group?.tileSet?.length })),
 }));
-const internationalGroup = result.tileGroup.find(group => result.offlineMetadata[group.offlineMetadataIndex]?.regulatoryRegionId === 0);
-const chinaGroup = result.tileGroup.find(group => result.offlineMetadata[group.offlineMetadataIndex]?.regulatoryRegionId === 2);
-if (!internationalGroup || !chinaGroup || internationalGroup === chinaGroup) throw new Error("real manifest provider groups are not separated");
+if (result.tileGroup.length !== 1) throw new Error(`real manifest must expose one CN-owned activity group, got ${result.tileGroup.length}`);
+const chinaGroup = result.tileGroup[0];
+if (result.offlineMetadata[chinaGroup.offlineMetadataIndex]?.regulatoryRegionId !== 2) throw new Error("real activity group is not owned by CN regulatoryRegionId=2");
 for (const group of result.tileGroup) {
 	if ((group.tileSet || []).some(ref => ref.tileSetIndex < 0 || ref.tileSetIndex >= result.tileSet.length)) throw new Error("real manifest contains invalid tile index");
 	if ((group.resourceIndex || []).some(index => index < 0 || index >= result.resource.length)) throw new Error("real manifest contains invalid resource index");
 	if ((group.attributionIndex || []).some(index => index < 0 || index >= result.attribution.length)) throw new Error("real manifest contains invalid attribution index");
 }
-if (internationalGroup.tileSet.some(ref => isCN(result.tileSet[ref.tileSetIndex]))) throw new Error("real international group contains CN tile selectors");
-if (chinaGroup.tileSet.some(ref => !isCN(result.tileSet[ref.tileSetIndex]))) throw new Error("real CN group contains international tile selectors");
-for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_ROADS", "VECTOR_SPR_ROADS", "RASTER_SATELLITE"]) {
+for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_ROADS", "RASTER_SATELLITE"]) {
 	if (!chinaGroup.tileSet.some(ref => result.tileSet[ref.tileSetIndex]?.style === style && isCN(result.tileSet[ref.tileSetIndex]))) throw new Error(`real CN group is missing ${style}`);
 }
 for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "UNUSED_98", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
-	if (!internationalGroup.tileSet.some(ref => result.tileSet[ref.tileSetIndex]?.style === style && !isCN(result.tileSet[ref.tileSetIndex]))) throw new Error(`real international group is missing ${style}`);
+	if (!chinaGroup.tileSet.some(ref => result.tileSet[ref.tileSetIndex]?.style === style && !isCN(result.tileSet[ref.tileSetIndex]))) throw new Error(`real CN-owned capability group is missing international ${style}`);
 }
 console.log(JSON.stringify({
 	cnInputBytes: cnBody.length,
@@ -93,6 +91,5 @@ console.log(JSON.stringify({
 	outputBytes: bytes.length,
 	tileSets: result.tileSet.length,
 	tileGroups: result.tileGroup.length,
-	internationalRegulatoryRegion: result.offlineMetadata[internationalGroup.offlineMetadataIndex]?.regulatoryRegionId,
-	chinaRegulatoryRegion: result.offlineMetadata[chinaGroup.offlineMetadataIndex]?.regulatoryRegionId,
+	activityRegulatoryRegion: result.offlineMetadata[chinaGroup.offlineMetadataIndex]?.regulatoryRegionId,
 }));

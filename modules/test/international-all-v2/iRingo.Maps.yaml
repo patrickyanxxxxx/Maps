@@ -1,10 +1,10 @@
 name: ' iRingo: 🗺️ Maps International-All Test v2'
 description: |-
   Egern 优先测试版本
-  test23-disjoint-cn-regulatory-group：CN 与国际地图使用相互独立、覆盖互斥的原生监管组
+  test24-cn-primary-international-capabilities：CN 原生清单作为唯一坐标主体，仅追加国际能力
   国内高德地图、POI、交通、导航与定位修正
   国际卫星、3D、Flyover、完整四处看看服务链、地球与道路能力
-  国内标准地图、POI、道路、卫星及定位由 CN regulatoryRegionId=2 组负责；国外卫星、3D 和四处看看由国际 regulatoryRegionId=0 组负责
+  国内标准地图、POI、道路、卫星及定位保持 CN 原生语义；国外追加国际卫星、3D、Flyover 与四处看看
 compat_arguments:
   GeoManifest.Dynamic.Config.CountryCode: CN
   UrlInfoSet.RAP: Apple
@@ -13,7 +13,7 @@ compat_arguments_desc: |
   本测试版本以 Egern 为主要验证客户端。为避免无效参数和旧 BoxJs 配置干扰，国内/国际服务组合采用固定策略，只开放实际会被脚本读取的参数。
 
   GeoManifest.Dynamic.Config.CountryCode: [动态配置] 清单主体
-      ├ CN: 请求及发布身份保持中国服务语义，CN/国际能力分别使用原生监管组（默认，test23）
+      ├ CN: 使用 CN 原生清单作为唯一主体并追加国际视觉能力（默认，test24）
       ├ AUTO: 根据设备当前分支选择主体并预热另一份清单
       └ US: 国际主体仅用于回退诊断；可能导致国内坐标/POI 偏移
 
@@ -31,9 +31,9 @@ compat_arguments_desc: |
       ├ UrlInfoSet.Directions=AutoNavi: 保留上一实机版本已验证的国内外导航组合
       ├ UrlInfoSet.LocationShift=AutoNavi: 国内 GCJ-02 坐标修正
       ├ TileSet.Map/POI/Traffic=CN: 国内底图、POI 与交通
-      ├ TileSet.Flyover/Munin=XX: 国际原生组保留 3D、Flyover 与可交互四处看看完整链
-      ├ TileSet.Roads=XX: 模块参数保持国际能力；脚本在独立 CN 组恢复大陆原生道路选择器
-      ├ TileSet.Satellite=HYBRID: CN 与国际卫星分别由独立监管组承载，覆盖范围互斥
+      ├ TileSet.Flyover/Munin=XX: 向 CN 主组追加国际 3D、Flyover 与可交互四处看看能力
+      ├ TileSet.Roads=XX: 保留 CN 原生标准道路，并追加四处看看所需国际道路能力
+      ├ TileSet.Satellite=HYBRID: CN 原生主体保留国内卫星，并追加国际卫星与 3D 链
       ├ Munin URL=XX: 四处看看同时保留国际服务及资源入口
       ├ Config.Announcements.Environment=CN: 使用中国公告环境
       └ Storage=Argument: 模块参数优先，避免旧持久化参数覆盖
@@ -66,20 +66,20 @@ scriptings:
 - http_response:
     name: Maps.InternationalAllV2.defaults.response
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.23-disjoint-cn-regulatory-group
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.24-cn-primary-international-capabilities
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
 - http_request:
     name: Maps.InternationalAllV2.manifest.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.23-disjoint-cn-regulatory-group
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.24-cn-primary-international-capabilities
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: Maps.InternationalAllV2.manifest.response
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.23-disjoint-cn-regulatory-group
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.24-cn-primary-international-capabilities
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true

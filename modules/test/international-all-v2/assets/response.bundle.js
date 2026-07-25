@@ -1,4 +1,4 @@
-console.log("[iRingo Maps International-All Test v2 test23-disjoint-cn-regulatory-group] response script loaded");
+console.log("[iRingo Maps International-All Test v2 test24-cn-primary-international-capabilities] response script loaded");
 console.log(" iRingo: \uD83D\uDDFA️ Maps"),console.log("response.bundle.js"),console.log("Version: 4.6.1"),console.log("Date: 2026/4/5 04:55:23"),(()=>{"use strict";var e,t,i,a,n,r,s,o,l,c,u,d,g,h,m,f,p,R,b,y,T,L,S,k,U,E,w,N,I,A,C,D,O,v,_,B;let x,V,P,X=(()=>{switch(!0){case"$task"in globalThis:return"Quantumult X";case"$loon"in globalThis:return"Loon";case"$rocket"in globalThis:return"Shadowrocket";case"Egern"in globalThis:return"Egern";case!!globalThis.$environment?.["surge-version"]:return"Surge";case!!globalThis.$environment?.["stash-version"]:return"Stash";case"Cloudflare"in globalThis:return"Worker";case!!globalThis.process?.versions?.node:return"Node.js";default:return}})();class M{static #e=new Map([]);static #t=[];static #i=new Map([]);static clear=()=>{};static count=(e="default")=>{switch(M.#e.has(e)){case!0:M.#e.set(e,M.#e.get(e)+1);break;case!1:M.#e.set(e,0)}M.log(`${e}: ${M.#e.get(e)}`)};static countReset=(e="default")=>{switch(M.#e.has(e)){case!0:M.#e.set(e,0),M.log(`${e}: ${M.#e.get(e)}`);break;case!1:M.warn(`Counter "${e}" doesn’t exist`)}};static debug=(...e)=>{M.#a<4||(e=e.map(e=>`🅱️ ${e}`),M.log(...e))};static error(...e){if(!(M.#a<1)){switch(X){case"Surge":case"Loon":case"Stash":case"Egern":case"Shadowrocket":case"Quantumult X":default:e=e.map(e=>`❌ ${e}`);break;case"Worker":case"Node.js":e=e.map(e=>`❌ ${e?.stack??e}`)}M.log(...e)}}static exception=(...e)=>M.error(...e);static group=e=>M.#t.unshift(e);static groupEnd=()=>M.#t.shift();static info(...e){M.#a<3||(e=e.map(e=>`ℹ️ ${e}`),M.log(...e))}static #a=3;static get logLevel(){switch(M.#a){case 0:return"OFF";case 1:return"ERROR";case 2:return"WARN";case 3:default:return"INFO";case 4:return"DEBUG";case 5:return"ALL"}}static set logLevel(e){switch(typeof e){case"string":e=e.toLowerCase();break;case"number":break;default:e="warn"}switch(e){case 0:case"off":M.#a=0;break;case 1:case"error":M.#a=1;break;case 2:case"warn":case"warning":default:M.#a=2;break;case 3:case"info":M.#a=3;break;case 4:case"debug":M.#a=4;break;case 5:case"all":M.#a=5}}static log=(...e)=>{0!==M.#a&&(e=e.map(e=>{switch(typeof e){case"object":e=JSON.stringify(e);break;case"bigint":case"number":case"boolean":case"string":e=e.toString()}return e}),M.#t.forEach(t=>{(e=e.map(e=>`  ${e}`)).unshift(`▼ ${t}:`)}),console.log((e=["",...e]).join("\n")))};static time=(e="default")=>M.#i.set(e,Date.now());static timeEnd=(e="default")=>M.#i.delete(e);static timeLog=(e="default")=>{let t=M.#i.get(e);t?M.log(`${e}: ${Date.now()-t}ms`):M.warn(`Timer "${e}" doesn’t exist`)};static warn(...e){M.#a<2||(e=e.map(e=>`⚠️ ${e}`),M.log(...e))}}class ${static escape(e){let t={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};return e.replace(/[&<>"']/g,e=>t[e])}static get(e={},t="",i){Array.isArray(t)||(t=$.toPath(t));let a=t.reduce((e,t)=>Object(e)[t],e);return void 0===a?i:a}static merge(e,...t){if(null==e)return e;for(let i of t)if(null!=i)for(let t of Object.keys(i)){let a=i[t],n=e[t];switch(!0){case $.#n(a)&&$.#n(n):e[t]=$.merge(n,a);break;case a instanceof Map&&n instanceof Map:if(a.size>0)for(let[e,t]of a)n.set(e,t);break;case a instanceof Set&&n instanceof Set:if(a.size>0)for(let e of a)n.add(e);break;case Array.isArray(a)&&0===a.length&&void 0!==n:case a instanceof Map&&0===a.size&&void 0!==n:case a instanceof Set&&0===a.size&&void 0!==n:break;case void 0!==a:e[t]=a}}return e}static #n(e){if(null===e||"object"!=typeof e)return!1;let t=Object.getPrototypeOf(e);return null===t||t===Object.prototype}static omit(e={},t=[]){return Array.isArray(t)||(t=[t.toString()]),t.forEach(t=>$.unset(e,t)),e}static pick(e={},t=[]){return Array.isArray(t)||(t=[t.toString()]),Object.fromEntries(Object.entries(e).filter(([e,i])=>t.includes(e)))}static set(e,t,i){return Array.isArray(t)||(t=$.toPath(t)),t.slice(0,-1).reduce((e,i,a)=>Object(e[i])===e[i]?e[i]:e[i]=/^\d+$/.test(t[a+1])?[]:{},e)[t[t.length-1]]=i,e}static toPath(e){return e.replace(/\[(\d+)\]/g,".$1").split(".").filter(Boolean)}static unescape(e){let t={"&amp;":"&","&lt;":"<","&gt;":">","&quot;":'"',"&#39;":"'"};return e.replace(/&amp;|&lt;|&gt;|&quot;|&#39;/g,e=>t[e])}static unset(e={},t=""){return Array.isArray(t)||(t=$.toPath(t)),t.reduce((e,i,a)=>a===t.length-1?(delete e[i],!0):Object(e)[i],e)}}class F{static parse(e){let t={};switch(typeof e){case"string":{let i=Object.fromEntries(e.split("&").map(e=>e.split("=",2).map(e=>e.replace(/\"/g,""))));Object.keys(i).forEach(e=>$.set(t,e,i[e]));break}case"object":if(null===e);else{let i={};Object.keys(e).forEach(t=>$.set(i,t,e[t])),t=i}break;case"undefined":t={}}return t}static stringify(e={}){if(!e||"object"!=typeof e)return"";let t=[];return(Object.keys(e).forEach(i=>F.#r(e,i,t)),0===t.length)?"":t.map(([e,t])=>`${F.#s(F.#o(e))}=${F.#s(t)}`).join("&")}static #r(e,t,i){let a=$.get(e,t);if(void 0!==a){if(null===a)return void i.push([t,""]);if(Array.isArray(a))return void a.forEach((a,n)=>{void 0!==a&&F.#r(e,`${t}[${n}]`,i)});if(F.#n(a))return void Object.keys(a).forEach(a=>F.#r(e,`${t}.${a}`,i));i.push([t,String(a)])}}static #o(e){let[t,...i]=$.toPath(e);return i.reduce((e,t)=>/^\d+$/.test(t)?`${e}[${t}]`:`${e}.${t}`,t)}static #n(e){if(null===e||"object"!=typeof e||Array.isArray(e))return!1;let t=Object.getPrototypeOf(e);return null===t||t===Object.prototype}static #s(e){return encodeURIComponent(e)}}M.debug("☑️ $argument"),globalThis.$argument=F.parse(globalThis.$argument),globalThis.$argument.LogLevel&&(M.logLevel=globalThis.$argument.LogLevel),M.debug("✅ $argument",`$argument: ${JSON.stringify(globalThis.$argument)}`);let j={100:"Continue",101:"Switching Protocols",102:"Processing",103:"Early Hints",200:"OK",201:"Created",202:"Accepted",203:"Non-Authoritative Information",204:"No Content",205:"Reset Content",206:"Partial Content",207:"Multi-Status",208:"Already Reported",226:"IM Used",300:"Multiple Choices",301:"Moved Permanently",302:"Found",304:"Not Modified",307:"Temporary Redirect",308:"Permanent Redirect",400:"Bad Request",401:"Unauthorized",402:"Payment Required",403:"Forbidden",404:"Not Found",405:"Method Not Allowed",406:"Not Acceptable",407:"Proxy Authentication Required",408:"Request Timeout",409:"Conflict",410:"Gone",411:"Length Required",412:"Precondition Failed",413:"Content Too Large",414:"URI Too Long",415:"Unsupported Media Type",416:"Range Not Satisfiable",417:"Expectation Failed",418:"I'm a teapot",421:"Misdirected Request",422:"Unprocessable Entity",423:"Locked",424:"Failed Dependency",425:"Too Early",426:"Upgrade Required",428:"Precondition Required",429:"Too Many Requests",431:"Request Header Fields Too Large",451:"Unavailable For Legal Reasons",500:"Internal Server Error",501:"Not Implemented",502:"Bad Gateway",503:"Service Unavailable",504:"Gateway Timeout",505:"HTTP Version Not Supported",506:"Variant Also Negotiates",507:"Insufficient Storage",508:"Loop Detected",510:"Not Extended",511:"Network Authentication Required"};async function W(e,t={}){switch(typeof e){case"object":e={...t,...e};break;case"string":e={...t,url:e};break;default:throw TypeError(`${Function.name}: 参数类型错误, resource 必须为对象或字符串`)}!e.method&&(e.method="GET",(e.body??e.bodyBytes)&&(e.method="POST")),delete e.headers?.Host,delete e.headers?.[":authority"],delete e.headers?.["Content-Length"],delete e.headers?.["content-length"];let i=e.method.toLocaleLowerCase();if(e.timeout||(e.timeout=5),e.timeout&&(e.timeout=Number.parseInt(e.timeout,10),e.timeout>500&&(e.timeout=Math.round(e.timeout/1e3))),e.timeout)switch(X){case"Loon":case"Quantumult X":case"Worker":case"Node.js":e.timeout=1e3*e.timeout}switch(X){case"Loon":case"Surge":case"Stash":case"Egern":case"Shadowrocket":default:if(e.policy)switch(X){case"Loon":e.node=e.policy;break;case"Stash":$.set(e,"headers.X-Stash-Selected-Proxy",encodeURI(e.policy));break;case"Shadowrocket":$.set(e,"headers.X-Surge-Proxy",e.policy)}switch("boolean"==typeof e.redirection&&(e["auto-redirect"]=e.redirection),e.bodyBytes&&!e.body&&(e.body=e.bodyBytes,e.bodyBytes=void 0),(e.headers?.Accept||e.headers?.accept)?.split(";")?.[0]){case"application/protobuf":case"application/x-protobuf":case"application/vnd.google.protobuf":case"application/vnd.apple.flatbuffer":case"application/grpc":case"application/grpc+proto":case"application/octet-stream":e["binary-mode"]=!0}return new Promise((t,a)=>{globalThis.$httpClient[i](e,(i,n,r)=>{i?a(i):(n.ok=/^2\d\d$/.test(n.status),n.statusCode=n.status,n.statusText=j[n.status],r&&(n.body=r,!0==e["binary-mode"]&&(n.bodyBytes=r)),t(n))})});case"Quantumult X":return e.policy&&$.set(e,"opts.policy",e.policy),"boolean"==typeof e["auto-redirect"]&&$.set(e,"opts.redirection",e["auto-redirect"]),e.body instanceof ArrayBuffer?(e.bodyBytes=e.body,e.body=void 0):ArrayBuffer.isView(e.body)?(e.bodyBytes=e.body.buffer.slice(e.body.byteOffset,e.body.byteLength+e.body.byteOffset),e.body=void 0):e.body&&(e.bodyBytes=void 0),Promise.race([globalThis.$task.fetch(e).then(e=>{switch(e.ok=/^2\d\d$/.test(e.statusCode),e.status=e.statusCode,e.statusText=j[e.status],(e.headers?.["Content-Type"]??e.headers?.["content-type"])?.split(";")?.[0]){case"application/protobuf":case"application/x-protobuf":case"application/vnd.google.protobuf":case"application/vnd.apple.flatbuffer":case"application/grpc":case"application/grpc+proto":case"application/octet-stream":e.body=e.bodyBytes}return e.bodyBytes=void 0,e},e=>Promise.reject(e.error)),new Promise((t,i)=>{setTimeout(()=>{i(Error(`${Function.name}: 请求超时, 请检查网络后重试`))},e.timeout)})]);case"Worker":case"Node.js":{switch(!globalThis.fetch&&(globalThis.fetch=require("node-fetch")),e["auto-cookie"]){case void 0:case"true":case!0:case"1":case 1:default:globalThis.fetch?.cookieJar||(globalThis.fetch=require("fetch-cookie").default(globalThis.fetch));case"false":case!1:case"0":case 0:case"-1":case -1:}e.redirect=e.redirection?"follow":"manual";let{url:t,...i}=e;return Promise.race([globalThis.fetch(t,i).then(async e=>{let t,i=await e.arrayBuffer();try{t=e.headers.raw()}catch{t=Array.from(e.headers.entries()).reduce((e,[t,i])=>(e[t]=e[t]?[...e[t],i]:[i],e),{})}return{ok:e.ok??/^2\d\d$/.test(e.status),status:e.status,statusCode:e.status,statusText:e.statusText,body:new TextDecoder("utf-8").decode(i),bodyBytes:i,headers:Object.fromEntries(Object.entries(t).map(([e,t])=>[e,"set-cookie"!==e.toLowerCase()?t.toString():t]))}}).catch(e=>Promise.reject(e.message)),new Promise((t,i)=>{setTimeout(()=>{i(Error(`${Function.name}: 请求超时, 请检查网络后重试`))},e.timeout)})])}}}class G{static data=null;static dataFile="box.dat";static #l=/^@(?<key>[^.]+)(?:\.(?<path>.*))?$/;static getItem(e,t=null){let i=t;if(!0===e.startsWith("@")){let{key:t,path:a}=e.match(G.#l)?.groups;e=t;let n=G.getItem(e,{});"object"!=typeof n&&(n={}),i=$.get(n,a);try{i=JSON.parse(i)}catch(e){}}else{switch(X){case"Surge":case"Loon":case"Stash":case"Egern":case"Shadowrocket":i=$persistentStore.read(e);break;case"Quantumult X":i=$prefs.valueForKey(e);break;case"Worker":G.data=G.data??{},i=G.data[e];break;case"Node.js":G.data=G.#c(G.dataFile),i=G.data?.[e];break;default:i=G.data?.[e]||null}try{i=JSON.parse(i)}catch(e){}}return i??t}static setItem(e=new String,t=new String){let i=!1;if(t="object"==typeof t?JSON.stringify(t):String(t),!0===e.startsWith("@")){let{key:a,path:n}=e.match(G.#l)?.groups;e=a;let r=G.getItem(e,{});"object"!=typeof r&&(r={}),$.set(r,n,t),i=G.setItem(e,r)}else switch(X){case"Surge":case"Loon":case"Stash":case"Egern":case"Shadowrocket":i=$persistentStore.write(t,e);break;case"Quantumult X":i=$prefs.setValueForKey(t,e);break;case"Worker":G.data=G.data??{},G.data[e]=t,i=!0;break;case"Node.js":G.data=G.#c(G.dataFile),G.data[e]=t,G.#u(G.dataFile),i=!0;break;default:i=G.data?.[e]||null}return i}static removeItem(e){let t=!1;if(!0===e.startsWith("@")){let{key:i,path:a}=e.match(G.#l)?.groups;e=i;let n=G.getItem(e);"object"!=typeof n&&(n={}),keyValue=$.unset(n,a),t=G.setItem(e,n)}else switch(X){case"Surge":t=$persistentStore.write(null,e);break;case"Loon":case"Stash":case"Egern":case"Shadowrocket":default:t=!1;break;case"Quantumult X":t=$prefs.removeValueForKey(e);break;case"Worker":G.data=G.data??{},delete G.data[e],t=!0;break;case"Node.js":G.data=G.#c(G.dataFile),delete G.data[e],G.#u(G.dataFile),t=!0}return t}static clear(){let e=!1;switch(X){case"Surge":case"Loon":case"Stash":case"Egern":case"Shadowrocket":default:e=!1;break;case"Quantumult X":e=$prefs.removeAllValues();break;case"Worker":G.data={},e=!0;break;case"Node.js":G.data=G.#c(G.dataFile),G.data={},G.#u(G.dataFile),e=!0}return e}static #c=e=>{if("Node.js"!==X)return{};{this.fs=this.fs?this.fs:require("node:fs"),this.path=this.path?this.path:require("node:path");let t=this.path.resolve(e),i=this.path.resolve(process.cwd(),e),a=this.fs.existsSync(t),n=!a&&this.fs.existsSync(i);if(!a&&!n)return{};try{return JSON.parse(this.fs.readFileSync(a?t:i))}catch(e){return{}}}};static #u=(e=this.dataFile)=>{if("Node.js"===X){this.fs=this.fs?this.fs:require("node:fs"),this.path=this.path?this.path:require("node:path");let t=this.path.resolve(e),i=this.path.resolve(process.cwd(),e),a=this.fs.existsSync(t),n=!a&&this.fs.existsSync(i),r=JSON.stringify(this.data);a?this.fs.writeFileSync(t,r):n?this.fs.writeFileSync(i,r):this.fs.writeFileSync(t,r)}}}class Y{static name="XML";static version="0.4.2";static about=()=>console.log(`
 🟧 ${this.name} v${this.version}
 `);static #d="@";static #g="#";static #h={"&amp;":"&","&lt;":"<","&gt;":">","&apos;":"'","&quot;":'"'};static #m={"&":"&amp;","<":"&lt;",">":"&gt;","'":"&apos;",'"':"&quot;"};static parse(e=new String,t=""){let i=this.#h,a=this.#d,n=this.#g;return function e(t,i){let s;switch(typeof t){case"string":case"undefined":s=t;break;case"object":let o=t.raw,l=t.name,c=t.tag,u=t.children;s=o||(c?function(e,t){let i,n;if(!e)return;let s=e.split(/([^\s='"]+(?:\s*=\s*(?:'[\S\s]*?'|"[\S\s]*?"|[^\s'"]*))?)/),o=s.length;for(let e=0;e<o;e++){var l;let o=(l=s[e],l?.trim?.());if(!o)continue;i||(i={});let c=o.indexOf("=");if(c<0)o=a+o,n=null;else{n=o.substr(c+1).replace(/^\s+/,""),o=a+o.substr(0,c).replace(/\s+$/,"");let e=n[0];e===n[n.length-1]&&("'"===e||'"'===e)&&(n=n.substr(1,n.length-2)),n=r(n)}t&&(n=t(o,n)),d(i,o,n)}return i}(c,i):u?{}:{[l]:void 0}),"plist"===l?s=Object.assign(s,function e(t,i){let a;switch(typeof t){case"string":case"undefined":a=t;break;case"object":let n=t.name,r=t.children;switch(a={},n){case"plist":a=Object.assign(a,e(r[0],i));break;case"dict":let s=r.map(t=>e(t,i));a=Object.fromEntries(s=function(e){for(var t=0,i=[];t<e.length;)i.push(e.slice(t,t+=2));return i}(s));break;case"array":Array.isArray(a)||(a=[]),a=r.map(t=>e(t,i));break;case"key":case"string":a=r[0];break;case"true":case"false":a=JSON.parse(n);break;case"integer":a=BigInt(r[0]);break;case"real":a=parseFloat(r[0])}i&&(a=i(n||"",a))}return a}(u[0],i)):u?.forEach?.((t,a)=>{"string"==typeof t?d(s,n,e(t,i),void 0):t.tag||t.children||t.raw?d(s,t.name,e(t,i),void 0):d(s,t.name,e(t,i),u?.[a-1]?.name)}),u&&0===u.length&&d(s,n,null,void 0),i&&(s=i(l||"",s))}return s;function d(e,t,i,a=t){if(void 0!==i){let n=e[a];Array.isArray(n)?n.push(i):n?e[a]=[n,i]:e[t]=i}}}(function(e){let t=e.replace(/^[ \t]+/gm,"").split(/<([^!<>?](?:'[\S\s]*?'|"[\S\s]*?"|[^'"<>])*|!(?:--[\S\s]*?--|\[[^\[\]'"<>]+\[[\S\s]*?]]|DOCTYPE[^\[<>]*?\[[\S\s]*?]|(?:ENTITY[^"<>]*?"[\S\s]*?")?[\S\s]*?)|\?[\S\s]*?\?)>/),i=t.length,a={children:[]},n=a,s=[];for(let e=0;e<i;){let i=t[e++];i&&function(e){var t;t=e,(e=t?.replace?.(/^(\r\n|\r|\n|\t)+|(\r\n|\r|\n|\t)+$/g,""))&&o(r(e))}(i);let a=t[e++];a&&function(e){let t=e.split(" "),i=t.shift(),a=t.length,r={};switch(i[0]){case"/":let l=e.replace(/^\/|[\s\/].*$/g,"").toLowerCase();for(;s.length;){let e=n?.name?.toLowerCase?.();if(n=s.pop(),e===l)break}break;case"?":r.name=i,r.raw=t.join(" "),o(r);break;case"!":/!\[CDATA\[(.+)\]\]/.test(e)?(r.name="!CDATA",r.raw=e.match(/!\[CDATA\[(?<raw>.+)\]\]/)?.groups?.raw):/!--(.+)--/.test(e)?(r.name="!--",r.raw=e.match(/!--(?<raw>.+)--/)?.groups?.raw):(r.name=i,r.raw=t.join(" ")),o(r);break;default:o(r=function(e){let t={children:[]},i=(e=e.replace(/\s*\/?$/,"")).search(/[\s='"\/]/);return i<0?t.name=e:(t.name=e.substr(0,i),t.tag=e.substr(i)),t}(e)),"/"===(t?.[a-1]??i).slice(-1)||"link"===i?delete r.children:(s.push(n),n=r)}}(a)}return a;function o(e){n.children.push(e)}}(e),t);function r(e){return e.replace(/(&(?:lt|gt|amp|apos|quot|#(?:\d{1,6}|x[0-9a-fA-F]{1,5}));)/g,function(e){if("#"===e[1]){let t="x"===e[2]?parseInt(e.substr(3),16):parseInt(e.substr(2),10);if(t>-1)return String.fromCharCode(t)}return i[e]||e})}}static stringify(e={},t=""){this.#m;let i=this.#d,a=this.#g,n="";for(let t in e)n+=function e(t,n,r){let s="";switch(typeof t){case"object":if(Array.isArray(t))s=t.reduce((t,i)=>t+=`${r}${e(i,n,`${r}	`)}
@@ -47,61 +47,6 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
       maxZ
     }));
   };
-  const isMainlandRegion = region => {
-    if (!region || region.minZ < 8) return false;
-    const factor = 2 ** (region.minZ - 8);
-    const minXAtZ8 = Math.floor(region.minX / factor);
-    const maxXAtZ8 = Math.ceil((region.maxX + 1) / factor) - 1;
-    return minXAtZ8 >= 180 && maxXAtZ8 <= 223;
-  };
-
-  const scaleRegionToZoom = (region, zoom) => {
-    if (!region || zoom < region.minZ || zoom > region.maxZ) return null;
-    const factor = 2 ** (zoom - region.minZ);
-    return {
-      minX: Math.floor(region.minX * factor),
-      minY: Math.floor(region.minY * factor),
-      maxX: Math.ceil((region.maxX + 1) * factor) - 1,
-      maxY: Math.ceil((region.maxY + 1) * factor) - 1,
-      minZ: zoom,
-      maxZ: zoom
-    };
-  };
-  const subtractRectangle = (source, cut) => {
-    const left = Math.max(source.minX, cut.minX);
-    const top = Math.max(source.minY, cut.minY);
-    const right = Math.min(source.maxX, cut.maxX);
-    const bottom = Math.min(source.maxY, cut.maxY);
-    if (left > right || top > bottom) return [source];
-    const parts = [];
-    if (source.minY < top) parts.push({ ...source, maxY: top - 1 });
-    if (bottom < source.maxY) parts.push({ ...source, minY: bottom + 1 });
-    if (source.minX < left) parts.push({ ...source, minY: top, maxX: left - 1, maxY: bottom });
-    if (right < source.maxX) parts.push({ ...source, minX: right + 1, minY: top, maxY: bottom });
-    return parts;
-  };
-  const excludeMainlandFromVersions = versions => (versions || []).map(version => {
-    const regions = [];
-    for (const source of version.availableTiles || []) {
-      const lowZoomMax = Math.min(7, source.maxZ);
-      if (source.minZ <= lowZoomMax) regions.push({ ...clone(source), maxZ: lowZoomMax });
-      const highZoomMin = Math.max(8, source.minZ);
-      if (highZoomMin > source.maxZ) continue;
-      const scaledSource = scaleRegionToZoom(source, highZoomMin);
-      if (!scaledSource) continue;
-      // availableTiles rectangles scale automatically from minZ through maxZ.
-      // Subtract once at the first detailed zoom and extend each complement
-      // rectangle to source.maxZ; expanding every zoom separately would bloat
-      // the manifest with more than a thousand equivalent regions.
-      let remaining = [{ ...scaledSource, maxZ: source.maxZ }];
-      for (const cut of mainlandRegions(highZoomMin, highZoomMin)) {
-        remaining = remaining.flatMap(region => subtractRectangle(region, cut));
-        if (!remaining.length) break;
-      }
-      regions.push(...remaining);
-    }
-    return { ...clone(version), availableTiles: regions };
-  }).filter(version => version.availableTiles.length);
 
   const resourceKey = item => [item?.resourceType, item?.filename, item?.alternateResourceURLIndex ?? ""].join("|");
   const mergeResources = (primary = [], secondary = []) => {
@@ -166,172 +111,68 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     return result;
   };
 
-  // test.14 uses exactly one adaptive group. test.12's separate US and CN
-  // groups appeared correct at first, but after international resources had
-  // warmed up Maps could switch to the global US group and reinterpret both
-  // the mainland standard and satellite maps. Clone Apple's native CN group
-  // as the sole coordinate owner, put regional CN rendering selectors first,
-  // then append the native US group's references in their original order.
-  const buildChinaOwnedAdaptiveTileGroup = result => {
+  // test.8 keeps the US manifest's original indices authoritative. Apple 3D
+  // groups link mesh, DSM, metadata and texture descriptors by tile-set index;
+  // rebuilding every group with every descriptor can make Maps select a
+  // partial/lower-detail chain. Mainland-only descriptors are appended after
+  // all native US entries, then referenced without changing any native index.
+  const preserveInternationalTileGroups = result => {
     const nativeTileCount = international.tileSet?.length ?? 0;
-    const nativeOfflineMetadataCount = international.offlineMetadata?.length ?? 0;
-    const group = clone((cn.tileGroup || [])[0] || {});
-    group.identifier = manifestRefreshIdentifier;
-    const refs = [];
-    const seenTiles = new Set();
-    const addRef = index => {
-      if (!Number.isInteger(index) || index < 0 || index >= result.tileSet.length || seenTiles.has(index)) return;
-      const ref = { tileSetIndex: index };
-      const identifier = result.tileSet[index]?.validVersion?.[0]?.identifier;
-      if (typeof identifier !== "undefined") ref.identifier = identifier;
-      refs.push(ref);
-      seenTiles.add(index);
-    };
-    // The appended descriptors are the regional CN standard map, POI,
-    // traffic, buildings and native 2D satellite layers. Keep them before the
-    // international fallbacks so domestic roads/POI/imagery share one CN
-    // regulatory identity for the lifetime of this manifest.
-    for (let index = nativeTileCount; index < result.tileSet.length; index++) {
-      const style = result.tileSet[index]?.style;
-      if (internationalMuninStyles.has(style)) continue;
-      if (internationalVisualStyles.has(style) && !mainlandSatelliteStyles.has(style)) continue;
-      addRef(index);
-    }
-    // Preserve the real US combined group's selector order instead of
-    // rebuilding its 3D/Munin chain by style. Any native descriptor omitted by
-    // an older group is appended afterwards without disturbing those refs.
-    for (const nativeGroup of international.tileGroup || []) {
-      for (const ref of nativeGroup.tileSet || []) addRef(ref?.tileSetIndex);
-    }
-    for (let index = 0; index < nativeTileCount; index++) addRef(index);
-    group.tileSet = refs;
-    group.attributionIndex = result.attribution.map((_, index) => index);
-    group.resourceIndex = result.resource.map((_, index) => index);
-    const cnOfflineMetadataIndex = group.offlineMetadataIndex;
-    if (Number.isInteger(cnOfflineMetadataIndex) && cnOfflineMetadataIndex >= 0 && cnOfflineMetadataIndex < (cn.offlineMetadata?.length ?? 0)) {
-      group.offlineMetadataIndex = nativeOfflineMetadataCount + cnOfflineMetadataIndex;
-    } else {
-      delete group.offlineMetadataIndex;
-    }
-    return [group];
-  };
-
-  // test23 keeps the two coordinate providers in different regulatory groups.
-  // International groups retain regulatoryRegionId=0 and the complete native
-  // satellite/3D/Munin graph. A separate group cloned from Apple's CN manifest
-  // owns every mainland standard, POI, road and satellite selector under
-  // regulatoryRegionId=2. Their advertised tile coverage is disjoint, so iOS
-  // does not interpret AutoNavi geometry through the international group.
-  const buildDisjointProviderTileGroups = (result, chinaTileIndexes, chinaAttributionOffset, chinaResourceOffset, chinaOfflineMetadataOffset) => {
-    const nativeTileCount = international.tileSet?.length ?? 0;
+    const nativeAttributionCount = international.attribution?.length ?? 0;
+    const nativeResourceCount = international.resource?.length ?? 0;
     const groups = clone(international.tileGroup || []);
-    const baseStyles = new Set([
-      "VECTOR_STANDARD",
-      "VECTOR_POI",
-      "VECTOR_POI_V2",
-      "VECTOR_POI_V2_UPDATE",
-      "VECTOR_TRAFFIC",
-      "VECTOR_TRAFFIC_SKELETON",
-      "VECTOR_BUILDINGS",
-      "VECTOR_BUILDINGS_V2"
-    ]);
+    // Add mainland descriptors only to the native 2D/base-map group. The 3D
+    // detail groups remain byte-for-byte equivalent at the object-field level:
+    // no CN tile, attribution or resource reference is inserted into them.
     const baseMatch = groups.reduce((best, group) => {
       const styles = (group.tileSet || []).map(ref => international.tileSet?.[ref?.tileSetIndex]?.style);
-      const baseHits = styles.filter(style => baseStyles.has(style)).length;
-      const capabilityHits = styles.filter(style => internationalVisualStyles.has(style) || internationalMuninStyles.has(style)).length;
-      if (!best || baseHits > best.baseHits || (baseHits === best.baseHits && capabilityHits > best.capabilityHits)) {
-        return { group, baseHits, capabilityHits };
+      const baseHits = styles.filter(style => mainlandRenderingStyles.has(style)).length;
+      const visualHits = styles.filter(style => internationalVisualStyles.has(style) || internationalMuninStyles.has(style)).length;
+      // Current iOS 27 manifests may expose one combined tileGroup containing
+      // both base-map and 3D capabilities. A visual penalty must not disqualify
+      // that only group, otherwise every appended CN descriptor is orphaned.
+      // On older multi-group manifests, prefer the group with more base-map
+      // selectors; use fewer visual selectors only as a tie-breaker.
+      if (!best || baseHits > best.baseHits || (baseHits === best.baseHits && visualHits < best.visualHits)) {
+        return { group, baseHits, visualHits };
       }
       return best;
     }, null);
-    if (!baseMatch) return groups;
-
+    if (!baseMatch || baseMatch.baseHits <= 0) return groups;
     const baseGroup = baseMatch.group;
+    // iOS caches the rendered attribution together with the tile group. The
+    // source identifier can otherwise keep the previous status timestamp for
+    // roughly one manifest TTL even though this response is marked no-store.
     baseGroup.identifier = manifestRefreshIdentifier;
-    const nativeRefs = Array.isArray(baseGroup.tileSet) ? baseGroup.tileSet : [];
-    const seenTiles = new Set(nativeRefs.map(ref => ref?.tileSetIndex));
-    const activeRefs = [...nativeRefs];
-    // Some manifests split satellite/3D/Munin entries into secondary groups,
-    // but iOS 27 may only activate the primary group. Reference every native
-    // international descriptor from the primary group as a fallback while
-    // retaining the source indices and the original primary ordering. This is
-    // what turns a visible Look Around coverage icon into usable imagery.
-    for (let index = 0; index < nativeTileCount; index++) {
+
+    const tileRefs = Array.isArray(baseGroup.tileSet) ? baseGroup.tileSet : [];
+    const seenTiles = new Set(tileRefs.map(ref => ref?.tileSetIndex));
+    const mainlandRefs = [];
+    for (let index = nativeTileCount; index < result.tileSet.length; index++) {
       if (seenTiles.has(index)) continue;
-      const ref = { tileSetIndex: index };
       const identifier = result.tileSet[index]?.validVersion?.[0]?.identifier;
+      const ref = { tileSetIndex: index };
       if (typeof identifier !== "undefined") ref.identifier = identifier;
-      activeRefs.push(ref);
-      seenTiles.add(index);
+      mainlandRefs.push(ref);
     }
-    // Keep the complete international capability chain active without adding
-    // any CN selector to this regulatory group.
-    const internationalCapabilityRefs = [];
-    const nativeFallbackRefs = [];
-    for (const ref of activeRefs) {
-      const style = result.tileSet[ref?.tileSetIndex]?.style;
-      if (internationalVisualStyles.has(style) || internationalMuninStyles.has(style) || internationalCriticalStyles.has(style) || style === foreignRegionCapabilityStyle) {
-        internationalCapabilityRefs.push(ref);
-      } else {
-        nativeFallbackRefs.push(ref);
-      }
-    }
-    baseGroup.tileSet = [...internationalCapabilityRefs, ...nativeFallbackRefs];
-    if (!Number.isInteger(baseGroup.offlineMetadataIndex) && international.offlineMetadata?.length) baseGroup.offlineMetadataIndex = 0;
+    // Only inside the 2D base-map group, let the regional CN descriptors win
+    // before the global Apple fallback. Native tile-set indices remain stable,
+    // and all international 3D groups are left untouched.
+    baseGroup.tileSet = [...mainlandRefs, ...tileRefs];
 
-    const sourceChinaGroup = clone((cn.tileGroup || [])[0] || {});
-    const occupiedIdentifiers = new Set(groups.map(group => group?.identifier).filter(Number.isInteger));
-    let chinaIdentifier = Number.isInteger(sourceChinaGroup.identifier) ? sourceChinaGroup.identifier : manifestRefreshIdentifier + 1;
-    while (occupiedIdentifiers.has(chinaIdentifier)) chinaIdentifier = chinaIdentifier >= 2147483647 ? 1 : chinaIdentifier + 1;
-    sourceChinaGroup.identifier = chinaIdentifier;
-    sourceChinaGroup.tileSet = chinaTileIndexes.map(tileSetIndex => {
-      const ref = { tileSetIndex };
-      const identifier = result.tileSet[tileSetIndex]?.validVersion?.[0]?.identifier;
-      if (typeof identifier !== "undefined") ref.identifier = identifier;
-      return ref;
-    });
-    sourceChinaGroup.attributionIndex = (cn.attribution || []).map((_, index) => chinaAttributionOffset + index);
-    sourceChinaGroup.resourceIndex = (cn.resource || []).map((_, index) => chinaResourceOffset + index);
-    const sourceOfflineIndex = Number.isInteger(sourceChinaGroup.offlineMetadataIndex) ? sourceChinaGroup.offlineMetadataIndex : 0;
-    sourceChinaGroup.offlineMetadataIndex = chinaOfflineMetadataOffset + sourceOfflineIndex;
-    return sourceChinaGroup.tileSet.length ? [...groups, sourceChinaGroup] : groups;
-  };
+    const attributionRefs = Array.isArray(baseGroup.attributionIndex) ? baseGroup.attributionIndex : [];
+    const seenAttributions = new Set(attributionRefs);
+    for (let index = nativeAttributionCount; index < result.attribution.length; index++) {
+      if (!seenAttributions.has(index)) attributionRefs.push(index);
+    }
+    baseGroup.attributionIndex = attributionRefs;
 
-  // test.15 keeps both provider graphs native, but makes the complete CN graph
-  // the first group and the sole owner of mainland standard/satellite roads.
-  // test.14 mixed duplicate CN/US selectors inside one group; iOS 27 then
-  // selected the first CN satellite globally while selecting international
-  // road overlays in China. Separate native groups avoid both cross-provider
-  // selector choices. The US group remains intact for foreign satellite, 3D
-  // and Look Around, while PROD-CN and regulatoryRegionId=2 remain the
-  // manifest-level mainland coordinate identity.
-  const buildChinaFirstNativeTileGroups = result => {
-    const cnTileCount = cn.tileSet?.length ?? 0;
-    const cnAttributionCount = cn.attribution?.length ?? 0;
-    const cnResourceCount = cn.resource?.length ?? 0;
-    const cnOfflineMetadataCount = cn.offlineMetadata?.length ?? 0;
-    const groups = [];
-    const occupiedIdentifiers = new Set();
-    const uniqueIdentifier = preferred => {
-      let identifier = Number.isInteger(preferred) ? preferred : manifestRefreshIdentifier;
-      while (occupiedIdentifiers.has(identifier)) identifier = identifier >= 2147483647 ? 1 : identifier + 1;
-      occupiedIdentifiers.add(identifier);
-      return identifier;
-    };
-    for (const [groupIndex, source] of (cn.tileGroup || []).entries()) {
-      const group = clone(source);
-      group.identifier = uniqueIdentifier(groupIndex === 0 ? manifestRefreshIdentifier : group.identifier);
-      groups.push(group);
+    const resourceRefs = Array.isArray(baseGroup.resourceIndex) ? baseGroup.resourceIndex : [];
+    const seenResources = new Set(resourceRefs);
+    for (let index = nativeResourceCount; index < result.resource.length; index++) {
+      if (!seenResources.has(index)) resourceRefs.push(index);
     }
-    for (const source of international.tileGroup || []) {
-      const group = clone(source);
-      group.identifier = uniqueIdentifier(group.identifier);
-      group.tileSet = (group.tileSet || []).map(ref => ({ ...ref, tileSetIndex: ref.tileSetIndex + cnTileCount }));
-      group.attributionIndex = (group.attributionIndex || []).map(index => index + cnAttributionCount);
-      group.resourceIndex = (group.resourceIndex || []).map(index => index + cnResourceCount);
-      if (Number.isInteger(group.offlineMetadataIndex)) group.offlineMetadataIndex += cnOfflineMetadataCount;
-      groups.push(group);
-    }
+    baseGroup.resourceIndex = resourceRefs;
     return groups;
   };
 
@@ -354,21 +195,6 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
   };
 
   const attributionKey = item => [item?.name, item?.dataSet ?? ""].join("|");
-  const markStatusAttribution = source => {
-    const attribution = clone(source);
-    if (attribution?.name === "‎") {
-      attribution.name = " iRingo: 📍 adaptive hybrid\n" + manifestBuiltAt.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai", hour12: false });
-      attribution.url = refreshAttributionURL(attribution.url);
-      attribution.plainTextURL = refreshAttributionURL(attribution.plainTextURL);
-      delete attribution.plainTextURLSHA256Checksum;
-    }
-    return attribution;
-  };
-  const offsetAlternateResourceIndex = (source, offset) => {
-    const item = clone(source);
-    if (Number.isInteger(item?.alternateResourceURLIndex)) item.alternateResourceURLIndex += offset;
-    return item;
-  };
   const appendMainlandAttributions = primary => {
     const result = clone(primary || []);
     // Preserve every native attribution index, but turn Apple's invisible
@@ -437,7 +263,6 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     "VECTOR_SPR_MODELS",
     "VECTOR_SPR_MATERIALS",
     "VECTOR_SPR_METADATA",
-    "VECTOR_SPR_ROADS",
     "VECTOR_SPR_STANDARD",
     "SPR_ASSET_METADATA",
     "VECTOR_SPR_POLAR",
@@ -446,14 +271,9 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
   // A CN manifest can contain styles with the same names as the international
   // satellite/Flyover chain. Merely appending missing styles leaves those CN
   // descriptors first, so Maps may never request foreign imagery. Replace the
-  // complete visual capability chain with international descriptors. iOS 27
-  // does not reliably choose between two descriptors with the same satellite
-  // style, even when their availableTiles ranges differ. Keep one global
-  // selector and route only mainland requests to CN at request time.
+  // complete visual capability chain with the international descriptors; the
+  // separate coordinate router sends only mainland style 98 tiles back to CN.
   const internationalVisualStyles = new Set([
-    // iOS 27 decodes the international 3D satellite selector style=98 as
-    // UNUSED_98. Keep it ahead of the regional CN satellite fallbacks.
-    "UNUSED_98",
     "RASTER_SATELLITE",
     "RASTER_SATELLITE_NIGHT",
     "RASTER_SATELLITE_DIGITIZE",
@@ -511,26 +331,6 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     "VECTOR_ROAD_NETWORK",
     "VECTOR_ROAD_SELECTION"
   ]);
-  const mainlandRegionalVisualStyles = new Set([
-    ...mainlandSatelliteStyles,
-    ...lookAroundRoadStyles
-  ]);
-  const regionalizeMainlandTile = sourceTile => {
-    const tile = clone(sourceTile);
-    tile.validVersion = (tile.validVersion || []).map(version => {
-      const sourceRegions = version.availableTiles || [];
-      const sourceMinZ = Math.min(...sourceRegions.map(region => region.minZ));
-      const sourceMaxZ = Math.max(...sourceRegions.map(region => region.maxZ));
-      const minZ = Math.max(8, sourceMinZ);
-      return {
-        ...version,
-        availableTiles: Number.isFinite(sourceMaxZ) && sourceMaxZ >= minZ
-          ? mainlandRegions(minZ, sourceMaxZ)
-          : []
-      };
-    }).filter(version => version.availableTiles.length);
-    return tile.validVersion.length ? tile : null;
-  };
   const mainlandDrivingStyles = new Set([
     "VECTOR_TRAFFIC",
     "VECTOR_TRAFFIC_SKELETON"
@@ -560,38 +360,11 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     "VECTOR_BUILDINGS_V2",
     "VECTOR_POI_V2_UPDATE",
     "VECTOR_TOPOGRAPHIC",
-    "VECTOR_CONTOURS",
-    // Use Apple's native CN satellite descriptors only inside their mainland
-    // coverage. They create a correctly signed CN request directly, avoiding
-    // the slow/invalid cross-service accessKey rewrite used by test10. The US
-    // descriptors remain in their original positions as the global fallback.
-    "RASTER_SATELLITE",
-    "RASTER_SATELLITE_NIGHT",
-    "RASTER_SATELLITE_DIGITIZE",
-    "RASTER_SATELLITE_ASTC",
-    "RASTER_SATELLITE_POLAR",
-    "RASTER_SATELLITE_POLAR_NIGHT",
-    // The native CN road selectors must remain in the CN regulatory group.
-    // Removing them forces standard/satellite overlays back through the
-    // international coordinate interpretation and causes visible drift.
-    "VECTOR_ROADS",
-    "VECTOR_ROAD_NETWORK",
-    "VECTOR_ROAD_SELECTION",
-    "VECTOR_SPR_ROADS",
+    "VECTOR_CONTOURS"
   ]);
   for (const style of mainlandPOIStyles) mainlandRenderingStyles.add(style);
 
-  const requestedChinaBaseline = String(countryCode).toUpperCase() === "CN";
-  // iOS 27 only activates the first/primary provider group. test15 kept the
-  // complete CN group first, which made its nominally native descriptors act
-  // globally: foreign standard maps became AutoNavi, the international
-  // satellite group was ignored, and Look Around exposed a coverage icon
-  // without an active Munin/SPR image graph. Keep the native international
-  // capability graph authoritative and inject CN descriptors only as
-  // mainland-limited entries into its real base group. CountryCode remains CN
-  // at the request/service layer, so Dispatcher, POI, navigation, reverse
-  // geocoding and location shifting continue to use the mainland services.
-  const useChinaBaseline = false;
+  const useChinaBaseline = String(countryCode).toUpperCase() === "CN";
   // Fixed direct mode: no A/B switch and no persisted BoxJs value can put the
   // conflicting mainland road capability descriptors back into the manifest.
   const sharedMode = "ForeignPriority";
@@ -599,36 +372,29 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
   const result = clone(useChinaBaseline ? cn : international);
 
   if (useChinaBaseline) {
-    // Keep every CN descriptor and its native tile-group references unchanged.
-    // In particular VECTOR_ROADS, VECTOR_SPR_ROADS and the native satellite
-    // descriptors must stay together; splitting them was the direct cause of
-    // roads moving away from otherwise-correct POI and imagery in test.14.
-    // Append the complete US graph afterwards so foreign capabilities do not
-    // share a selector group with the mainland coordinate provider.
-    result.tileSet = [
-      ...clone(cn.tileSet || []),
-      ...clone(international.tileSet || [])
-    ];
+    const cnStyles = new Set((cn.tileSet || []).map(tile => tile?.style));
+    const replaceStyles = new Set(internationalMuninStyles);
+    // Keep native CN 2D satellite and VECTOR_SPR_ROADS selectors. The latter
+    // draws the road overlay used by satellite mode, so replacing it with the
+    // US descriptor shifts roads away from the native CN imagery. Only the
+    // 3D/Flyover chain is replaced; US satellite/road descriptors are appended
+    // as foreign fallbacks below.
+    for (const style of international3DStyles) replaceStyles.add(style);
+    // These selectors describe global availability, not mainland geometry.
+    // Use the international variants so foreign capabilities remain visible.
+    for (const style of balancedSelectorStyles) replaceStyles.add(style);
+    if (foreignRegionCapability === "International") replaceStyles.add(foreignRegionCapabilityStyle);
+
+    const baseTiles = clone(cn.tileSet || []).filter(tile => !replaceStyles.has(tile?.style));
+    const internationalTiles = [];
+    for (const tile of international.tileSet || []) {
+      if (replaceStyles.has(tile?.style) || mainlandSatelliteStyles.has(tile?.style) || internationalCriticalStyles.has(tile?.style) || mainlandDrivingStyles.has(tile?.style) || !cnStyles.has(tile?.style)) internationalTiles.push(clone(tile));
+    }
+    result.tileSet = [...baseTiles, ...internationalTiles];
 
     result.dataSet = mergeDataSets(cn.dataSet, international.dataSet);
-    const cnURLInfo = clone(cn.urlInfoSet?.[0] || {});
-    const internationalURLInfo = international.urlInfoSet?.[0] || {};
-    const cnAlternateURLCount = cnURLInfo.alternateResourcesURL?.length ?? 0;
-    // Native groups reference resource and attribution arrays by numeric
-    // index. Concatenate rather than de-duplicate, and offset the US
-    // alternate-resource indices to match the concatenated URL list.
-    result.resource = [
-      ...clone(cn.resource || []),
-      ...(international.resource || []).map(item => offsetAlternateResourceIndex(item, cnAlternateURLCount))
-    ];
-    result.attribution = [
-      ...clone(cn.attribution || []),
-      ...(international.attribution || []).map(source => {
-        const attribution = markStatusAttribution(source);
-        attribution.resource = (attribution.resource || []).map(item => offsetAlternateResourceIndex(item, cnAlternateURLCount));
-        return attribution;
-      })
-    ];
+    result.resource = mergeResources(cn.resource, international.resource);
+    result.attribution = buildAttributions(cn.attribution);
     result.displayString = clone(international.displayString || []);
     result.muninBucket = clone(international.muninBucket || []);
     // Keep the native PROD-CN release identity. The previous US identity made
@@ -636,6 +402,8 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     // international coordinate semantics, while POI remained correctly CN.
     result.releaseInfo = clone(cn.releaseInfo);
 
+    const cnURLInfo = clone(cn.urlInfoSet?.[0] || {});
+    const internationalURLInfo = international.urlInfoSet?.[0] || {};
     if ((settings?.UrlInfoSet?.RAP ?? "Apple") === "Apple") {
       for (const key of [
         "problemSubmissionURL",
@@ -665,11 +433,7 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     }
     cnURLInfo.alternateResourcesURL = alternateURLs;
     result.urlInfoSet = [cnURLInfo];
-    result.offlineMetadata = [
-      ...clone(cn.offlineMetadata || []),
-      ...clone(international.offlineMetadata || [])
-    ];
-    result.tileGroup = buildChinaFirstNativeTileGroups(result);
+    result.tileGroup = buildInclusiveTileGroups(result);
 
     if (!/dispatcher\.is\.autonavi\.com/i.test(endpoint(cnURLInfo.dispatcherURL))) throw new Error("China Dispatcher is missing");
     if (!/direction2\.is\.autonavi\.com/i.test(endpoint(cnURLInfo.directionsURL))) throw new Error("China Directions is missing");
@@ -678,72 +442,75 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     const internationalMuninEndpoints = new Set((international.tileSet || []).filter(tile => tile?.style === "MUNIN_METADATA").map(tile => endpoint(tile?.baseURL)));
     if (!result.tileSet.some(tile => tile?.style === "MUNIN_METADATA" && internationalMuninEndpoints.has(endpoint(tile?.baseURL)))) throw new Error("International Munin metadata is missing from China baseline");
     if (!result.tileSet.some(tile => tile?.style === "SPUTNIK_METADATA")) throw new Error("International 3D satellite metadata is missing from China baseline");
-    for (const style of mainlandSatelliteStyles) {
-      const cnDescriptors = result.tileSet.filter(tile => tile?.style === style && isMainlandEndpoint(tile?.baseURL));
-      const internationalDescriptors = result.tileSet.filter(tile => tile?.style === style && !isMainlandEndpoint(tile?.baseURL));
-      const sourceCN = (cn.tileSet || []).filter(tile => tile?.style === style);
-      const sourceInternational = (international.tileSet || []).filter(tile => tile?.style === style);
-      if (sourceCN.length && !cnDescriptors.length) throw new Error("Native China satellite selector is missing: " + style);
-      if (sourceInternational.length && !internationalDescriptors.length) throw new Error("International satellite fallback is missing: " + style);
-    }
     for (const style of mainlandDrivingStyles) {
       if (!result.tileSet.some(tile => tile?.style === style && isMainlandEndpoint(tile?.baseURL))) throw new Error("China driving layer is missing: " + style);
       if (!result.tileSet.some(tile => tile?.style === style && !isMainlandEndpoint(tile?.baseURL))) throw new Error("International driving layer is missing: " + style);
     }
     for (const style of lookAroundRoadStyles) {
-      const sourceCNHasStyle = (cn.tileSet || []).some(tile => tile?.style === style);
-      if (sourceCNHasStyle && !result.tileSet.some(tile => tile?.style === style && isMainlandEndpoint(tile?.baseURL))) throw new Error("Native China road selector is missing: " + style);
       if (!result.tileSet.some(tile => tile?.style === style && !isMainlandEndpoint(tile?.baseURL))) throw new Error("Apple Look Around road selector is missing: " + style);
     }
     const satelliteRoads = result.tileSet.filter(tile => tile?.style === "VECTOR_SPR_ROADS");
-    if (!satelliteRoads.some(tile => isMainlandEndpoint(tile?.baseURL))) throw new Error("Native China satellite road descriptor is missing");
-    if (!satelliteRoads.some(tile => !isMainlandEndpoint(tile?.baseURL))) throw new Error("International satellite/Look Around road descriptor is missing");
-    const foreignRegionTile = result.tileSet.find(tile =>
-      tile?.style === foreignRegionCapabilityStyle
-      && (foreignRegionCapability === "International" ? !isMainlandEndpoint(tile?.baseURL) : isMainlandEndpoint(tile?.baseURL))
-    );
+    if (!satelliteRoads.some(tile => isMainlandEndpoint(tile?.baseURL))) throw new Error("China satellite road overlay is missing");
+    if (!satelliteRoads.some(tile => !isMainlandEndpoint(tile?.baseURL))) throw new Error("International satellite/Look Around road fallback is missing");
+    if (!isMainlandEndpoint(satelliteRoads[0]?.baseURL)) throw new Error("China satellite road overlay is not mainland-first");
+    const foreignRegionTile = result.tileSet.find(tile => tile?.style === foreignRegionCapabilityStyle);
     if (!foreignRegionTile) throw new Error("Foreign-region capability polygon is missing");
     if (foreignRegionCapability === "International" && isMainlandEndpoint(foreignRegionTile?.baseURL)) throw new Error("International foreign-region capability polygon is missing");
     if (foreignRegionCapability === "CN" && !isMainlandEndpoint(foreignRegionTile?.baseURL)) throw new Error("v1.3.1 China capability polygon fallback is missing");
     if (result.releaseInfo !== cn.releaseInfo) throw new Error("Native CN manifest identity is missing");
-    if (result.tileGroup.length < 2) throw new Error("China and international native groups were not separated");
-    console.log("[iRingo Maps International-All Test v2 test.16 legacy CN branch] international-primary mode should bypass this branch");
+    console.log("[iRingo Maps International-All Test v2 test.24] native CN map/satellite/road identity preserved; international satellite/3D/Munin/road capabilities appended");
   } else {
     const chinaTiles = [];
     for (const sourceTile of cn.tileSet || []) {
       if (!mainlandRenderingStyles.has(sourceTile?.style)) continue;
       const tile = clone(sourceTile);
-      // Preserve Apple's live CN provider metadata byte-for-byte. Only narrow
-      // availableTiles to the mainland; the separate CN group supplies the
-      // regulatory coordinate semantics.
-      tile.validVersion = (tile.validVersion || []).map(version => {
-        const sourceRegions = version.availableTiles || [];
-        const sourceMinZ = Math.min(...sourceRegions.map(region => region.minZ));
-        const sourceMaxZ = Math.max(...sourceRegions.map(region => region.maxZ));
-        const minZ = Math.max(8, sourceMinZ);
-        return {
-          ...version,
-          availableTiles: Number.isFinite(sourceMaxZ) && sourceMaxZ >= minZ ? mainlandRegions(minZ, sourceMaxZ) : [],
-          timeToLiveSeconds: Math.min(version.timeToLiveSeconds || 3600, 3600)
-        };
-      }).filter(version => version.availableTiles.length);
+      // Keep the CN dataset identity and explicit provider region. Removing
+      // either makes iOS 27 treat AutoNavi standard-map geometry as a global
+      // Apple layer, which produces the familiar GCJ-02/WGS-84 road and POI
+      // displacement. Coverage remains mainland-only below.
+      tile.countryRegionWhitelist = [{ countryCode: "CN", region: "" }];
+      if (tile.style === "VECTOR_STANDARD") {
+        // VECTOR_STANDARD draws the mainland base-map road geometry. Apple's
+        // live CN descriptor intentionally uses the shared provider whitelist,
+        // not countryCode=CN. Relabelling it makes iOS 27 apply the mainland
+        // coordinate interpretation twice: POI stays correct while roads move.
+        // Preserve the source metadata exactly and rely on availableTiles for
+        // the mainland boundary.
+        tile.countryRegionWhitelist = clone(sourceTile.countryRegionWhitelist || []);
+      }
+      if (mainlandPOIStyles.has(tile.style)) {
+        // The US manifest is only the international capability baseline. Mark
+        // every injected mainland POI descriptor as CN so Maps applies the
+        // same AutoNavi/GCJ-02 interpretation used by mainland roads,
+        // buildings and device-location shifting. Leaving this empty makes
+        // iOS 27 interpret POI geometry as an Apple/WGS-84 layer and visibly
+        // displace labels from roads. Keep the original POI zoom bands, but
+        // regionalize them below so this CN identity cannot affect overseas
+        // maps.
+        tile.validVersion = (sourceTile.validVersion || []).map(version => ({
+          ...clone(version),
+          availableTiles: (version.availableTiles || []).flatMap(region =>
+            mainlandRegions(region.minZ, region.maxZ)
+          )
+        })).filter(version => version.availableTiles.length);
+      } else {
+        tile.validVersion = (tile.validVersion || []).map(version => {
+          const sourceRegions = version.availableTiles || [];
+          const sourceMinZ = Math.min(...sourceRegions.map(region => region.minZ));
+          const sourceMaxZ = Math.max(...sourceRegions.map(region => region.maxZ));
+          const minZ = Math.max(8, sourceMinZ);
+          return {
+            ...version,
+            availableTiles: Number.isFinite(sourceMaxZ) && sourceMaxZ >= minZ ? mainlandRegions(minZ, sourceMaxZ) : [],
+            timeToLiveSeconds: Math.min(version.timeToLiveSeconds || 3600, 3600)
+          };
+        }).filter(version => version.availableTiles.length);
+      }
       if (tile.validVersion.length) chinaTiles.push(tile);
     }
     // Append mainland-only layers. Prepending them would shift every native US
     // tile-set index and break the original high-detail 3D group references.
-    const internationalMainlandOwnedStyles = new Set([...mainlandRenderingStyles, "UNUSED_98"]);
-    const internationalTiles = clone(international.tileSet || []).map(tile => {
-      if (!internationalMainlandOwnedStyles.has(tile?.style)) return tile;
-      // iOS 27 keeps the satellite selector chosen when satellite mode opens.
-      // If CN and international descriptors overlap over mainland tiles, it
-      // continues using CN after the viewport moves abroad until standard mode
-      // resets the selector. Make their advertised coverage disjoint: CN owns
-      // mainland z8+, international owns everything else. No request signing
-      // or endpoint rewrite is needed.
-      tile.validVersion = excludeMainlandFromVersions(tile.validVersion);
-      return tile;
-    });
-    result.tileSet = [...internationalTiles, ...chinaTiles];
+    result.tileSet = [...clone(international.tileSet || []), ...chinaTiles];
     // Preserve every native international attribution index. Tile groups refer
     // to these positions directly, so mainland attribution must only append.
     result.attribution = appendMainlandAttributions(international.attribution);
@@ -754,9 +521,9 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
         if (typeof mainlandURLInfo[key] !== "undefined") internationalURLInfo[key] = clone(mainlandURLInfo[key]);
       }
     };
-    // Keep the US capability graph authoritative, but restore the previously
-    // device-tested AutoNavi POI/navigation/reverse-geocoding and GCJ-02
-    // services. International Munin/RAP/resource entry points remain untouched.
+    // Keep the US capability graph authoritative, but restore only the CN
+    // services needed by mainland POI, navigation, reverse geocoding and
+    // GCJ-02. International Munin/RAP/resource entry points remain untouched.
     copyURLKeys([
       "dispatcherURL",
       "backgroundDispatcherURL",
@@ -783,57 +550,19 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     // numeric index. Append only those three files and remap their indices into
     // the untouched international URL array; blindly merging resources while
     // keeping the US URL array makes the client download the wrong mappings.
-    // Keep both provider resource arrays index-stable. The CN group references
-    // the appended CN resources using their original relative indices.
-    const internationalResourceCount = international.resource?.length ?? 0;
-    const internationalAlternateURLCount = internationalURLInfo.alternateResourcesURL?.length ?? 0;
-    result.resource = [
-      ...clone(international.resource || []),
-      ...(cn.resource || []).map(item => offsetAlternateResourceIndex(item, internationalAlternateURLCount))
-    ];
-    internationalURLInfo.alternateResourcesURL = [
-      ...clone(internationalURLInfo.alternateResourcesURL || []),
-      ...clone(mainlandURLInfo.alternateResourcesURL || [])
-    ];
+    const poiResources = appendMainlandPOIResources(
+      international.resource,
+      cn.resource,
+      internationalURLInfo.alternateResourcesURL,
+      mainlandURLInfo.alternateResourcesURL
+    );
+    result.resource = poiResources.resources;
+    internationalURLInfo.alternateResourcesURL = poiResources.alternateResourcesURL;
     result.urlInfoSet = [internationalURLInfo];
     result.dataSet = mergeDataSets(international.dataSet, cn.dataSet);
     result.displayString = clone(international.displayString || []);
     result.muninBucket = clone(international.muninBucket || []);
-    // Keep the international regulatory group for global satellite, 3D and
-    // Look Around, but advertise the native CN release identity requested by
-    // the device. iOS 27 otherwise interprets the injected AutoNavi standard
-    // geometry under the PROD international provider identity while the CN
-    // POI service remains correctly shifted, producing road/POI displacement.
-    // Unlike test18, this does not replace regulatoryRegionId=0 and therefore
-    // does not suppress the international capability graph.
-    result.releaseInfo = clone(cn.releaseInfo);
-    // Keep international regulatory/group identity authoritative. CN provider
-    // ownership is carried by the regional descriptors, dataset and service
-    // URLs instead of a second group that iOS 27 may select globally.
-    const internationalAttributions = (international.attribution || []).map(markStatusAttribution);
-    const chinaAttributionOffset = internationalAttributions.length;
-    const chinaAttributions = clone(cn.attribution || []).map(attribution => {
-      if (attribution?.name === "AutoNavi" || attribution?.name === "高德地图") {
-        attribution.name = "高德地图";
-        attribution.resource = (attribution.resource || []).filter(resource => resource?.resourceType !== 6 && resource?.resourceType !== "ATTRIBUTION_BADGE");
-        attribution.region = mainlandRegions(8, 21);
-      }
-      return attribution;
-    });
-    result.attribution = [...internationalAttributions, ...chinaAttributions];
-    const chinaOfflineMetadataOffset = international.offlineMetadata?.length ?? 0;
-    result.offlineMetadata = [
-      ...clone(international.offlineMetadata || []),
-      ...clone(cn.offlineMetadata || [])
-    ];
-    const chinaTileIndexes = chinaTiles.map((_, index) => internationalTiles.length + index);
-    result.tileGroup = buildDisjointProviderTileGroups(
-      result,
-      chinaTileIndexes,
-      chinaAttributionOffset,
-      internationalResourceCount,
-      chinaOfflineMetadataOffset
-    );
+    result.tileGroup = preserveInternationalTileGroups(result);
 
     const urlInfo = result.urlInfoSet?.[0] || {};
     if (!/dispatcher\.is\.autonavi\.com/i.test(endpoint(urlInfo.dispatcherURL))) throw new Error("China Dispatcher is missing from US baseline");
@@ -843,43 +572,9 @@ function iRingoSurgeAdaptiveHybridFix(body, caches, settings = {}, countryCode =
     // Verify that the original international value survived instead of tying
     // the manifest to the historical gsp76/gspe76 host.
     if (endpoint(urlInfo.muninBaseURL) !== endpoint(international.urlInfoSet?.[0]?.muninBaseURL)) throw new Error("International Munin URL was replaced in US baseline");
-    if (result.releaseInfo !== cn.releaseInfo) throw new Error("Native CN release identity is missing from the hybrid baseline");
-    for (const style of internationalMuninStyles) {
-      const nativeDescriptors = (international.tileSet || []).filter(tile => tile?.style === style);
-      for (const native of nativeDescriptors) {
-        if (!result.tileSet.some(tile => tile?.style === style && endpoint(tile?.baseURL) === endpoint(native?.baseURL))) {
-          throw new Error("International Look Around descriptor was replaced in US baseline: " + style);
-        }
-      }
-    }
-    for (const style of mainlandSatelliteStyles) {
-      const cnSatellite = result.tileSet.find(tile => tile?.style === style && isMainlandEndpoint(tile?.baseURL));
-      const internationalSatellite = result.tileSet.find(tile => tile?.style === style && !isMainlandEndpoint(tile?.baseURL));
-      const sourceCN = (cn.tileSet || []).find(tile => tile?.style === style);
-      const sourceInternational = (international.tileSet || []).find(tile => tile?.style === style);
-      const sourceCNHasMainlandZoom = sourceCN?.validVersion?.some(version =>
-        version?.availableTiles?.some(region => Number(region?.maxZ) >= 8)
-      );
-      // CN night/polar descriptors can be global low-zoom-only entries. They
-      // do not need a mainland duplicate; the untouched US group already owns
-      // the globe/night chain. Require a CN descriptor only when the source
-      // actually contains detailed mainland zoom levels.
-      if (sourceCNHasMainlandZoom && !cnSatellite) throw new Error("Regional China satellite descriptor is missing: " + style);
-      if (cnSatellite && endpoint(cnSatellite?.baseURL) !== endpoint(sourceCN?.baseURL)) throw new Error("China satellite endpoint was rewritten: " + style);
-      if (sourceInternational && !internationalSatellite) throw new Error("International satellite fallback is missing: " + style);
-    }
-    for (const style of [...lookAroundRoadStyles, "VECTOR_SPR_ROADS"]) {
-      const chinaRoad = result.tileSet.find(tile => tile?.style === style && isMainlandEndpoint(tile?.baseURL));
-      const internationalRoad = result.tileSet.find(tile => tile?.style === style && !isMainlandEndpoint(tile?.baseURL));
-      if ((cn.tileSet || []).some(tile => tile?.style === style) && !chinaRoad) throw new Error("Native China road selector is missing from the CN group: " + style);
-      if ((international.tileSet || []).some(tile => tile?.style === style) && !internationalRoad) throw new Error("International road selector is missing: " + style);
-    }
-    const internationalGroup = result.tileGroup.find(group => group.tileSet?.some(ref => result.tileSet[ref.tileSetIndex]?.style === "MUNIN_METADATA" && !isMainlandEndpoint(result.tileSet[ref.tileSetIndex]?.baseURL)));
-    const chinaGroup = result.tileGroup.find(group => group.tileSet?.some(ref => result.tileSet[ref.tileSetIndex]?.style === "VECTOR_STANDARD" && isMainlandEndpoint(result.tileSet[ref.tileSetIndex]?.baseURL)));
-    if (result.offlineMetadata?.[internationalGroup?.offlineMetadataIndex]?.regulatoryRegionId !== 0) throw new Error("International capability group lost regulatoryRegionId=0");
-    if (result.offlineMetadata?.[chinaGroup?.offlineMetadataIndex]?.regulatoryRegionId !== 2) throw new Error("China rendering group lost regulatoryRegionId=2");
-    if (internationalGroup === chinaGroup) throw new Error("China and international providers still share one regulatory group");
-    console.log("[iRingo Maps International-All Test v2 test.23] disjoint CN regulatory group owns mainland standard/roads/satellite; international graph owns foreign capabilities; requested CN=" + requestedChinaBaseline);
+    const leaked = result.tileSet.find(tile => internationalCriticalStyles.has(tile?.style) && isMainlandEndpoint(tile?.baseURL));
+    if (leaked) throw new Error("Mainland critical selector leaked into international baseline: " + leaked.style);
+    console.log("[iRingo Maps International-All Test v2 test.8] native US 3D indices/groups preserved; appended " + chinaTiles.length + " mainland rendering layers");
   }
 
   return result;
