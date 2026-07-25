@@ -1,7 +1,7 @@
 name: ' iRingo: 🗺️ Maps International-All Test v2'
 description: |-
   Egern 优先测试版本
-  test20-ios27-style98-priority：修复 iOS 27 国际 3D 卫星 style=98 被排在 CN 卫星回退之后的问题
+  test21-cn-release-disjoint-style98：恢复 CN 发布身份并将国际 style=98 从大陆覆盖中隔离
   国内高德地图、POI、交通、导航与定位修正
   国际卫星、3D、Flyover、完整四处看看服务链、地球与道路能力
   国内标准地图、POI、道路、卫星及定位保持同一 CN 坐标语义；国外卫星、3D 和四处看看使用国际链
@@ -13,7 +13,7 @@ compat_arguments_desc: |
   本测试版本以 Egern 为主要验证客户端。为避免无效参数和旧 BoxJs 配置干扰，国内/国际服务组合采用固定策略，只开放实际会被脚本读取的参数。
 
   GeoManifest.Dynamic.Config.CountryCode: [动态配置] 清单主体
-      ├ CN: 请求保持中国服务身份，但实际能力主组使用国际监管身份（默认，test20）
+      ├ CN: 请求及发布身份保持中国服务语义，国际能力主组仍使用国际监管身份（默认，test21）
       ├ AUTO: 根据设备当前分支选择主体并预热另一份清单
       └ US: 国际主体仅用于回退诊断；可能导致国内坐标/POI 偏移
 
@@ -66,20 +66,20 @@ scriptings:
 - http_response:
     name: Maps.InternationalAllV2.defaults.response
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.20-ios27-style98-priority
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.21-cn-release-disjoint-style98
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
 - http_request:
     name: Maps.InternationalAllV2.manifest.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.20-ios27-style98-priority
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/request.bundle.js?v=6.4.0-test.21-cn-release-disjoint-style98
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: Maps.InternationalAllV2.manifest.response
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.20-ios27-style98-priority
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v2/modules/test/international-all-v2/assets/response.bundle.js?v=6.4.0-test.21-cn-release-disjoint-style98
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="AutoNavi"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="HYBRID"&TileSet.Traffic="CN"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true

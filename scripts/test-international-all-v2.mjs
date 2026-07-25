@@ -166,7 +166,7 @@ const cnResult = adaptiveFix(cn, { CN: cn, XX: xx }, settings, "CN");
 if (!cnResult.urlInfoSet[0].dispatcherURL.includes("autonavi")) throw new Error("CN dispatcher was not preserved");
 if (!cnResult.urlInfoSet[0].directionsURL.includes("autonavi")) throw new Error("CN directions were not preserved");
 if (cnResult.urlInfoSet[0].muninBaseURL !== xxURLInfo.muninBaseURL) throw new Error("international Munin service URL was not preserved");
-if (cnResult.releaseInfo !== xx.releaseInfo) throw new Error("CN request did not produce the international capability identity");
+if (cnResult.releaseInfo !== cn.releaseInfo) throw new Error("CN request did not preserve the native CN release identity");
 for (const style of ["VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA"]) {
 	if (!cnResult.tileSet.some(item => item.style === style && item.baseURL.includes("gsp76-ssl"))) throw new Error(`international Look Around selector was not preserved: ${style}`);
 }
@@ -259,7 +259,7 @@ for (const style of ["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT"]) {
 	if (!mainland || !foreign) throw new Error(`regional CN plus international satellite chain is incomplete: ${style}`);
 	if (!mainland.validVersion?.every(version => version.availableTiles?.every(isMainlandRegion))) throw new Error(`mainland satellite descriptor was not regionalized: ${style}`);
 }
-if (xxResult.releaseInfo !== xx.releaseInfo) throw new Error("international PROD identity was not preserved");
+if (xxResult.releaseInfo !== cn.releaseInfo) throw new Error("hybrid baseline did not adopt the native CN release identity");
 for (const filename of ["POITypeMapping-CN-1.json", "POITypeMapping-CN-2.json", "China.cms-lpr"]) {
 	const resource = xxResult.resource.find(item => item.filename === filename);
 	if (!resource) throw new Error(`mainland POI resource is missing: ${filename}`);
@@ -341,6 +341,8 @@ const firstCNSatellitePosition = separatedRefs.findIndex(ref =>
 );
 if (style98Position < 0) throw new Error("iOS 27 style=98 international 3D satellite selector is missing");
 if (firstCNSatellitePosition >= 0 && style98Position > firstCNSatellitePosition) throw new Error("iOS 27 style=98 selector is still behind the CN satellite fallback");
+const style98 = singleGroupResult.tileSet[separatedRefs[style98Position].tileSetIndex];
+if (style98.validVersion?.some(version => version.availableTiles?.some(isMainlandRegion))) throw new Error("iOS 27 style=98 still advertises mainland coverage and can suppress native CN satellite detail");
 if (!responseText.includes("u.tileGroup=Array.from(u.tileGroup??[])")) throw new Error("legacy tile-group rebuilder was not bypassed");
 if (responseText.includes("u=iRingoSurgeAdaptiveHybridFix(u,s,o,t),u.tileGroup=tt.tileGroups")) throw new Error("legacy tile-group rebuilder is still active after test8 fix");
 
@@ -425,7 +427,7 @@ if (outside.action !== "passthrough") throw new Error("foreign road request was 
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.20-ios27-style98-priority",
+	"6.4.0-test.21-cn-release-disjoint-style98",
 	"CountryCode:\"CN\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
@@ -460,7 +462,7 @@ for (const marker of [
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("test20-ios27-style98-priority")) throw new Error("Egern module does not expose the test20 cache identity");
+if (!egernText.includes("test21-cn-release-disjoint-style98")) throw new Error("Egern module does not expose the test21 cache identity");
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
 if (egernText.includes("assets/satellite-route.js")) throw new Error("Egern still uses the retired satellite imagery rewrite");
 if (egernText.includes("assets/cn-satellite-road.js")) throw new Error("Egern still performs the retired test14 satellite-road rewrite");
