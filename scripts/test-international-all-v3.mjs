@@ -242,12 +242,22 @@ const assertTest20Invariants = (result, cnSource, xxSource, label) => {
 const settings = { UrlInfoSet: { RAP: "Apple" } };
 const xxResult = adaptiveFix(structuredClone(xx), { CN: structuredClone(cn), XX: structuredClone(xx) }, settings, "US");
 assertTest20Invariants(xxResult, cn, xx, "fixture US");
-// Native US tile order must be untouched so the appended mainland entries and
-// existing group references keep their indices.
+// test22: mainland layers are PREPENDED; the native US block must follow at a
+// constant offset with its relative order and identifiers untouched.
+const mainlandCount = xxResult.tileSet.length - xx.tileSet.length;
+if (mainlandCount <= 0) throw new Error("no mainland layers were injected");
+for (let index = 0; index < mainlandCount; index++) {
+	if (!/-cn-ssl\./.test(xxResult.tileSet[index]?.baseURL ?? "")) throw new Error(`mainland-first block contains a non-mainland tile at ${index}`);
+}
 for (let index = 0; index < xx.tileSet.length; index++) {
-	if (xxResult.tileSet[index].style !== xx.tileSet[index].style || xxResult.tileSet[index].baseURL !== xx.tileSet[index].baseURL) {
-		throw new Error(`native US tile index changed at ${index}`);
+	if (xxResult.tileSet[mainlandCount + index].style !== xx.tileSet[index].style || xxResult.tileSet[mainlandCount + index].baseURL !== xx.tileSet[index].baseURL) {
+		throw new Error(`native US tile order changed at ${index}`);
 	}
+}
+for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_TRAFFIC"]) {
+	const mainlandIndex = xxResult.tileSet.findIndex(item => item.style === style && /-cn-ssl\./.test(item.baseURL ?? ""));
+	const internationalIndex = xxResult.tileSet.findIndex(item => item.style === style && !/-cn-ssl\./.test(item.baseURL ?? ""));
+	if (mainlandIndex < 0 || internationalIndex < 0 || mainlandIndex > internationalIndex) throw new Error(`mainland layer does not precede the international one in tileSet order: ${style}`);
 }
 if (!xxResult.attribution[0].name.includes("iRingo: 📍 adaptive hybrid")) throw new Error("iRingo adaptive hybrid attribution was not restored");
 
@@ -313,7 +323,7 @@ if (existsSync(realCNPath) && existsSync(realUSPath)) {
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v3",
-	"6.4.0-test.21-uniform-coordinate-identity",
+	"6.4.0-test.22-mainland-first-order",
 	'CountryCode:"US"',
 	'TileSet.Satellite:"ROUTE"',
 	"modules/test/international-all-v3/assets/",
@@ -347,7 +357,7 @@ for (const marker of [
 	"assets/satellite-route.js",
 	"binary_body: true",
 	"- gspe11-ssl.ls.apple.com",
-	"test21-uniform-coordinate-identity",
+	"test22-mainland-first-order",
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }

@@ -1,8 +1,20 @@
-# Maps International-All Test v3（当前：test21）
+# Maps International-All Test v3（当前：test22）
 
 这是与 `test/international-all-v2` 并行的独立测试线，基于 test19（`e3f6c3f`）的代码继续修改。目标不变：国内标准地图 POI 完整且道路/POI 不偏移；国内卫星图影像/道路/POI/定位对齐、导航正常；国外标准地图 POI 完整、3D 卫星、四处看看与导航正常。
 
-## test21-uniform-coordinate-identity（当前版本）
+## test22-mainland-first-order（当前版本）
+
+test21 实机结果：`Hybrid.MainlandWhitelist` × `UrlInfoSet.LocationShift` 的 **2×2 四种组合结果完全相同**——卫星模式道路+底图偏移、标准地图道路偏移、POI 正常。结论：白名单标记和定位修正服务都不是坐标解释的开关，"混合身份"假设被实验排除。
+
+复盘完整迭代史后发现一条强相关线索：
+
+- 稳定版与上游项目把大陆图层**放在 tileSet 数组开头**（prepend），那个时期国内标准地图正常；
+- test8 为保护国际 3D 组索引改为**追加到数组末尾**（append），紧接着的实机反馈就是"国内标准地图偏移了"，此后 append 结构贯穿 test8→test21，道路漂移也贯穿始终；
+- 推断：iOS 27 按 tileSet 顺序解析同 style 描述符。国际 TomTom 版中国道路（几何自带 GCJ 偏移、按国际语义渲染）排在前面，把注入的高德图层挡住了；POI 正常是因为国际清单的中国 POI 稀疏、系统落回 CN POI 描述符。这同时解释卫星模式：影像来自 CN 端点、道路覆盖层却是国际数据，两帧错开。
+
+test22 只改一件事（单变量实验）：**大陆图层移到 tileSet 数组最前**，全部原生组引用整体平移一个常量偏移（相对顺序与 identifier 逐字保留——不同于 test8 当年出问题的"重建索引"；稳定版同为 prepend 且国际 3D 正常，风险有先例背书）。组内引用顺序保持 test19 的"国际能力优先"，不改动已正常的国外侧。test21 的两个诊断开关保留。
+
+## test21-uniform-coordinate-identity（已被 test22 继承）
 
 test20 实机结果：**国外四处看看、3D 卫星、导航全部正常**（国际主组 + 单卫星选择器机制成立）；国内标准地图道路偏移、国内卫星模式影像/道路/POI/定位偏移仍在。
 
@@ -13,29 +25,18 @@ test20 实机结果：**国外四处看看、3D 卫星、导航全部正常**（
 | test16 | 原生 | 强制 CN | POI 对齐、道路漂移 |
 | test17 | 强制 CN | 强制 CN | 仍漂移（当时 POI 资源重映射尚未就位） |
 | test18~20 | 原生 | 强制 CN | POI 对齐、道路漂移 |
-| **test21 默认** | **原生** | **原生（统一）** | 待实机验证 |
+| test21 | 统一（NATIVE/CN 可切换） | 同左 | 2×2 四组合结果相同，假设排除 |
 
-推理：真机 CN 清单下所有大陆图层以原生身份在同一坐标帧（GCJ-02）渲染，定位点由 `polyLocationShift` 换算进同一帧；"对齐"的本质是**互相一致**。而 test16 起一直处于"POI 被单独标记 CN（系统单独修正）、道路保持原生（不修正）"的混合状态，两套空间必然互相错开。
-
-test21 把坐标身份改为**统一处理**，并开放两个可在 Egern 参数面板直接切换的诊断开关：
+test21 保留的两个诊断开关：
 
 - `Hybrid.MainlandWhitelist`：`NATIVE`（默认，全部大陆图层保留原生白名单）/ `CN`（全部统一标记 countryCode=CN）。
 - `UrlInfoSet.LocationShift`：`AutoNavi`（默认，定位点 GCJ-02 修正）/ `Apple`（不修正）。
 
-### 2×2 实机测试方案
+### 验证清单是否真正刷新
 
-每换一组参数后强退地图 App 再测。重点观察三组相对关系：①道路 vs POI ②道路/POI vs 卫星影像 ③定位点 vs 周围道路。
+切换参数或更新模块后，把地图缩到最小，看左下角注释 ` iRingo: 📍 adaptive hybrid` 下方的时间戳是否更新为最近时间。若时间戳不变，说明 geod 仍在使用缓存清单，测试结果不反映新配置；强退地图与 Egern，必要时重启设备。
 
-| 组合 | MainlandWhitelist | LocationShift | 预期 |
-| --- | --- | --- | --- |
-| A（默认） | NATIVE | AutoNavi | 图层互相一致（GCJ-02 帧），定位点换算进同帧 |
-| B | NATIVE | Apple | 图层互相一致，但定位点可能整体偏移固定距离 |
-| C | CN | AutoNavi | 全部触发系统大陆坐标解释 |
-| D | CN | Apple | 对照组 |
-
-把四种组合各自的三组相对关系记录下来，即可确定坐标解释机制并锁定最终组合。
-
-## test20-proven-satellite-route 的设计依据（已由 test21 继承）
+## test20-proven-satellite-route 的设计依据（已由 test21/22 继承）
 
 19 轮实机迭代已确认的约束：
 

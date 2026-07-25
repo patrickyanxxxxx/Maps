@@ -1,7 +1,7 @@
 name: ' iRingo: 🗺️ Maps International-All Test v3'
 description: |-
   Egern 优先测试版本
-  test21-uniform-coordinate-identity：在 test20 单一国际卫星选择器 + 大陆坐标请求路由的基础上，统一全部大陆图层的坐标身份，并开放白名单/定位修正两个诊断开关
+  test22-mainland-first-order：大陆图层移到 tileSet 数组最前（稳定版/上游已验证的顺序），原生组引用整体平移；保留 test21 的统一坐标身份与诊断开关
   国内高德地图、POI、交通、导航与定位修正
   国际卫星、3D、Flyover、完整四处看看服务链、地球与道路能力
   大陆 style=98 卫星请求按瓦片坐标改写到 CN 端点，国外请求保持国际链，卫星模式跨区不再锁定
@@ -77,20 +77,20 @@ scriptings:
 - http_response:
     name: Maps.InternationalAllV3.defaults.response
     match: ^https?:\/\/configuration\.ls\.apple\.com\/config\/defaults
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.21-uniform-coordinate-identity
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.22-mainland-first-order
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Hybrid.MainlandWhitelist="{{{Hybrid.MainlandWhitelist}}}"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
 - http_request:
     name: Maps.InternationalAllV3.manifest.request
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/request.bundle.js?v=6.4.0-test.21-uniform-coordinate-identity
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/request.bundle.js?v=6.4.0-test.22-mainland-first-order
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Hybrid.MainlandWhitelist="{{{Hybrid.MainlandWhitelist}}}"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
 - http_response:
     name: Maps.InternationalAllV3.manifest.response
     match: ^https?:\/\/gspe35-ssl\.ls\.apple\.(com|cn)\/geo_manifest\/dynamic\/config
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.21-uniform-coordinate-identity
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/response.bundle.js?v=6.4.0-test.22-mainland-first-order
     env:
       _compat.$argument: GeoManifest.Dynamic.Config.CountryCode="{{{GeoManifest.Dynamic.Config.CountryCode}}}"&UrlInfoSet.Dispatcher="AutoNavi"&UrlInfoSet.Directions="AutoNavi"&UrlInfoSet.RAP="{{{UrlInfoSet.RAP}}}"&UrlInfoSet.LocationShift="{{{UrlInfoSet.LocationShift}}}"&TileSet.Earth="AutoNavi"&TileSet.Flyover="XX"&TileSet.Map="CN"&TileSet.Munin="XX"&TileSet.POI="CN"&TileSet.Roads="XX"&TileSet.Satellite="ROUTE"&TileSet.Traffic="CN"&Hybrid.MainlandWhitelist="{{{Hybrid.MainlandWhitelist}}}"&Config.Announcements.Environment="CN"&Storage="Argument"&LogLevel="{{{LogLevel}}}"
     body_required: true
@@ -98,7 +98,7 @@ scriptings:
 - http_request:
     name: Maps.InternationalAllV3.satellite-route.request
     match: ^https?:\/\/gspe11-ssl\.ls\.apple\.com\/tile
-    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/satellite-route.js?v=6.4.0-test.21-uniform-coordinate-identity
+    script_url: https://raw.githubusercontent.com/patrickyanxxxxx/Maps/test/international-all-v3/modules/test/international-all-v3/assets/satellite-route.js?v=6.4.0-test.22-mainland-first-order
 mitm:
   hostnames:
     includes:
