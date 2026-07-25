@@ -13,7 +13,7 @@
 
 - 继续使用已在 iOS 27 验证的国内卫星坐标路由：国际 `style=98/v=226` 请求落在大陆坐标时转换为 CN `style=7/v=68`，国外请求保持不变。
 - 测试模块和四个脚本全部放在本目录，避免覆盖稳定 `modules/assets/`。
-- 所有脚本地址指向远程 `test/surge-adaptive-v1.4.0` 分支；上传前不可直接远程导入。
+- 所有脚本地址指向远程 `test/international-all-surge-adaptive` 分支；上传前不可直接远程导入。
 
 ## 文件
 
