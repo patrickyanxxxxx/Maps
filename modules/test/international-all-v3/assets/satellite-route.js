@@ -1,10 +1,15 @@
-/* iOS 27 mainland satellite route: style 98/226 -> CN style 7/68. */
+/* iOS 27 mainland satellite route -> CN style 7/68.
+ * Confirmed on device (2026-07-26 Egern logs): with no CN satellite
+ * descriptor in the manifest, geod requests mainland imagery through BOTH
+ * the style=98 (v=226) selector and the legacy style=7 (v=10421)
+ * international selector. The style=7 mainland requests fail outright on
+ * gspe11-ssl (0 KB), so both styles must be routed to the CN endpoint. */
 (() => {
 	const req = globalThis.$request;
 	if (!req?.url) return $done({});
 	const url = new URL(req.url);
 	const style = url.searchParams.get("style") ?? url.searchParams.get("tile_style");
-	if (url.hostname !== "gspe11-ssl.ls.apple.com" || url.pathname !== "/tile" || style !== "98") return $done({});
+	if (url.hostname !== "gspe11-ssl.ls.apple.com" || url.pathname !== "/tile" || (style !== "98" && style !== "7")) return $done({});
 	const n = key => Number(url.searchParams.get(key));
 	const x = n("x"), y = n("y"), z = n("z");
 	if (![x, y, z].every(Number.isInteger) || z < 1 || z > 30) return $done({});

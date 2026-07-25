@@ -1,8 +1,21 @@
-# Maps International-All Test v3（当前：test22）
+# Maps International-All Test v3（当前：test23）
 
 这是与 `test/international-all-v2` 并行的独立测试线，基于 test19（`e3f6c3f`）的代码继续修改。目标不变：国内标准地图 POI 完整且道路/POI 不偏移；国内卫星图影像/道路/POI/定位对齐、导航正常；国外标准地图 POI 完整、3D 卫星、四处看看与导航正常。
 
-## test22-mainland-first-order（当前版本）
+## test23-satellite-style7-cn-roads（当前版本）
+
+test22 实机结果：国外四处看看/3D 依旧正常；国内标准地图道路与 POI 漂移、卫星模式不贴合仍在——但 Egern 连接日志（2026-07-26 03:13-03:19）首次给出了直接证据：
+
+1. **清单身份链路正常**：设备 CN 请求被正确改写为 US 上网（85 KB 原始 US 清单 + 83 KB CN 预热 → 交付 343 KB 混合清单）。
+2. **国内标准地图两帧混画**：`gspe19-cn-ssl`（CN 图层，42 KB↓）与 `gspe19-ssl`（国际图层，65 KB↓）同时供图。国际流量来自被 test19 保持国际的道路能力样式——GCJ 偏移的国际中国道路叠在 CN 底图上。
+3. **国内卫星请求实际失败**：geod 对大陆卫星发出 `gspe11-ssl/tile?style=7&v=10421`（国际 RASTER_SATELLITE 选择器）而非预期的 style=98，全部失败（0 KB）；路由脚本只匹配 98，从未触发（日志中无 `gspe11-2-cn` 卫星请求）。另见 style=100/v=226 大陆请求返回 200/223B 空响应（暂不路由，映射未确认）。
+
+test23 按证据修两处：
+
+- `satellite-route.js` 同时改写大陆 style=98 和 style=7 请求 → CN `style=7/v=68/size=1/scale=2`（保留 accessKey，去掉 region/h）。
+- 恢复大陆限定的 CN `VECTOR_ROADS` 注入（稳定版同款；稳定版含此图层且四处看看正常）。`VECTOR_ROAD_NETWORK/VECTOR_ROAD_SELECTION/VECTOR_SPR_ROADS` 继续保持国际，保护 Munin/四处看看链。
+
+## test22-mainland-first-order（已被 test23 继承）
 
 test21 实机结果：`Hybrid.MainlandWhitelist` × `UrlInfoSet.LocationShift` 的 **2×2 四种组合结果完全相同**——卫星模式道路+底图偏移、标准地图道路偏移、POI 正常。结论：白名单标记和定位修正服务都不是坐标解释的开关，"混合身份"假设被实验排除。
 
@@ -65,7 +78,7 @@ test21 保留的两个诊断开关：
 - `iRingo.Maps.sgmodule`：Surge 兼容模块，同一策略。
 - `assets/request.bundle.js`：完整清单请求管线；US 身份下自动预热 CN 清单缓存。
 - `assets/response.bundle.js`：test20 合并逻辑（自检断言会在结构不符时抛错）。
-- `assets/satellite-route.js`：与稳定版逐字一致的大陆卫星坐标路由脚本。
+- `assets/satellite-route.js`：大陆卫星坐标路由脚本；test23 起同时改写 style=98 与 style=7 请求。
 
 ## 验证
 

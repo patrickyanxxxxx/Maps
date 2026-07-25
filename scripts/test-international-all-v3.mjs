@@ -196,11 +196,15 @@ const assertTest20Invariants = (result, cnSource, xxSource, label) => {
 			if (!result.tileSet.some(item => item.style === style && item.baseURL === native.baseURL)) throw new Error(`${label}: international Look Around descriptor was replaced: ${style}`);
 		}
 	}
-	for (const style of ["VECTOR_ROADS", "VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTION", "VECTOR_SPR_ROADS"]) {
+	for (const style of ["VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTION", "VECTOR_SPR_ROADS"]) {
 		if (result.tileSet.some(item => item.style === style && /-cn-ssl\./.test(item.baseURL ?? ""))) throw new Error(`${label}: CN road selector competes with international Look Around: ${style}`);
 	}
-	// Mainland standard map, POI and traffic remain regional CN entries.
-	for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_TRAFFIC"]) {
+	for (const style of ["VECTOR_ROADS", "VECTOR_ROAD_NETWORK", "VECTOR_ROAD_SELECTION", "VECTOR_SPR_ROADS"]) {
+		if ((xxSource.tileSet || []).some(item => item.style === style) && !result.tileSet.some(item => item.style === style && !/-cn-ssl\./.test(item.baseURL ?? ""))) throw new Error(`${label}: international road capability is missing: ${style}`);
+	}
+	// test23: mainland roads come back as a regional CN layer (stable parity).
+	// Mainland standard map, POI, traffic and roads remain regional CN entries.
+	for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_TRAFFIC", "VECTOR_ROADS"]) {
 		const mainland = result.tileSet.find(item => item.style === style && /-cn-ssl\./.test(item.baseURL ?? ""));
 		if ((cnSource.tileSet || []).some(item => item.style === style) && !mainland) throw new Error(`${label}: regional mainland layer is missing: ${style}`);
 		// POI layers keep their native zoom bands (which can start below z8) as
@@ -303,8 +307,21 @@ if (beijingURL.searchParams.get("vertical_datum") !== "wgs84") throw new Error("
 if (beijingURL.searchParams.get("region") !== null || beijingURL.searchParams.get("h") !== null) throw new Error("mainland satellite request kept international-only parameters");
 const tokyo = runRoute("https://gspe11-ssl.ls.apple.com/tile?style=98&v=226&region=0&z=14&x=14538&y=6450&h=0");
 if (tokyo?.url) throw new Error("foreign style-98 request was modified");
+// test23: the legacy style=7 international selector also serves mainland
+// requests on device (observed failing with v=10421); route those too.
+const beijing7 = runRoute("https://gspe11-ssl.ls.apple.com/tile?style=7&size=2&scale=2&v=10421&z=11&x=1615&y=840&vertical_datum=wgs84&preflight=2&accessKey=TEST7");
+if (!beijing7?.url) throw new Error("mainland style-7 request was not rewritten");
+const beijing7URL = new URL(beijing7.url);
+if (beijing7URL.hostname !== "gspe11-2-cn-ssl.ls.apple.com" || beijing7URL.pathname !== "/2/tiles") throw new Error("mainland style-7 endpoint mismatch");
+if (beijing7URL.searchParams.get("style") !== "7" || beijing7URL.searchParams.get("v") !== "68" || beijing7URL.searchParams.get("size") !== "1" || beijing7URL.searchParams.get("scale") !== "2") throw new Error("mainland style-7 target parameters mismatch");
+if (beijing7URL.searchParams.get("x") !== "1615" || beijing7URL.searchParams.get("y") !== "840" || beijing7URL.searchParams.get("z") !== "11") throw new Error("mainland style-7 coordinates changed");
+if (beijing7URL.searchParams.get("accessKey") !== "TEST7") throw new Error("mainland style-7 accessKey was dropped");
+const tokyo7 = runRoute("https://gspe11-ssl.ls.apple.com/tile?style=7&size=2&scale=2&v=10421&z=11&x=1817&y=806");
+if (tokyo7?.url) throw new Error("foreign style-7 request was modified");
 const sputnik = runRoute("https://gspe11-ssl.ls.apple.com/tile?style=15&v=100&z=14&x=13450&y=6220");
-if (sputnik?.url) throw new Error("non-98 3D request was modified");
+if (sputnik?.url) throw new Error("non-satellite 3D request was modified");
+const style100 = runRoute("https://gspe11-ssl.ls.apple.com/tile?style=100&v=226&region=0&z=9&x=404&y=210&h=0");
+if (style100?.url) throw new Error("style-100 request must pass through until its CN mapping is confirmed");
 
 // --- optional: run the merge against real device manifests when present.
 const realCNPath = "/tmp/maps-cn.json";
@@ -323,7 +340,7 @@ if (existsSync(realCNPath) && existsSync(realUSPath)) {
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v3",
-	"6.4.0-test.22-mainland-first-order",
+	"6.4.0-test.23-satellite-style7-cn-roads",
 	'CountryCode:"US"',
 	'TileSet.Satellite:"ROUTE"',
 	"modules/test/international-all-v3/assets/",
@@ -357,7 +374,7 @@ for (const marker of [
 	"assets/satellite-route.js",
 	"binary_body: true",
 	"- gspe11-ssl.ls.apple.com",
-	"test22-mainland-first-order",
+	"test23-satellite-style7-cn-roads",
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
