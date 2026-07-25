@@ -166,7 +166,7 @@ if (runSatellite(tokyoSatelliteInput) !== tokyoSatelliteInput) throw new Error("
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.6",
+	"6.4.0-test.7",
 	"CountryCode:\"AUTO\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
@@ -178,7 +178,7 @@ for (const marker of [
 	if (!moduleText.includes(marker)) throw new Error(`Surge module is missing ${marker}`);
 }
 if (moduleText.includes("surge-adaptive-v1.4.0")) throw new Error("Surge module still references the retired directory");
-if (!moduleText.includes("DOMAIN,gspe11-ssl.ls.apple.com,DIRECT")) throw new Error("Surge module does not direct-route international 3D tiles");
+if (moduleText.includes("DOMAIN,gspe11-ssl.ls.apple.com,DIRECT")) throw new Error("Surge module direct-routes international 3D tiles and may make them unreachable");
 
 const egernText = await readFile(`${root}/iRingo.Maps.yaml`, "utf8");
 for (const marker of [
@@ -204,6 +204,6 @@ for (const marker of [
 }
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern module unexpectedly enables the Surge road authorization helper");
 if (egernText.includes("surge-adaptive-v1.4.0")) throw new Error("Egern module references the retired directory");
-if (!egernText.includes("match: gspe11-ssl.ls.apple.com") || !egernText.includes("policy: DIRECT")) throw new Error("Egern module does not direct-route international 3D tiles");
+if (egernText.includes("match: gspe11-ssl.ls.apple.com")) throw new Error("Egern module direct-routes international 3D tiles and may make them unreachable");
 
 console.log("International-All v2 Egern-first integration tests passed");
