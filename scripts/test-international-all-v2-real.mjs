@@ -67,6 +67,12 @@ if (bytes.length > 2_097_152) throw new Error(`real manifest exceeds Egern max-s
 const result = context.__decodeManifest(bytes);
 const endpoint = tile => String(tile?.baseURL || "");
 const isCN = tile => /-cn-ssl\.ls\.apple\.com/i.test(endpoint(tile));
+const containsTile = (region, z, x, y) => {
+	if (!region || z < region.minZ || z > region.maxZ) return false;
+	const factor = 2 ** (z - region.minZ);
+	return x >= region.minX * factor && x <= ((region.maxX + 1) * factor - 1)
+		&& y >= region.minY * factor && y <= ((region.maxY + 1) * factor - 1);
+};
 console.log(JSON.stringify({
 	offlineMetadata: result.offlineMetadata?.map((item, index) => ({ index, regulatoryRegionId: item?.regulatoryRegionId })),
 	tileGroups: result.tileGroup?.map((group, index) => ({ index, identifier: group?.identifier, offlineMetadataIndex: group?.offlineMetadataIndex, refs: group?.tileSet?.length })),
@@ -85,6 +91,13 @@ for (const style of ["VECTOR_STANDARD", "VECTOR_POI", "VECTOR_ROADS", "RASTER_SA
 for (const style of ["MUNIN_METADATA", "VECTOR_SPR_MERCATOR", "VECTOR_SPR_MODELS", "VECTOR_SPR_MATERIALS", "VECTOR_SPR_METADATA", "VECTOR_SPR_ROADS", "SPR_ASSET_METADATA", "UNUSED_98", "SPUTNIK_METADATA", "FLYOVER_C3M_MESH"]) {
 	if (!chinaGroup.tileSet.some(ref => result.tileSet[ref.tileSetIndex]?.style === style && !isCN(result.tileSet[ref.tileSetIndex]))) throw new Error(`real CN-owned capability group is missing international ${style}`);
 }
+const chinaSatellite = result.tileSet.find(tile => tile?.style === "RASTER_SATELLITE" && isCN(tile));
+const internationalSatellite = result.tileSet.find(tile => tile?.style === "RASTER_SATELLITE" && !isCN(tile));
+const shanghai = { z: 14, x: 12927, y: 6735 };
+const tokyo = { z: 14, x: 14539, y: 6451 };
+const covers = (tile, point) => tile?.validVersion?.some(version => version.availableTiles?.some(region => containsTile(region, point.z, point.x, point.y)));
+if (!covers(chinaSatellite, shanghai) || covers(chinaSatellite, tokyo)) throw new Error("real CN satellite coverage is not mainland-only");
+if (covers(internationalSatellite, shanghai) || !covers(internationalSatellite, tokyo)) throw new Error("real international satellite coverage does not exclude mainland while preserving Tokyo");
 console.log(JSON.stringify({
 	cnInputBytes: cnBody.length,
 	usInputBytes: usBody.length,

@@ -38,6 +38,7 @@
 - `test.21-cn-release-disjoint-style98` 根据 test20 实机“国外四处看看正常、国际 3D 改善，但国内标准道路漂移且国内卫星只显示低分辨率”的结果，保留国际 `regulatoryRegionId=0` 主组和完整 Munin/SPR/3D 链，仅将混合清单的发布身份恢复为设备请求的 `PROD-CN`，避免 CN 标准道路在国际发布身份下解释；同时从国际 `style=98/v=226` 的覆盖范围精确扣除中国大陆，让国内命中 CN 原生 `style=7/v=68` 卫星。所有瓦片 URL/accessKey 和国际四处看看顺序保持不变。
 - `test.23-disjoint-cn-regulatory-group` 根据 test22 实机“国内标准地图和卫星地图均能显示，但两者仍漂移”的结果，停止把 CN 图层挂入国际 `regulatoryRegionId=0` 主组。国际原生组保持完整的国外标准地图、卫星、3D、Flyover 与 Munin/SPR 四处看看链，并从其国内标准、POI、道路、卫星等选择器中扣除中国大陆覆盖；另建由 Apple CN 原生组克隆的 `regulatoryRegionId=2` 组，使用未经改写的 CN 标准图、POI、道路、卫星及原生资源索引，仅覆盖中国大陆。两组瓦片覆盖互斥，目标是让 iOS 27 分别使用正确的坐标解释，同时保留国际能力。
 - `test.24-cn-primary-international-capabilities` 根据 test23 实机“国内卫星不显示、标准地图乱码，而国外正常”的结果，确认 iOS 27/Egern 不会稳定激活第二个 CN 监管组。本版回到已验证国内标准地图坐标正确的 CN 原生主体：只保留一个由 CN 原生组重建的活动组，完整保留 CN 标准图、POI、道路、交通、2D 卫星、卫星道路、导航与 `regulatoryRegionId=2`；US 清单只追加国外卫星回退、国际 3D、Flyover、Munin/SPR、四处看看及全球能力选择器，不再让国际普通底图或第二监管组接管国内渲染。
+- `test.25-disjoint-satellite-coverage` 根据 test24 实机“国内地图恢复正常，但国外卫星消失”的结果，保持 CN 单一活动组、国内标准图、POI、道路、导航和坐标逻辑不变，仅处理同名卫星选择器：CN 原生 2D 卫星覆盖精确限制在中国大陆，国际 2D 卫星从 z8 以上覆盖中扣除大陆后负责境外，二者不再重叠；国际 3D、Flyover、Munin/SPR 与四处看看链不变，也不增加瓦片请求改写。
 - `test.19-international-capability-priority` 根据 test18 实机出现“中国以外整颗卫星地球灰色、只剩国内卫星且无四处看看”的结果，确认不能把共享国际主组切换为 CN `regulatoryRegionId=2`。本版恢复 US `regulatoryRegionId=0`，并把国际卫星、Sputnik/Flyover、Munin/SPR、道路能力和境外区域选择器放在主组最前；CN 卫星仅作为大陆范围回退。CN `VECTOR_ROADS`、`VECTOR_ROAD_NETWORK`、`VECTOR_ROAD_SELECTION` 与 `VECTOR_SPR_ROADS` 不再注入共享主组，避免同名选择器抢占四处看看。国内标准底图、POI、交通、导航和定位服务继续保留。
 - 测试模块和脚本全部放在本目录，避免覆盖稳定 `modules/assets/`。
 - Egern 只公开脚本真正读取的三个参数，其余服务组合固定，避免旧 BoxJs/持久化配置覆盖测试结果。
@@ -73,7 +74,7 @@ Egern 固定使用以下组合：`Dispatcher/Directions/LocationShift=AutoNavi`�
 ## 已知风险
 
 - 参考版本说明以 iOS 26 + Surge 为主要验证环境；本组合版针对 Egern 模块格式和 iOS 27 卫星路由进行了整合，但仍需实机验证所有组合能力。
-- test24 已恢复 CN 原生单一活动组以解决 test23 的国内卫星缺失和标准图乱码；国际卫星、3D 与四处看看能否同时被 iOS 27 完整激活仍需继续实机验证。
+- test25 已在 CN 原生单一活动组内拆分国内/国际卫星覆盖；iOS 27 是否会在卫星模式跨区域时立即重新选择数据源仍需继续实机验证。
 - 国内卫星数据较旧，仍可能存在数据源自身的清晰度、覆盖和固有偏移；本测试版本保留 Apple 原始 CN 描述符，不执行人工坐标换算。
 - 国际卫星、3D 和四处看看依赖国际 Apple 地图节点；若用户网络或代理规则无法访问对应域名，仍可能加载缓慢或功能不可用。本模块不会强制将国际节点设为直连。
 - 当前仅保证以 Egern 进行主要测试；Surge 模块属于兼容输出，其他代理软件暂未生成，也不保证功能完整。

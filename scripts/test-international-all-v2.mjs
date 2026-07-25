@@ -101,8 +101,8 @@ const xx = {
 		tile("VECTOR_SPR_METADATA", "https://gsp76-ssl.ls.apple.com/spr"),
 		tile("VECTOR_SPR_ROADS", "https://gsp76-ssl.ls.apple.com/spr"),
 		tile("SPR_ASSET_METADATA", "https://gsp76-ssl.ls.apple.com/spr"),
-		tile("RASTER_SATELLITE", "https://gspe11-ssl.ls.apple.com/tile"),
-		tile("RASTER_SATELLITE_NIGHT", "https://gspe11-ssl.ls.apple.com/tile"),
+		tile("RASTER_SATELLITE", "https://gspe11-ssl.ls.apple.com/tile", { validVersion: [{ identifier: 1, availableTiles: [{ minX: 0, minY: 0, maxX: 255, maxY: 255, minZ: 8, maxZ: 21 }] }] }),
+		tile("RASTER_SATELLITE_NIGHT", "https://gspe11-ssl.ls.apple.com/tile", { validVersion: [{ identifier: 1, availableTiles: [{ minX: 0, minY: 0, maxX: 255, maxY: 255, minZ: 8, maxZ: 21 }] }] }),
 		tile("SPUTNIK_METADATA", "https://gspe11-ssl.ls.apple.com/tile"),
 		tile("FLYOVER_C3M_MESH", "https://gspe11-ssl.ls.apple.com/tile"),
 	],
@@ -154,6 +154,10 @@ for (const style of ["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT", "SPUTNIK_META
 	if (["RASTER_SATELLITE", "RASTER_SATELLITE_NIGHT"].includes(style) && !descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`native CN satellite descriptor was not preserved: ${style}`);
 	if (["SPUTNIK_METADATA", "FLYOVER_C3M_MESH"].includes(style) && descriptors.some(item => item.baseURL.includes("-cn-ssl"))) throw new Error(`CN 3D descriptor still shadows international imagery: ${style}`);
 }
+const cnSatellite = cnResult.tileSet.find(item => item.style === "RASTER_SATELLITE" && item.baseURL.includes("-cn-ssl"));
+const internationalSatellite = cnResult.tileSet.find(item => item.style === "RASTER_SATELLITE" && item.baseURL.includes("gspe11-ssl"));
+if (!cnSatellite?.validVersion?.every(version => version.availableTiles.every(region => region.minZ >= 8 && region.minX >= 180 * 2 ** (region.minZ - 8) && region.maxX < 224 * 2 ** (region.minZ - 8)))) throw new Error("CN satellite coverage was not limited to mainland longitudes");
+if (internationalSatellite?.validVersion?.some(version => version.availableTiles.some(region => region.minZ >= 8 && region.minX <= 214 * 2 ** (region.minZ - 8) && region.maxX >= 216 * 2 ** (region.minZ - 8) && region.minY <= 82 * 2 ** (region.minZ - 8) && region.maxY >= 82 * 2 ** (region.minZ - 8)))) throw new Error("international satellite still overlaps the mainland test area");
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_ROADS" && item.baseURL.includes("-cn-ssl"))) throw new Error("native mainland road selector was lost");
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && item.baseURL.includes("-cn-ssl"))) throw new Error("mainland traffic was not preserved");
 if (!cnResult.tileSet.some(item => item.style === "VECTOR_TRAFFIC" && !item.baseURL.includes("-cn-ssl"))) throw new Error("international traffic fallback was not preserved");
@@ -360,7 +364,7 @@ if (runSatellite(tokyoSatelliteInput) !== tokyoSatelliteInput) throw new Error("
 const moduleText = await readFile(`${root}/iRingo.Maps.sgmodule`, "utf8");
 for (const marker of [
 	"International-All Test v2",
-	"6.4.0-test.24-cn-primary-international-capabilities",
+	"6.4.0-test.25-disjoint-satellite-coverage",
 	"CountryCode:\"CN\"",
 	"TileSet.Satellite:\"HYBRID\"",
 	"modules/test/international-all-v2/assets/",
@@ -393,7 +397,7 @@ for (const marker of [
 ]) {
 	if (!egernText.includes(marker)) throw new Error(`Egern module is missing ${marker}`);
 }
-if (!egernText.includes("test24-cn-primary-international-capabilities")) throw new Error("Egern module does not expose the test24 cache identity");
+if (!egernText.includes("test25-disjoint-satellite-coverage")) throw new Error("Egern module does not expose the test25 cache identity");
 if (egernText.includes("assets/cn-native-road.js")) throw new Error("Egern still performs standard-map request rewriting under the CN baseline");
 if (egernText.includes("surge-adaptive-v1.4.0")) throw new Error("Egern module references the retired directory");
 if (egernText.includes("match: gspe11-ssl.ls.apple.com")) throw new Error("Egern module direct-routes international 3D tiles and may make them unreachable");
